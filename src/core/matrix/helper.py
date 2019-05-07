@@ -2,8 +2,8 @@ from numbers import Number
 from typing import List, Set
 
 import numpy as np
+from scipy import linalg
 
-from core.error import InvalidShapeError
 from core.matrix import Matrix, real
 
 
@@ -111,14 +111,6 @@ def inverse(m: Matrix) -> Matrix:
     return m.inverse()
 
 
-def throw_invalid_shapes(m1: Matrix, m2: Matrix):
-    raise InvalidShapeError("Invalid matrix multiplication. Shapes " +
-                            m1.shape_string() +
-                            " and " +
-                            m2.shape_string() +
-                            " do not match.")
-
-
 def row_mean(mat: Matrix, index: int) -> real:
     return row_means(mat).get(index, 0)
 
@@ -162,34 +154,9 @@ def fill_diagonal(mat: Matrix, value: Number):
         i += 1
 
 
-def must_be_row_vector(vector: 'Matrix'):
-    if not vector.is_row_vector():
-        raise ValueError('Must be a row vector')
+def solve(A: Matrix, b: Matrix) -> Matrix:
+    return Matrix(linalg.solve(A.data, b.data))
 
 
-def must_be_column_vector(vector: 'Matrix'):
-    if not vector.is_column_vector():
-        raise ValueError('Must be a column vector')
-
-
-def must_be_vector(vector: 'Matrix'):
-    if not vector.is_vector():
-        raise ValueError('Must be a vector')
-
-
-def must_be_same_shape(m1: Matrix, m2: Matrix):
-    dimensions_must_match(m1, m2, rows_to_rows=True, columns_to_columns=True)
-
-
-def dimensions_must_match(m1: Matrix, m2: Matrix, *,
-                          rows_to_rows: bool = False,
-                          rows_to_columns: bool = False,
-                          columns_to_rows: bool = False,
-                          columns_to_columns: bool = False):
-    checks: Set[bool] = {not rows_to_rows or m1.num_rows() == m2.num_rows(),
-                         not rows_to_columns or m1.num_rows() == m2.num_columns(),
-                         not columns_to_rows or m1.num_columns() == m2.num_rows(),
-                         not columns_to_columns or m1.num_columns() == m2.num_columns()}
-
-    if False in checks:
-        raise InvalidShapeError('', m1, m2)
+def multi_concat(axis: int, *matrices: Matrix) -> Matrix:
+    return Matrix(np.concatenate([matrix.data for matrix in matrices], axis))

@@ -1,10 +1,10 @@
 from numbers import Number
-from typing import Optional, Union, List, Tuple, Callable
+from typing import Optional, Union, List, Tuple, Callable, Set
 
 import numpy as np
 
-from core.error import MatrixAlgorithmsError, InvalidAxisError
-from core.matrix import real, helper
+from core.error import MatrixAlgorithmsError, InvalidAxisError, InvalidShapeError
+from core.matrix import real
 
 
 class Matrix:
@@ -179,17 +179,17 @@ class Matrix:
 
     def mul_elementwise(self, other: 'Matrix') -> 'Matrix':
         if not self.same_shape_as(other):
-            helper.throw_invalid_shapes(self, other)
+            throw_invalid_shapes(self, other)
         return Matrix(np.multiply(self.data, other.data))
 
     def scale_by_row_vector(self, vector: 'Matrix') -> 'Matrix':
-        helper.must_be_row_vector(vector)
-        helper.dimensions_must_match(self, vector, columns_to_rows=True)
+        must_be_row_vector(vector)
+        dimensions_must_match(self, vector, columns_to_rows=True)
         return self.mul_by_vector(vector)
 
     def scale_by_column_vector(self, vector: 'Matrix') -> 'Matrix':
-        helper.must_be_column_vector(vector)
-        helper.dimensions_must_match(self, vector, rows_to_rows=True)
+        must_be_column_vector(vector)
+        dimensions_must_match(self, vector, rows_to_rows=True)
         return self.mul_by_vector(vector)
 
     def add_by_vector(self, vector: 'Matrix') -> 'Matrix':
@@ -197,7 +197,7 @@ class Matrix:
 
     def div_elementwise(self, other: 'Matrix') -> 'Matrix':
         if not self.same_shape_as(other):
-            helper.throw_invalid_shapes(self, other)
+            throw_invalid_shapes(self, other)
         return Matrix(np.divide(self.data, other.data))
 
     def div(self, scalar: real) -> 'Matrix':
@@ -205,12 +205,12 @@ class Matrix:
 
     def sub(self, other: Union['Matrix', real]) -> 'Matrix':
         if isinstance(other, Matrix):
-            helper.must_be_same_shape(self, other)
+            must_be_same_shape(self, other)
         return Matrix(np.subtract(self.data, other.data))
 
     def add(self, other: Union['Matrix', real]) -> 'Matrix':
         if isinstance(other, Matrix):
-            helper.must_be_same_shape(self, other)
+            must_be_same_shape(self, other)
         return Matrix(np.add(self.data, other.data))
 
     def pow_elementwise(self, exponent: real) -> 'Matrix':
@@ -236,14 +236,14 @@ class Matrix:
         self.data[row][column] = real(value)
 
     def set_row(self, row_index: int, row: 'Matrix'):
-        helper.must_be_row_vector(row)
-        helper.dimensions_must_match(self, row, columns_to_columns=True)
+        must_be_row_vector(row)
+        dimensions_must_match(self, row, columns_to_columns=True)
         self.reset_cache()
         self.data[row_index] = row.data[0]
 
     def set_column(self, column_index: int, column: 'Matrix'):
-        helper.must_be_column_vector(column)
-        helper.dimensions_must_match(self, column, rows_to_rows=True)
+        must_be_column_vector(column)
+        dimensions_must_match(self, column, rows_to_rows=True)
         self.reset_cache()
         self.data[:, column_index] = column.data[:, 0]
 
@@ -349,7 +349,7 @@ class Matrix:
         return np.median(self.data)
 
     def where_vector(self, condition: Callable[[real], bool]) -> List[int]:
-        helper.must_be_vector(self)
+        must_be_vector(self)
         if self.is_row_vector():
             return [i for i in range(self.num_columns())
                     if condition(self.get(0, i))]
@@ -485,7 +485,7 @@ class Matrix:
         return result
 
     def vector_op_modify(self, vector: 'Matrix', op: np.ufunc):
-        helper.must_be_vector(vector)
+        must_be_vector(vector)
         self.ensure_vector_size_matches(vector)
         op.at(self.data, ..., vector.data)
 
@@ -501,3 +501,43 @@ class Matrix:
         if not self.vector_size_matches(vector):
             raise ValueError('The supplied vector is not the right size')
 
+
+def must_be_row_vector(vector: 'Matrix'):
+    if not vector.is_row_vector():
+        raise ValueError('Must be a row vector')
+
+
+def must_be_column_vector(vector: 'Matrix'):
+    if not vector.is_column_vector():
+        raise ValueError('Must be a column vector')
+
+
+def must_be_vector(vector: 'Matrix'):
+    if not vector.is_vector():
+        raise ValueError('Must be a vector')
+
+
+def must_be_same_shape(m1: Matrix, m2: Matrix):
+    dimensions_must_match(m1, m2, rows_to_rows=True, columns_to_columns=True)
+
+
+def dimensions_must_match(m1: Matrix, m2: Matrix, *,
+                          rows_to_rows: bool = False,
+                          rows_to_columns: bool = False,
+                          columns_to_rows: bool = False,
+                          columns_to_columns: bool = False):
+    checks: Set[bool] = {not rows_to_rows or m1.num_rows() == m2.num_rows(),
+                         not rows_to_columns or m1.num_rows() == m2.num_columns(),
+                         not columns_to_rows or m1.num_columns() == m2.num_rows(),
+                         not columns_to_columns or m1.num_columns() == m2.num_columns()}
+
+    if False in checks:
+        raise InvalidShapeError('', m1, m2)
+
+
+def throw_invalid_shapes(m1: Matrix, m2: Matrix):
+    raise InvalidShapeError("Invalid matrix multiplication. Shapes " +
+                            m1.shape_string() +
+                            " and " +
+                            m2.shape_string() +
+                            " do not match.")
