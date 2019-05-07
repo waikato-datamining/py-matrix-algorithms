@@ -301,9 +301,20 @@ class Matrix:
                 result.data[row][col] = body(result.data[row][col])
         return result
 
-    def clip(self, lower_bound: real, upper_bound: real) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+    def clip(self, lower_bound: Number, upper_bound: Number) -> 'Matrix':
+        if lower_bound > upper_bound:
+            raise MatrixAlgorithmsError('Invalid clipping values. Lower ' +
+                                        'bound must be below upper bound')
+
+        def clip(el: real) -> real:
+            if el < lower_bound:
+                return real(lower_bound)
+            elif el > upper_bound:
+                return real(upper_bound)
+            else:
+                return el
+
+        return self.apply_elementwise(clip)
 
     def clip_lower(self, lower_bound: real) -> 'Matrix':
         return self.clip(lower_bound, np.inf)
