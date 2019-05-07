@@ -1,0 +1,2 @@
+class MatrixAlgorithmError(RuntimeError):
+    pass
