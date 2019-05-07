@@ -3,7 +3,7 @@ from typing import Optional, Union, List, Tuple, Callable
 
 import numpy as np
 
-from core.matrix import real
+from core.matrix import real, helper
 from core.matrix.helper import must_be_vector
 
 
@@ -178,8 +178,9 @@ class Matrix:
         return self.num_rows() == other.num_rows() and self.num_columns() == other.num_columns()
 
     def mul_elementwise(self, other: 'Matrix') -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        if not self.same_shape_as(other):
+            helper.throw_invalid_shapes(self, other)
+        return Matrix(np.multiply(self.data, other.data))
 
     def scale_by_row_vector(self, vector: 'Matrix') -> 'Matrix':
         # TODO
