@@ -3,7 +3,7 @@ from typing import Optional, Union, List, Tuple, Callable
 
 import numpy as np
 
-from core.error import MatrixAlgorithmsError
+from core.error import MatrixAlgorithmsError, InvalidAxisError
 from core.matrix import real, helper
 
 
@@ -367,9 +367,15 @@ class Matrix:
             result.set(i, 0, self.get(i, i))
         return result
 
-    def mean(self, axis: int) -> real:
-        # TODO
-        raise NotImplementedError
+    def mean(self, axis: Optional[int] = None) -> Union['Matrix', real]:
+        if axis is None or axis == -1:
+            return np.mean(self.data)
+        elif axis == 0:
+            return Matrix(np.mean(self.data, axis))
+        elif axis == 1:
+            return Matrix(np.mean(self.data, axis)).transpose()
+        else:
+            raise InvalidAxisError(axis)
 
     def reduce_rows_L1(self) -> 'Matrix':
         # TODO
