@@ -275,16 +275,13 @@ class Matrix:
         raise NotImplementedError
 
     def concat(self, other: 'Matrix', axis: int) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        return Matrix(np.concatenate((self.data, other.data), axis))
 
     def concat_along_rows(self, other: 'Matrix') -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        return self.concat(other, 0)
 
     def concat_along_columns(self, other: 'Matrix') -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        return self.concat(other, 1)
 
     def reset_cache(self):
         self.eigenvalue_decomposition = None
