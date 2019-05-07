@@ -323,33 +323,49 @@ class Matrix:
         return self.clip(-np.inf, upper_bound)
 
     def sign(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        def sign(el: real) -> real:
+            if el < 0:
+                return real(-1)
+            elif el > 0:
+                return real(1)
+            else:
+                return real(0)
+
+        return self.apply_elementwise(sign)
 
     def abs(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        def abs(el: real) -> real:
+            if el < 0:
+                return -el
+            else:
+                return el
+
+        return self.apply_elementwise(abs)
 
     def max(self) -> real:
-        # TODO
-        raise NotImplementedError
+        return np.amax(self.data)
 
     def median(self) -> real:
-        # TODO
-        raise NotImplementedError
+        return np.median(self.data)
 
-    def where_vector(self, condition) -> List[int]:
-        # TODO: type of condition
-        # TODO
-        raise NotImplementedError
+    def where_vector(self, condition: Callable[[real], bool]) -> List[int]:
+        helper.must_be_vector(self)
+        if self.is_row_vector():
+            return [i for i in range(self.num_columns())
+                    if condition(self.get(0, i))]
+        else:
+            return [i for i in range(self.num_rows())
+                    if condition(self.get(i, 0))]
 
     def head(self, n: int = 5) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        return Matrix(np.array(self.data[:n, :]))
 
     def diag(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        from core.matrix.factory import zeros
+        result = zeros(min(self.num_rows(), self.num_columns()), 1)
+        for i in range(result.num_rows()):
+            result.set(i, 0, self.get(i, i))
+        return result
 
     def mean(self, axis: int) -> real:
         # TODO
