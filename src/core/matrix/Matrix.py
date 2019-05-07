@@ -294,10 +294,12 @@ class Matrix:
     def is_column_vector(self) -> bool:
         return self.is_vector() and self.num_columns() == 1
 
-    def apply_elementwise(self, body) -> 'Matrix':
-        # TODO: type for body
-        # TODO
-        raise NotImplementedError
+    def apply_elementwise(self, body: Callable[[real], real]) -> 'Matrix':
+        result = self.copy()
+        for row in range(self.num_rows()):
+            for col in range(self.num_columns()):
+                result.data[row][col] = body(result.data[row][col])
+        return result
 
     def clip(self, lower_bound: real, upper_bound: real) -> 'Matrix':
         # TODO
