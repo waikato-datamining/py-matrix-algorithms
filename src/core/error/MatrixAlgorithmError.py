@@ -1,2 +1,0 @@
-class MatrixAlgorithmError(RuntimeError):
-    pass

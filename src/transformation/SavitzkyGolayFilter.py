@@ -1,6 +1,6 @@
 from typing import List
 
-from core.error import MatrixAlgorithmError
+from core.error import MatrixAlgorithmsError
 from core.matrix import Matrix, real, factory
 from transformation.AbstractTransformation import AbstractTransformation
 
@@ -41,7 +41,7 @@ class SavitzkyGolayFilter(AbstractTransformation):
             .concat_along_rows(last_row)
 
     def do_inverse_transform(self, data: Matrix) -> Matrix:
-        raise MatrixAlgorithmError('Inverse transformation of Savitzky Golay is not available.')
+        raise MatrixAlgorithmsError('Inverse transformation of Savitzky Golay is not available.')
 
     def smooth_row(self, i: int, matrix: Matrix) -> Matrix:
         res: Matrix = factory.zeros(1, matrix.num_columns())
