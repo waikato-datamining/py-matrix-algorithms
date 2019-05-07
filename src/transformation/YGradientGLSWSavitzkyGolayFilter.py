@@ -5,7 +5,7 @@ from core.matrix import Matrix, real, factory
 from transformation.AbstractTransformation import AbstractTransformation
 
 
-class SavitzkyGolayFilter(AbstractTransformation):
+class YGradientGLSWSavitzkyGolayFilter(AbstractTransformation):
     def __init__(self):
         super().__init__()
         self.coef: List[real] = [real(2.0 / 10.0),

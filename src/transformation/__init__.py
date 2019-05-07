@@ -4,7 +4,6 @@ from core.matrix import Matrix
 from transformation.Center import Center
 from transformation.RowNorm import RowNorm
 from transformation.Standardize import Standardize
-from transformation.SavitzkyGolayFilter import SavitzkyGolayFilter
 
 
 def center(data: Matrix) -> Matrix:
@@ -18,6 +17,3 @@ def row_norm(data: Matrix) -> Matrix:
 def standardize(data: Matrix) -> Matrix:
     return Standardize().transform(data)
 
-
-def savitzky_golay_filter(data: Matrix) -> Matrix:
-    return SavitzkyGolayFilter().transform(data)
