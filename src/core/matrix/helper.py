@@ -1,5 +1,5 @@
 from numbers import Number
-from typing import List
+from typing import List, Set
 
 import numpy as np
 
@@ -175,3 +175,17 @@ def must_be_column_vector(vector: 'Matrix'):
 def must_be_vector(vector: 'Matrix'):
     if not vector.is_vector():
         raise ValueError('Must be a vector')
+
+
+def dimensions_must_match(m1: Matrix, m2: Matrix, *,
+                          rows_to_rows: bool = False,
+                          rows_to_columns: bool = False,
+                          columns_to_rows: bool = False,
+                          columns_to_columns: bool = False):
+    checks: Set[bool] = {not rows_to_rows or m1.num_rows() == m2.num_rows(),
+                         not rows_to_columns or m1.num_rows() == m2.num_columns(),
+                         not columns_to_rows or m1.num_columns() == m2.num_rows(),
+                         not columns_to_columns or m1.num_columns() == m2.num_columns()}
+
+    if False in checks:
+        raise InvalidShapeError('', m1, m2)

@@ -4,7 +4,6 @@ from typing import Optional, Union, List, Tuple, Callable
 import numpy as np
 
 from core.matrix import real, helper
-from core.matrix.helper import must_be_vector
 
 
 class Matrix:
@@ -183,12 +182,14 @@ class Matrix:
         return Matrix(np.multiply(self.data, other.data))
 
     def scale_by_row_vector(self, vector: 'Matrix') -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        helper.must_be_row_vector(vector)
+        helper.dimensions_must_match(self, vector, columns_to_rows=True)
+        return self.mul_by_vector(vector)
 
     def scale_by_column_vector(self, vector: 'Matrix') -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        helper.must_be_column_vector(vector)
+        helper.dimensions_must_match(self, vector, rows_to_rows=True)
+        return self.mul_by_vector(vector)
 
     def add_by_vector(self, vector: 'Matrix') -> 'Matrix':
         return self.vector_op(vector, np.add)
@@ -425,6 +426,9 @@ class Matrix:
     def sub_by_vector(self, vector: 'Matrix') -> 'Matrix':
         return self.vector_op(vector, np.subtract)
 
+    def mul_by_vector(self, vector: 'Matrix') -> 'Matrix':
+        return self.vector_op(vector, np.multiply)
+
     def add_by_vector_modify(self, vector: 'Matrix'):
         self.vector_op_modify(vector, np.add)
 
@@ -443,7 +447,7 @@ class Matrix:
         return result
 
     def vector_op_modify(self, vector: 'Matrix', op: np.ufunc):
-        must_be_vector(vector)
+        helper.must_be_vector(vector)
         self.ensure_vector_size_matches(vector)
         op.at(self.data, ..., vector.data)
 
