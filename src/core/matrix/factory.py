@@ -30,8 +30,8 @@ from_raw = create
 
 
 def zeros(rows: int, columns: int) -> Matrix:
-    # TODO
-    raise NotImplementedError
+    return create([[0 for _ in builtins.range(columns)]
+                   for _ in builtins.range(rows)])
 
 
 def zeros_like(other: Matrix) -> Matrix:
