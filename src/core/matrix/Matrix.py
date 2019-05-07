@@ -413,15 +413,16 @@ class Matrix:
                     return True
         return False
 
-    def all(self, function) -> bool:
-        # TODO: type for function
-        # TODO
-        raise NotImplementedError
+    def all(self, function: Callable[[real], bool]) -> bool:
+        return not self.any(lambda el: not function(el))
 
-    def which(self, function) -> List[Tuple[int, int]]:
-        # TODO: type for function
-        # TODO
-        raise NotImplementedError
+    def which(self, function: Callable[[real], bool]) -> List[Tuple[int, int]]:
+        result: List[Tuple[int, int]] = []
+        for row in range(self.num_rows()):
+            for col in range(self.num_columns()):
+                if function(self.data[row][col]):
+                    result.append((row, col))
+        return result
 
     def trace(self) -> real:
         return self.diag().sum()
