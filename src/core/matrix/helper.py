@@ -177,6 +177,10 @@ def must_be_vector(vector: 'Matrix'):
         raise ValueError('Must be a vector')
 
 
+def must_be_same_shape(m1: Matrix, m2: Matrix):
+    dimensions_must_match(m1, m2, rows_to_rows=True, columns_to_columns=True)
+
+
 def dimensions_must_match(m1: Matrix, m2: Matrix, *,
                           rows_to_rows: bool = False,
                           rows_to_columns: bool = False,

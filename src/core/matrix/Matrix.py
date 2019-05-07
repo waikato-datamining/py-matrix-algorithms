@@ -195,28 +195,28 @@ class Matrix:
         return self.vector_op(vector, np.add)
 
     def div_elementwise(self, other: 'Matrix') -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        if not self.same_shape_as(other):
+            helper.throw_invalid_shapes(self, other)
+        return Matrix(np.divide(self.data, other.data))
 
     def div(self, scalar: real) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        return Matrix(np.divide(self.data, scalar))
 
     def sub(self, other: Union['Matrix', real]) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        if isinstance(other, Matrix):
+            helper.must_be_same_shape(self, other)
+        return Matrix(np.subtract(self.data, other.data))
 
     def add(self, other: Union['Matrix', real]) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        if isinstance(other, Matrix):
+            helper.must_be_same_shape(self, other)
+        return Matrix(np.add(self.data, other.data))
 
     def pow_elementwise(self, exponent: real) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        return Matrix(np.power(self.data, exponent))
 
     def sqrt(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        return Matrix(np.sqrt(self.data))
 
     def transpose(self) -> 'Matrix':
         return Matrix(self.data.transpose())
