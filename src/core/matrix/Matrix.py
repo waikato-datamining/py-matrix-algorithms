@@ -3,6 +3,7 @@ from typing import Optional, Union, List, Tuple, Callable
 
 import numpy as np
 
+from core.error import MatrixAlgorithmError
 from core.matrix import real, helper
 
 
@@ -260,8 +261,10 @@ class Matrix:
         return Matrix(np.copy(self.data))
 
     def as_real(self) -> real:
-        # TODO
-        raise NotImplementedError
+        if self.num_rows() != 1 or self.num_columns() != 1:
+            raise MatrixAlgorithmError("Method Matrix#asReal is invalid " +
+                                       "when number of rows != 1 or number of columns != 1.")
+        return self.get(0, 0)
 
     def to_raw_copy_1D(self) -> List[real]:
         # TODO
