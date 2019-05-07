@@ -235,20 +235,22 @@ class Matrix:
         self.data[row][column] = real(value)
 
     def set_row(self, row_index: int, row: 'Matrix'):
-        # TODO
-        raise NotImplementedError
+        helper.must_be_row_vector(row)
+        helper.dimensions_must_match(self, row, columns_to_columns=True)
+        self.reset_cache()
+        self.data[row_index] = row.data[0]
 
     def set_column(self, column_index: int, column: 'Matrix'):
-        # TODO
-        raise NotImplementedError
+        helper.must_be_column_vector(column)
+        helper.dimensions_must_match(self, column, rows_to_rows=True)
+        self.reset_cache()
+        self.data[:, column_index] = column.data[:, 0]
 
     def get_row(self, row_index: int) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        return Matrix(np.array(self.data[row_index]))
 
     def get_column(self, column_index: int) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        return Matrix(np.array(self.data[:, column_index])).transpose()
 
     def inverse(self) -> 'Matrix':
         # TODO
