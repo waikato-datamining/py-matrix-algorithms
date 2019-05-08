@@ -6,7 +6,6 @@ from ..core.matrix import Matrix
 class AbstractTransformation(ABC):
     def __init__(self):
         self.configured: bool = False
-        pass
 
     def reset(self):
         self.configured = False
