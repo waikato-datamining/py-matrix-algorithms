@@ -4,7 +4,7 @@ from typing import Optional, Union, List, Tuple, Callable, Set
 import numpy as np
 
 from ..error import MatrixAlgorithmsError, InvalidAxisError, InvalidShapeError
-from ._types import real
+from .._types import real
 
 
 class Matrix:

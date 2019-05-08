@@ -2,7 +2,8 @@ from typing import Optional, List
 
 import numpy as np
 
-from ..core.matrix import factory, helper, Matrix, real
+from ..core import real
+from ..core.matrix import factory, helper, Matrix
 from ._AbstractTransformation import AbstractTransformation
 
 

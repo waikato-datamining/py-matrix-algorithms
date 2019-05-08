@@ -1,7 +1,7 @@
 from typing import Optional
 
+from ..core import real
 from ..core.matrix import Matrix
-from ..core.matrix import real
 from ..core.matrix.helper import row_means, row_stdevs
 from ._AbstractTransformation import AbstractTransformation
 

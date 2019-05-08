@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from .matrix import real
+from ._types import real
 
 
 def linear_regression(x: List[real], y: List[real]) -> Tuple[real, real]:

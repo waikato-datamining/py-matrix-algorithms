@@ -5,7 +5,7 @@ from typing import List, Union
 import numpy as np
 
 from ._Matrix import Matrix
-from ._types import real
+from .._types import real
 
 
 def create(data: Union[np.ndarray, List[List[Number]]]) -> Matrix:

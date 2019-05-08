@@ -2,8 +2,8 @@ import builtins
 from abc import ABC, abstractmethod
 from typing import Optional, List, Tuple
 
-from ..core import stats
-from ..core.matrix import Matrix, real, helper
+from ..core import stats, real
+from ..core.matrix import Matrix, helper
 from ._AbstractTransformation import AbstractTransformation
 
 

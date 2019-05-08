@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 
 from ._Matrix import Matrix
-from ._types import real
+from .._types import real
 
 
 def delete_col(data: Matrix, col: int) -> Matrix:
