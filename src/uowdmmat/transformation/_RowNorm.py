@@ -1,11 +1,12 @@
 from typing import Optional
 
-from uowdmmat.core.matrix import Matrix, real
-from uowdmmat.core.matrix.helper import column_stdevs, column_means
-from uowdmmat.transformation.AbstractTransformation import AbstractTransformation
+from uowdmmat.core.matrix._Matrix import Matrix
+from uowdmmat.core.matrix._types import real
+from uowdmmat.core.matrix.helper import row_means, row_stdevs
+from uowdmmat.transformation._AbstractTransformation import AbstractTransformation
 
 
-class Standardize(AbstractTransformation):
+class RowNorm(AbstractTransformation):
     def __init__(self):
         super().__init__()
         self.means: Optional[Matrix] = None
@@ -17,8 +18,8 @@ class Standardize(AbstractTransformation):
         self.std_devs = None
 
     def configure(self, data: Matrix):
-        self.means = column_means(data)
-        self.std_devs = column_stdevs(data)
+        self.means = row_means(data)
+        self.std_devs = row_stdevs(data)
         # Make sure we don't do a divide by zero
         for i in range(self.std_devs.num_rows()):
             if self.std_devs.get(i, 0) == real(0):

@@ -2,8 +2,10 @@ from typing import Optional, List
 
 import numpy as np
 
-from uowdmmat.core.matrix import real, Matrix, factory, helper
-from uowdmmat.transformation.AbstractTransformation import AbstractTransformation
+from uowdmmat.core.matrix import factory, helper
+from uowdmmat.core.matrix._Matrix import Matrix
+from uowdmmat.core.matrix._types import real
+from uowdmmat.transformation._AbstractTransformation import AbstractTransformation
 
 
 class SavitzkyGolay(AbstractTransformation):

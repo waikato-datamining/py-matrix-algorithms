@@ -1,8 +1,9 @@
 from typing import List
 
 from uowdmmat.core.error import MatrixAlgorithmsError
-from uowdmmat.core.matrix import Matrix, real, factory
-from uowdmmat.transformation.AbstractTransformation import AbstractTransformation
+from uowdmmat.core.matrix import Matrix, factory
+from uowdmmat.core.matrix._types import real
+from uowdmmat.transformation._AbstractTransformation import AbstractTransformation
 
 
 class YGradientGLSWSavitzkyGolayFilter(AbstractTransformation):

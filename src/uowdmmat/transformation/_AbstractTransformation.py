@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
 
-from uowdmmat.core.matrix import Matrix
+from uowdmmat.core.matrix._Matrix import Matrix
 
 
 class AbstractTransformation(ABC):
@@ -32,4 +32,8 @@ class AbstractTransformation(ABC):
         if not self.configured:
             self.configure(data)
         return self.do_inverse_transform(data)
+
+    @classmethod
+    def quick_apply(cls, data: Matrix) -> Matrix:
+        return cls().transform(data)
 
