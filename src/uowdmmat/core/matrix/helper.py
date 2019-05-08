@@ -1,5 +1,5 @@
 from numbers import Number
-from typing import List, Set
+from typing import List
 
 import numpy as np
 from scipy import linalg

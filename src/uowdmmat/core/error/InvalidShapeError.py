@@ -1,5 +1,3 @@
-from typing import List
-
 from uowdmmat.core.matrix import Matrix
 
 
