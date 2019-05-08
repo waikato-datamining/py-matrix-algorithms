@@ -3,8 +3,8 @@ from typing import Optional, Union, List, Tuple, Callable, Set
 
 import numpy as np
 
-from core.error import MatrixAlgorithmsError, InvalidAxisError, InvalidShapeError
-from core.matrix import real
+from uowdmmat.core.error import MatrixAlgorithmsError, InvalidAxisError, InvalidShapeError
+from uowdmmat.core.matrix import real
 
 
 class Matrix:
@@ -361,7 +361,7 @@ class Matrix:
         return Matrix(np.array(self.data[:n, :]))
 
     def diag(self) -> 'Matrix':
-        from core.matrix.factory import zeros
+        from uowdmmat.core.matrix.factory import zeros
         result = zeros(min(self.num_rows(), self.num_columns()), 1)
         for i in range(result.num_rows()):
             result.set(i, 0, self.get(i, i))

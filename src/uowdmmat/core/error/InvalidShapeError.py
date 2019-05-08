@@ -1,6 +1,6 @@
 from typing import List
 
-from core.matrix import Matrix
+from uowdmmat.core.matrix import Matrix
 
 
 class InvalidShapeError(RuntimeError):

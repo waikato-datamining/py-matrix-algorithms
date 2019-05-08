@@ -1,9 +1,9 @@
-from core.matrix import Matrix
+from uowdmmat.core.matrix import Matrix
 
 # Aliases
-from transformation.Center import Center
-from transformation.RowNorm import RowNorm
-from transformation.Standardize import Standardize
+from uowdmmat.transformation.Center import Center
+from uowdmmat.transformation.RowNorm import RowNorm
+from uowdmmat.transformation.Standardize import Standardize
 
 
 def center(data: Matrix) -> Matrix:

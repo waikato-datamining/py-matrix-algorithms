@@ -1,8 +1,8 @@
 from typing import Optional
 
-from core.matrix import Matrix
-from core.matrix.helper import column_means
-from transformation.AbstractTransformation import AbstractTransformation
+from uowdmmat.core.matrix import Matrix
+from uowdmmat.core.matrix.helper import column_means
+from uowdmmat.transformation.AbstractTransformation import AbstractTransformation
 
 
 class Center(AbstractTransformation):

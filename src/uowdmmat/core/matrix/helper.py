@@ -4,7 +4,7 @@ from typing import List, Set
 import numpy as np
 from scipy import linalg
 
-from core.matrix import Matrix, real
+from uowdmmat.core.matrix import Matrix, real
 
 
 def delete_col(data: Matrix, col: int) -> Matrix:

@@ -1,8 +1,8 @@
 from typing import Optional
 
-from core.matrix import Matrix, real
-from core.matrix.helper import row_means, row_stdevs
-from transformation.AbstractTransformation import AbstractTransformation
+from uowdmmat.core.matrix import Matrix, real
+from uowdmmat.core.matrix.helper import row_means, row_stdevs
+from uowdmmat.transformation.AbstractTransformation import AbstractTransformation
 
 
 class RowNorm(AbstractTransformation):

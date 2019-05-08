@@ -4,7 +4,7 @@ from typing import List, Union
 
 import numpy as np
 
-from core.matrix import Matrix, real
+from uowdmmat.core.matrix import Matrix, real
 
 
 def create(data: Union[np.ndarray, List[List[Number]]]) -> Matrix:
