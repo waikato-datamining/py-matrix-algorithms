@@ -2,7 +2,6 @@ from numbers import Number
 from typing import List
 
 import numpy as np
-from scipy import linalg
 
 from uowdmmat.core.matrix import Matrix, real
 
@@ -155,7 +154,7 @@ def fill_diagonal(mat: Matrix, value: Number):
 
 
 def solve(A: Matrix, b: Matrix) -> Matrix:
-    return Matrix(linalg.solve(A.data, b.data))
+    return Matrix(np.linalg.solve(A.data, b.data))
 
 
 def multi_concat(axis: int, *matrices: Matrix) -> Matrix:
