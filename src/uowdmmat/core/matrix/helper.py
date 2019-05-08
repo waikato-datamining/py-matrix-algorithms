@@ -3,7 +3,8 @@ from typing import List
 
 import numpy as np
 
-from uowdmmat.core.matrix import Matrix, real
+from ._Matrix import Matrix
+from ._types import real
 
 
 def delete_col(data: Matrix, col: int) -> Matrix:
@@ -133,7 +134,7 @@ def row_stdev(mat: Matrix, index: int) -> real:
 
 
 def row_stdevs(mat: Matrix) -> Matrix:
-    stdevs = Matrix(np.std(mat.data, 1, real,ddof=1))
+    stdevs = Matrix(np.std(mat.data, 1, real, ddof=1))
     stdevs = stdevs.transpose()
     return stdevs
 
