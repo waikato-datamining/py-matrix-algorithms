@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
 
-from uowdmmat.core.matrix._Matrix import Matrix
+from ..core.matrix import Matrix
 
 
 class AbstractTransformation(ABC):

@@ -1,9 +1,9 @@
 from typing import Optional
 
-from uowdmmat.core.matrix._Matrix import Matrix
-from uowdmmat.core.matrix._types import real
-from uowdmmat.core.matrix.helper import row_means, row_stdevs
-from uowdmmat.transformation._AbstractTransformation import AbstractTransformation
+from ..core.matrix import Matrix
+from ..core.matrix import real
+from ..core.matrix.helper import row_means, row_stdevs
+from ._AbstractTransformation import AbstractTransformation
 
 
 class RowNorm(AbstractTransformation):
