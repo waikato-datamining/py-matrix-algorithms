@@ -3,7 +3,7 @@ from typing import Optional, Union, List, Tuple, Callable, Set
 
 import numpy as np
 
-import uowdmmat.core.error as error
+from ..error import MatrixAlgorithmsError, InvalidAxisError, InvalidShapeError
 from ._types import real
 
 
@@ -262,8 +262,8 @@ class Matrix:
 
     def as_real(self) -> real:
         if self.num_rows() != 1 or self.num_columns() != 1:
-            raise error.MatrixAlgorithmsError('Method Matrix#asReal is invalid ' +
-                                              'when number of rows != 1 or number of columns != 1.')
+            raise MatrixAlgorithmsError('Method Matrix#asReal is invalid ' +
+                                        'when number of rows != 1 or number of columns != 1.')
         return self.get(0, 0)
 
     def to_raw_copy_1D(self) -> List[real]:
@@ -303,8 +303,8 @@ class Matrix:
 
     def clip(self, lower_bound: Number, upper_bound: Number) -> 'Matrix':
         if lower_bound > upper_bound:
-            raise error.MatrixAlgorithmsError('Invalid clipping values. Lower ' +
-                                              'bound must be below upper bound')
+            raise MatrixAlgorithmsError('Invalid clipping values. Lower ' +
+                                        'bound must be below upper bound')
 
         def clip(el: real) -> real:
             if el < lower_bound:
@@ -375,7 +375,7 @@ class Matrix:
         elif axis == 1:
             return Matrix(np.mean(self.data, axis)).transpose()
         else:
-            raise error.InvalidAxisError(axis)
+            raise InvalidAxisError(axis)
 
     def reduce_rows_L1(self) -> 'Matrix':
         # TODO
@@ -532,12 +532,12 @@ def dimensions_must_match(m1: Matrix, m2: Matrix, *,
                          not columns_to_columns or m1.num_columns() == m2.num_columns()}
 
     if False in checks:
-        raise error.InvalidShapeError('', m1.shape_string(), m2.shape_string())
+        raise InvalidShapeError('', m1.shape_string(), m2.shape_string())
 
 
 def throw_invalid_shapes(m1: Matrix, m2: Matrix):
-    raise error.InvalidShapeError("Invalid matrix multiplication. Shapes " +
-                                  m1.shape_string() +
-                                  " and " +
-                                  m2.shape_string() +
-                                  " do not match.")
+    raise InvalidShapeError('Invalid matrix multiplication. Shapes ' +
+                            m1.shape_string() +
+                            ' and ' +
+                            m2.shape_string() +
+                            ' do not match.')
