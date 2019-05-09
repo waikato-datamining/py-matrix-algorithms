@@ -1,7 +1,8 @@
 from typing import List
 
+from ..core import real
 from ..core.error import MatrixAlgorithmsError
-from ..core.matrix import Matrix, factory, real
+from ..core.matrix import Matrix, factory
 from ._AbstractTransformation import AbstractTransformation
 
 
