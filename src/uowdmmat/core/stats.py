@@ -17,4 +17,4 @@ def linear_regression(x: List[real], y: List[real]) -> Tuple[real, real]:
 
 
 def sum_of_squares(l: List[real]) -> real:
-    return sum([x * x for x in l])
+    return sum((x * x for x in l))
