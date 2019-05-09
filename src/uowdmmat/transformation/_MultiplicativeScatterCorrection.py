@@ -80,7 +80,7 @@ class RangeBased(AbstractMultiplicativeScatterCorrection):
         return result
 
     @staticmethod
-    def range_contains(range: Tuple[real, real], value):
+    def range_contains(range: Tuple[real, real], value: real) -> bool:
         lower, upper = range
 
         return lower <= value <= upper
