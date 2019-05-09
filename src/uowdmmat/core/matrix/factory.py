@@ -80,12 +80,12 @@ def diag(vector: Matrix) -> Matrix:
     n = vector.num_rows()
     result = zeros(n, n)
     for i in builtins.range(n):
-        result.set(i,i,vector.get(i,0))
+        result.set(i, i, vector.get(i, 0))
     return result
 
 
 def range(rows: int, columns: int, start: int) -> Matrix:
-    return create([[x for x in builtins.range(s,s + columns)]
+    return create([[x for x in builtins.range(s, s + columns)]
                    for s in builtins.range(start, start + rows * columns, columns)])
 
 
