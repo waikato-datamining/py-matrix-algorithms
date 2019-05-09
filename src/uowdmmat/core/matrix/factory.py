@@ -87,3 +87,10 @@ def diag(vector: Matrix) -> Matrix:
 def range(rows: int, columns: int, start: int) -> Matrix:
     return create([[x for x in builtins.range(s,s + columns)]
                    for s in builtins.range(start, start + rows * columns, columns)])
+
+
+def create_spectrum(wave_numbers: List[Number], amplitudes: List[Number]) -> Matrix:
+    if len(wave_numbers) != len(amplitudes):
+        raise ValueError('Must have equal number of amplitudes and wave-numbers')
+
+    return Matrix(np.array([[w, a] for w, a in zip(wave_numbers, amplitudes)], dtype=real))
