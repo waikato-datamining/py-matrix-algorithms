@@ -160,3 +160,7 @@ def solve(A: Matrix, b: Matrix) -> Matrix:
 
 def multi_concat(axis: int, *matrices: Matrix) -> Matrix:
     return Matrix(np.concatenate([matrix.data for matrix in matrices], axis))
+
+
+def create_spectrum(wave_numbers: List[Number], amplitudes: List[Number]) -> Matrix:
+    return Matrix(np.array([[w, a] for w, a in zip(wave_numbers, amplitudes)], dtype=real))
