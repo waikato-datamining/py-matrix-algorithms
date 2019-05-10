@@ -15,6 +15,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Aliases
+from ._AbstractTransformation import AbstractTransformation
 from ._Center import Center
 from ._RowNorm import RowNorm
 from ._Standardize import Standardize
