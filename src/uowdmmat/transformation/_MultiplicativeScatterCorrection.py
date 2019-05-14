@@ -18,7 +18,7 @@ import builtins
 from abc import ABC, abstractmethod
 from typing import Optional, List, Tuple
 
-from ..core import stats, real
+from ..core import utils, real
 from ..core.matrix import Matrix, helper
 from ._AbstractTransformation import AbstractTransformation
 
@@ -87,7 +87,7 @@ class RangeBased(AbstractMultiplicativeScatterCorrection):
                     y.append(filtered.get(i, 1))
                     x.append(average.get(i, 1))
 
-            inter, slope = stats.linear_regression(x, y)
+            inter, slope = utils.linear_regression(x, y)
 
             for i in builtins.range(result.num_rows()):
                 if self.range_contains(range, result.get(i, 0)):
