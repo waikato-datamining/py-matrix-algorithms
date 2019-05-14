@@ -15,3 +15,4 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from ._types import real
+from ._LoggingObject import LoggingObject
