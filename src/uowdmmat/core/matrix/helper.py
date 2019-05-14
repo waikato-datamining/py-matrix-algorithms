@@ -13,12 +13,14 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import sys
+import traceback
 from numbers import Number
 from typing import List
 
 import numpy as np
 
+from . import factory
 from ._Matrix import Matrix
 from .._types import real
 
@@ -90,8 +92,38 @@ def equal(m1: Matrix, m2: Matrix, epsilon: real = real(0)) -> bool:
 
 
 def read(filename: str, header: bool, separator: str) -> Matrix:
-    # TODO
-    raise NotImplementedError
+    """
+    Reads the matrix from the given CSV file.
+
+    :param filename:    The file to read from.
+    :param header:      True if the file contains a header (gets skipped).
+    :param separator:   The column separator used.
+    :return:            The matrix.
+    """
+    with open(filename, 'r') as file:
+        lines = [line for line in file]
+    if len(lines) == 0:
+        raise RuntimeError('No rows in file: ' + filename)
+
+    if header:
+        lines = lines[1:]
+    if len(lines) == 0:
+        raise RuntimeError('No data rows in file: ' + filename)
+
+    sep = separator
+    cells = lines[0].split(sep)
+    result = factory.zeros(len(lines), len(cells))
+    for i in range(len(lines)):
+        cells = lines[i].split(sep)
+        for j in range(min(len(cells), result.num_columns())):
+            try:
+                result.set(i, j, real(cells[j]))
+            except:
+                print('Failed to parse row=' + str(i + 1 if header else i) + ' col=' + str(j) + ': ' + str(cells[j]),
+                      file=sys.stderr)
+                traceback.print_exc(file=sys.stderr)
+
+    return result
 
 
 def to_lines(data: Matrix, header: bool, separator: str, num_dec: int, scientific: bool = False) -> List[str]:
