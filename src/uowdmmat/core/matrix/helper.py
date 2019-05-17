@@ -14,12 +14,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
-import traceback
+from functools import partial
 from numbers import Number
 from typing import List
 
 import numpy as np
 
+from ...core.utils import real_to_string_fixed
+from ...meta import print_stack_trace
 from . import factory
 from ._Matrix import Matrix
 from .._types import real
@@ -121,7 +123,7 @@ def read(filename: str, header: bool, separator: str) -> Matrix:
             except:
                 print('Failed to parse row=' + str(i + 1 if header else i) + ' col=' + str(j) + ': ' + str(cells[j]),
                       file=sys.stderr)
-                traceback.print_exc(file=sys.stderr)
+                print_stack_trace()
 
     return result
 
@@ -138,13 +140,30 @@ def to_lines(data: Matrix, header: bool, separator: str, num_dec: int, scientifi
 
 
 def data_to_string(data: Matrix, separator: str, num_dec: int, result: List[str], scientific: bool):
-    # TODO
-    raise NotImplementedError
+    if scientific:
+        formatter = partial(np.format_float_scientific,
+                            precision=num_dec,
+                            unique=True,
+                            trim='0',
+                            exp_digits=1)
+    elif num_dec == -1:
+        formatter = str
+    else:
+        formatter = partial(real_to_string_fixed, after_decimal_point=num_dec)
+
+    def get_formatted(row, column):
+        return formatter(data.get(row, column))
+
+    def line_gen(row):
+        return separator.join(get_formatted(row, column) for column in range(data.num_columns()))
+
+    for row in range(data.num_rows()):
+        result.append(line_gen(row))
 
 
 def write(data: Matrix, filename: str, header: bool, separator: str, num_dec: int, scientific: bool = False):
-    # TODO
-    raise NotImplementedError
+    with open(filename, 'w') as file:
+        file.writelines((line + '\n' for line in to_lines(data, header, separator, num_dec, scientific)))
 
 
 def to_string(data: Matrix, header: bool = True, separator: str = '\t', num_dec: int = 6) -> str:
