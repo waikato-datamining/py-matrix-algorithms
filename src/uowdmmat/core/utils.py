@@ -17,9 +17,9 @@
 """
 Helper functions.
 """
-
 from numbers import Number
-from typing import List, NoReturn, Tuple, Union, Optional
+from typing import List, NoReturn, Tuple, Optional
+from numpy import format_float_positional
 
 from ._types import real
 
@@ -263,8 +263,22 @@ def real_to_string_fixed(value: real, after_decimal_point: int) -> str:
                                     if number > Long.MAX_VALUE. TODO: Revisit Long.MAX_VALUE comment.
     :return:                        The real as a formatted string.
     """
-    # TODO
-    raise NotImplementedError
+    # Special numbers
+    if value == real(NAN):
+        return NAN
+    elif value == real(NEGATIVE_INFINITY):
+        return NEGATIVE_INFINITY
+    elif value == real(POSITIVE_INFINITY):
+        return POSITIVE_INFINITY
+
+    if after_decimal_point < 0:
+        return str(value)
+
+    return format_float_positional(value,
+                                   precision=after_decimal_point,
+                                   unique=False,
+                                   fractional=True,
+                                   trim='k')
 
 
 def get_list_dimensions(array: List[any]) -> int:
