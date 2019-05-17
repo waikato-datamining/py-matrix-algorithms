@@ -51,5 +51,5 @@ class LoggingObject(ABC):
         :return:    The logger.
         """
         if self.logger is None:
-            self.logger = Logger.get_logger(self.__name__)
+            self.logger = Logger.get_logger(self.__class__.__name__)
         return self.logger
