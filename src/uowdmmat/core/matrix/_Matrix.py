@@ -236,7 +236,7 @@ class Matrix:
         return Matrix(np.sqrt(self.data))
 
     def transpose(self) -> 'Matrix':
-        return Matrix(self.data.transpose())
+        return Matrix(np.array(self.data.transpose(), copy=True))
 
     def num_columns(self) -> int:
         return self.data.shape[1]
@@ -283,12 +283,24 @@ class Matrix:
         return self.get(0, 0)
 
     def to_raw_copy_1D(self) -> List[real]:
-        # TODO
-        raise NotImplementedError
+        copy = []
+
+        for col in range(self.num_columns()):
+            for row in range(self.num_rows()):
+                copy.append(self.get(row, col))
+
+        return copy
 
     def to_raw_copy_2D(self) -> List[List[real]]:
-        # TODO
-        raise NotImplementedError
+        copy = []
+
+        for row in range(self.num_rows()):
+            r = []
+            for col in range(self.num_columns()):
+                r.append(self.get(row, col))
+            copy.append(r)
+
+        return copy
 
     def concat(self, other: 'Matrix', axis: int) -> 'Matrix':
         return Matrix(np.concatenate((self.data, other.data), axis))
@@ -377,11 +389,8 @@ class Matrix:
         return Matrix(np.array(self.data[:n, :]))
 
     def diag(self) -> 'Matrix':
-        from uowdmmat.core.matrix.factory import zeros
-        result = zeros(min(self.num_rows(), self.num_columns()), 1)
-        for i in range(result.num_rows()):
-            result.set(i, 0, self.get(i, i))
-        return result
+        raw = [[self.get(i, i)] for i in range(min(self.num_rows(), self.num_columns()))]
+        return Matrix(np.array(raw))
 
     def mean(self, axis: Optional[int] = None) -> Union['Matrix', real]:
         if axis is None or axis == -1:
