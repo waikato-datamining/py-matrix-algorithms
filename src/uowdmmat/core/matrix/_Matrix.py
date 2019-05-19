@@ -33,7 +33,7 @@ class Matrix:
                 data = np.array([data])
 
         self.data = data
-        self.eigenvalue_decomposition = None
+        self.eigenvalue_decomposition: Optional[Tuple[Matrix, Matrix]] = None
         self.singular_value_decomposition = None
         self.qr_decomposition = None
 
@@ -67,48 +67,57 @@ class Matrix:
         return self.get_sub_matrix((0, self.num_rows()), columns)
 
     def get_eigenvectors(self, sort_dominance: bool = False) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        if sort_dominance:
+            return self.get_eigenvectors_sorted_descending()
+
+        self.make_eigenvalue_decomposition()
+        return self.eigenvalue_decomposition[1].copy()
 
     def get_eigenvectors_sorted_ascending(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        return self.get_eigenvectors_sorted(True)
 
     def get_eigenvectors_sorted_descending(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        return self.get_eigenvectors_sorted(False)
 
     def get_dominant_eigenvector(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        return self.get_eigenvalues_sorted_descending().get_column(0)
 
     def get_eigenvalue_decomposition_V(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        self.make_eigenvalue_decomposition()
+        return self.eigenvalue_decomposition[1]
 
     def get_eigenvalue_decomposition_D(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        self.make_eigenvalue_decomposition()
+        return self.eigenvalue_decomposition[0].vector_to_diagonal()
 
     def get_eigenvalues(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        self.make_eigenvalue_decomposition()
+        return self.eigenvalue_decomposition[0].copy()
 
     def get_eigenvalues_sorted_descending(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        return self.get_eigenvalues_sorted(False)
 
     def get_eigenvalues_sorted_ascending(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        return self.get_eigenvalues_sorted(True)
 
     def make_singular_value_decomposition(self):
         # TODO
         raise NotImplementedError
 
-    def make_eigenvalue_deomposition(self):
-        # TODO
-        raise NotImplementedError
+    def make_eigenvalue_decomposition(self):
+        """
+        Initialises the eigenvalue decomposition.
+
+        N.B. The numpy eigenvalue solver may produce different eigenvalues/vectors to
+        the reference solver (OJAlgo in the Java matrix-algorithms repo) up to a factor
+        of -1.0. While these are still correct solutions to the decomposition,
+        implementations that rely on the exact direction of the eigenvectors may be
+        affected. Possible future solution is to enforce a standard quadrant that the
+        vectors must point into.
+        """
+        if self.eigenvalue_decomposition is None:
+            eigenvalues, eigenvectors = np.linalg.eig(self.data)
+            self.eigenvalue_decomposition = (Matrix(eigenvalues), Matrix(eigenvectors))
 
     def make_qr_decomposition(self):
         # TODO
@@ -525,6 +534,42 @@ class Matrix:
     def ensure_vector_size_matches(self, vector: 'Matrix'):
         if not self.vector_size_matches(vector):
             raise ValueError('The supplied vector is not the right size')
+
+    def num_elements(self):
+        return self.num_rows() * self.num_columns()
+
+    def get_from_vector(self, index: int):
+        must_be_vector(self)
+        if self.is_row_vector():
+            return self.get(0, index)
+        else:
+            return self.get(index, 0)
+
+    def vector_to_diagonal(self):
+        must_be_vector(self)
+        raw = [[self.get_from_vector(i) if i == j else real(0) for i in range(self.num_elements())]
+               for j in range(self.num_elements())]
+        return Matrix(np.array(raw))
+
+    def get_eigenvectors_sorted(self, ascending: bool):
+        # Get eigenpairs
+        eigenpairs = [(self.eigenvalue_decomposition[0].get_from_vector(i),
+                       self.eigenvalue_decomposition[1].get_column(i))
+                       for i in range(self.num_rows())]
+
+        eigenpairs.sort(key=lambda v: v[0], reverse=not ascending)
+
+        first = eigenpairs[0][1]
+
+        for i in range(1, len(eigenpairs)):
+            first = first.concat_along_columns(eigenpairs[i][1])
+
+        return first
+
+    def get_eigenvalues_sorted(self, ascending: bool) -> 'Matrix':
+        eigenvalues = self.get_eigenvalues()
+        eigenvalues.data.sort()
+        return eigenvalues
 
 
 def must_be_row_vector(vector: 'Matrix'):
