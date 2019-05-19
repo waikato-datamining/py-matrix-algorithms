@@ -35,6 +35,7 @@ class AbstractRegressionTest(Generic[T], metaclass=AbstractRegressionTestMeta):
     resolved at run-time.
     """
     def __init__(self, *args, **kwargs):
+        args = (args[0][5:],)  # Strip the 'test_' prefix from the method name
         super().__init__(*args, **kwargs)
         self.test_name: str = ''  # TestName reference
         self.input_data: Optional[List[Matrix]] = None  # Regression input matrices
