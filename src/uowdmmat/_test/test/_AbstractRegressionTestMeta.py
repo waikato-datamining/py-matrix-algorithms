@@ -13,11 +13,11 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import GenericMeta, Tuple, List, Dict
+from typing import GenericMeta, Tuple, List, Dict, Any
 from unittest import TestCase, defaultTestLoader
 
-from uowdmmat._test.test.misc import TEST_TAG
-from uowdmmat.meta import has_tag
+from .misc import TEST_TAG
+from ...meta import has_tag, will_be_abstract
 
 
 class AbstractRegressionTestMeta(GenericMeta):
@@ -31,7 +31,8 @@ class AbstractRegressionTestMeta(GenericMeta):
     it wasn't being called (possible short-cutting in python implementation).
     """
     def __new__(self, name, bases, namespace, **kwargs):
-        bases = self.augment_bases(bases)
+        if not will_be_abstract(bases, namespace):
+            bases = self.augment_bases(bases)
         self.ensure_tests(namespace)
         return super().__new__(self, name, bases, namespace, **kwargs)
 
@@ -44,22 +45,10 @@ class AbstractRegressionTestMeta(GenericMeta):
         :return:        The base classes augmented with the TestCase class.
         """
         # Get the names of the base classes (so we don't create circular refs)
-        base_names: List = [base.__name__ for base in bases]
-
-        # If not inheriting from AbstractRegressionTest, no need to modify
-        if 'AbstractRegressionTest' not in base_names:
-            return bases
-
-        # Add the TestCase base class immediately after AbstractRegressionTest
-        i = base_names.index('AbstractRegressionTest')
-        modifiable_bases: List = list(bases)
-        modifiable_bases.insert(i + 1, TestCase)
-        bases = tuple(modifiable_bases)
-
-        return bases
+        return (*bases, TestCase)
 
     @staticmethod
-    def ensure_tests(namespace: Dict[str, any]):
+    def ensure_tests(namespace: Dict[str, Any]):
         """
         Makes sure that all methods marked with the test tag will be picked up by unittest.
 
