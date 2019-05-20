@@ -17,3 +17,4 @@
 from ._AbstractTransformationTest import AbstractTransformationTest
 from ._PassThroughTest import PassThroughTest
 from ._CenterTest import CenterTest
+from ._StandardizeTest import StandardizeTest
