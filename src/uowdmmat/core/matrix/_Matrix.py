@@ -573,6 +573,9 @@ class Matrix:
             eigenvalues.data = np.flip(eigenvalues.data)
         return eigenvalues
 
+    def exp(self):
+        return Matrix(np.exp(self.data))
+
 
 def must_be_row_vector(vector: 'Matrix'):
     if not vector.is_row_vector():
