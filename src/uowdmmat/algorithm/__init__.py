@@ -16,3 +16,4 @@
 
 from ._AbstractAlgorithm import AbstractAlgorithm
 from ._PCA import PCA
+from ._CCAFilter import CCAFilter

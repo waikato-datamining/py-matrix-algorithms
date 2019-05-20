@@ -34,7 +34,7 @@ class Matrix:
 
         self.data = data
         self.eigenvalue_decomposition: Optional[Tuple[Matrix, Matrix]] = None
-        self.singular_value_decomposition = None
+        self.singular_value_decomposition: Optional[Tuple[Matrix, Matrix, Matrix]] = None
         self.qr_decomposition = None
 
         # Alias
@@ -80,7 +80,7 @@ class Matrix:
         return self.get_eigenvectors_sorted(False)
 
     def get_dominant_eigenvector(self) -> 'Matrix':
-        return self.get_eigenvalues_sorted_descending().get_column(0)
+        return self.get_eigenvectors_sorted_descending().get_column(0)
 
     def get_eigenvalue_decomposition_V(self) -> 'Matrix':
         self.make_eigenvalue_decomposition()
@@ -101,8 +101,9 @@ class Matrix:
         return self.get_eigenvalues_sorted(True)
 
     def make_singular_value_decomposition(self):
-        # TODO
-        raise NotImplementedError
+        u, s, vh = np.linalg.svd(self.data, full_matrices=False)
+        # u and vh matrices are multiplied by -1 to match OJAlgo reference implementation
+        self.singular_value_decomposition = (Matrix(u).mul(-1), Matrix(s), Matrix(vh).mul(-1))
 
     def make_eigenvalue_decomposition(self):
         """
@@ -117,27 +118,26 @@ class Matrix:
         """
         if self.eigenvalue_decomposition is None:
             eigenvalues, eigenvectors = np.linalg.eig(self.data)
-            self.eigenvalue_decomposition = (Matrix(eigenvalues), Matrix(eigenvectors))
+            self.eigenvalue_decomposition = (Matrix(eigenvalues).transpose(), Matrix(eigenvectors))
 
     def make_qr_decomposition(self):
         # TODO
         raise NotImplementedError
 
     def svd_U(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        self.make_singular_value_decomposition()
+        return self.singular_value_decomposition[0].copy()
 
     def svd_V(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        self.make_singular_value_decomposition()
+        return self.singular_value_decomposition[2].copy()
 
     def svd_S(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        self.make_singular_value_decomposition()
+        return self.singular_value_decomposition[1].copy()
 
     def get_singular_values(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        return self.svd_S().diag()
 
     def sum(self, axis: Optional[int] = None) -> Union['Matrix', real]:
         if axis is None or axis == -1:
@@ -193,8 +193,9 @@ class Matrix:
         return np.dot(a, b)
 
     def normalized(self, axis: int = 0) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        norms = np.linalg.norm(self.data, 2, axis, keepdims=True)
+        result = np.divide(self.data, norms)
+        return Matrix(result)
 
     def is_vector(self) -> bool:
         return self.data.shape[0] == 1 or self.data.shape[1] == 1
@@ -279,8 +280,7 @@ class Matrix:
         return Matrix(np.array(self.data[:, column_index])).transpose()
 
     def inverse(self) -> 'Matrix':
-        # TODO
-        raise NotImplementedError
+        return Matrix(np.linalg.inv(self.data))
 
     def copy(self) -> 'Matrix':
         return Matrix(np.copy(self.data))
@@ -568,7 +568,9 @@ class Matrix:
 
     def get_eigenvalues_sorted(self, ascending: bool) -> 'Matrix':
         eigenvalues = self.get_eigenvalues()
-        eigenvalues.data.sort()
+        eigenvalues.data.sort(0)
+        if not ascending:
+            eigenvalues.data = np.flip(eigenvalues.data)
         return eigenvalues
 
 
