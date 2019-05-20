@@ -113,7 +113,7 @@ class AbstractRegressionTest(Generic[T], metaclass=AbstractRegressionTestMeta):
 
         :return:    Reference file directory.
         """
-        path = self.__class__.__qualname__\
+        path = (self.__class__.__module__ + '.' + self.__class__.__qualname__)\
             .replace('.', os.sep)\
             .replace('Test', '')
         return os.path.join('..', 'resources', 'regression', path)
