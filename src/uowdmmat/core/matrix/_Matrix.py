@@ -576,6 +576,9 @@ class Matrix:
     def exp(self):
         return Matrix(np.exp(self.data))
 
+    def tanh(self):
+        return Matrix(np.tanh(self.data))
+
 
 def must_be_row_vector(vector: 'Matrix'):
     if not vector.is_row_vector():

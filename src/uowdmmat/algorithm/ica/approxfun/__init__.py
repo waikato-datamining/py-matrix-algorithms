@@ -17,3 +17,4 @@
 from ._NegEntropyApproximationFunction import NegEntropyApproximationFunction
 from ._Cube import Cube
 from ._Exponential import Exponential
+from ._LogCosH import LogCosH
