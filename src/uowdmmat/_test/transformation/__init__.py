@@ -14,16 +14,5 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Aliases
-from ._AbstractTransformation import AbstractTransformation
-from ._Center import Center
-from ._RowNorm import RowNorm
-from ._Standardize import Standardize
-from ._SavitzkyGolay import SavitzkyGolay
-from ._SavitzkyGolay2 import SavitzkyGolay2
-from ._MultiplicativeScatterCorrection import MultiplicativeScatterCorrection
-from ._PassThrough import PassThrough
-
-center = Center.quick_apply
-row_norm = RowNorm.quick_apply
-standardize = Standardize.quick_apply
+from ._AbstractTransformationTest import AbstractTransformationTest
+from ._PassThroughTest import PassThroughTest

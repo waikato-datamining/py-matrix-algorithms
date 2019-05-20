@@ -1,4 +1,4 @@
-#  __init__.py
+#  _PassThroughTest.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,17 +13,20 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from ._AbstractTransformationTest import AbstractTransformationTest
+from ..test.misc import Test
+from ...core.matrix import Matrix
+from ...transformation import PassThrough
 
-# Aliases
-from ._AbstractTransformation import AbstractTransformation
-from ._Center import Center
-from ._RowNorm import RowNorm
-from ._Standardize import Standardize
-from ._SavitzkyGolay import SavitzkyGolay
-from ._SavitzkyGolay2 import SavitzkyGolay2
-from ._MultiplicativeScatterCorrection import MultiplicativeScatterCorrection
-from ._PassThrough import PassThrough
 
-center = Center.quick_apply
-row_norm = RowNorm.quick_apply
-standardize = Standardize.quick_apply
+class PassThroughTest(AbstractTransformationTest[PassThrough]):
+    @Test
+    def result_unchanged(self):
+        X: Matrix = self.input_data[0]
+        transform: Matrix = self.subject.transform(X)
+
+        is_equal: bool = X.sub(transform).abs().all(lambda v: v < 1e-7)
+        self.assertTrue(is_equal)
+
+    def instantiate_subject(self) -> PassThrough:
+        return PassThrough()

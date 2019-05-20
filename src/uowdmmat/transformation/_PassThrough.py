@@ -1,4 +1,4 @@
-#  __init__.py
+#  PassThrough.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,17 +13,16 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-# Aliases
 from ._AbstractTransformation import AbstractTransformation
-from ._Center import Center
-from ._RowNorm import RowNorm
-from ._Standardize import Standardize
-from ._SavitzkyGolay import SavitzkyGolay
-from ._SavitzkyGolay2 import SavitzkyGolay2
-from ._MultiplicativeScatterCorrection import MultiplicativeScatterCorrection
-from ._PassThrough import PassThrough
+from ..core.matrix import Matrix
 
-center = Center.quick_apply
-row_norm = RowNorm.quick_apply
-standardize = Standardize.quick_apply
+
+class PassThrough(AbstractTransformation):
+    def configure(self, data: Matrix):
+        self.configured = True
+
+    def do_transform(self, data: Matrix) -> Matrix:
+        return data
+
+    def do_inverse_transform(self, data: Matrix) -> Matrix:
+        return data
