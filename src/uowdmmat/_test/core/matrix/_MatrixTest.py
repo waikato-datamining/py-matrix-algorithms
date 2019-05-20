@@ -25,6 +25,14 @@ class MatrixTest(AbstractRegressionTest[Matrix]):
     def transpose(self):
         self.subject = self.subject.transpose()
 
+    @TestRegression
+    def get_eigenvectors(self):
+        self.subject = self.subject.get_eigenvectors()
+
+    @TestRegression
+    def get_eigenvalues(self):
+        self.subject = self.subject.get_eigenvalues()
+
     def setup_regressions(self, subject: Matrix, input_data: List[Matrix]):
         # Only regression testing the final configuration of the matrix
         self.add_regression(Tags.MATRIX, subject)
