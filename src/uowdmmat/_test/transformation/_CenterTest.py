@@ -1,4 +1,4 @@
-#  __init__.py
+#  _CenterTest.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,7 +13,21 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from ..test.misc import Test
+from ..transformation import AbstractTransformationTest
+from ...core import real
+from ...core.matrix import Matrix
+from ...transformation import Center
 
-from ._AbstractTransformationTest import AbstractTransformationTest
-from ._PassThroughTest import PassThroughTest
-from ._CenterTest import CenterTest
+
+class CenterTest(AbstractTransformationTest[Center]):
+    @Test
+    def mean_is_zero(self):
+        X: Matrix = self.input_data[0]
+        transform: Matrix = self.subject.transform(X)
+        actual: real = transform.mean()
+        expected: real = real(0.0)
+        self.assertAlmostEqual(actual, expected, delta=1e-7)
+
+    def instantiate_subject(self) -> Center:
+        return Center()
