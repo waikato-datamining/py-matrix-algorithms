@@ -81,6 +81,10 @@ class PCA(AbstractAlgorithm):
     def validate_max_columns(value: int):
         return value == -1 or value > 0
 
+    @staticmethod
+    def validate_center(value: bool):
+        return True
+
     def fill_correlation(self):
         """
         Fills the covariance matrix.
