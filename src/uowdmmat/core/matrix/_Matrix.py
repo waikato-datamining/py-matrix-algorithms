@@ -233,22 +233,22 @@ class Matrix:
             throw_invalid_shapes(self, other)
         return Matrix(np.divide(self.data, other.data))
 
-    def div(self, scalar: real) -> 'Matrix':
+    def div(self, scalar: Number) -> 'Matrix':
         return Matrix(np.divide(self.data, scalar))
 
-    def sub(self, other: Union['Matrix', real]) -> 'Matrix':
+    def sub(self, other: Union['Matrix', Number]) -> 'Matrix':
         if isinstance(other, Matrix):
             must_be_same_shape(self, other)
             other = other.data
         return Matrix(np.subtract(self.data, other))
 
-    def add(self, other: Union['Matrix', real]) -> 'Matrix':
+    def add(self, other: Union['Matrix', Number]) -> 'Matrix':
         if isinstance(other, Matrix):
             must_be_same_shape(self, other)
             other = other.data
         return Matrix(np.add(self.data, other))
 
-    def pow_elementwise(self, exponent: real) -> 'Matrix':
+    def pow_elementwise(self, exponent: Number) -> 'Matrix':
         return Matrix(np.power(self.data, exponent))
 
     def sqrt(self) -> 'Matrix':
@@ -305,7 +305,7 @@ class Matrix:
 
     def as_real(self) -> real:
         if self.num_rows() != 1 or self.num_columns() != 1:
-            raise MatrixAlgorithmsError('Method Matrix#asReal is invalid ' +
+            raise MatrixAlgorithmsError('Method Matrix#as_real is invalid ' +
                                         'when number of rows != 1 or number of columns != 1.')
         return self.get(0, 0)
 
@@ -349,11 +349,11 @@ class Matrix:
     def is_column_vector(self) -> bool:
         return self.is_vector() and self.num_columns() == 1
 
-    def apply_elementwise(self, body: Callable[[real], real]) -> 'Matrix':
+    def apply_elementwise(self, body: Callable[[real], Number]) -> 'Matrix':
         result = self.copy()
         for row in range(self.num_rows()):
             for col in range(self.num_columns()):
-                result.data[row][col] = body(result.data[row][col])
+                result.data[row][col] = real(body(result.data[row][col]))
         return result
 
     def clip(self, lower_bound: Number, upper_bound: Number) -> 'Matrix':
@@ -361,20 +361,23 @@ class Matrix:
             raise MatrixAlgorithmsError('Invalid clipping values. Lower ' +
                                         'bound must be below upper bound')
 
+        lower_bound = real(lower_bound)
+        upper_bound = real(upper_bound)
+
         def clip(el: real) -> real:
             if el < lower_bound:
-                return real(lower_bound)
+                return lower_bound
             elif el > upper_bound:
-                return real(upper_bound)
+                return upper_bound
             else:
                 return el
 
         return self.apply_elementwise(clip)
 
-    def clip_lower(self, lower_bound: real) -> 'Matrix':
+    def clip_lower(self, lower_bound: Number) -> 'Matrix':
         return self.clip(lower_bound, np.inf)
 
-    def clip_upper(self, upper_bound: real) -> 'Matrix':
+    def clip_upper(self, upper_bound: Number) -> 'Matrix':
         return self.clip(-np.inf, upper_bound)
 
     def sign(self) -> 'Matrix':
@@ -454,8 +457,9 @@ class Matrix:
         raise NotImplementedError
 
     def contains_NaN(self) -> bool:
+        NaN = real('NaN')
         def element_is_NaN(el):
-            return el == real('NaN')
+            return el == NaN
         return self.any(element_is_NaN)
 
     def any(self, function: Callable[[real], bool]) -> bool:
