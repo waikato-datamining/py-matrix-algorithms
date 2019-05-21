@@ -1,4 +1,4 @@
-#  _Logger.py
+#  __init__.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,22 +13,5 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import sys
 
-
-class Logger:
-    """
-    Class implementing equivalent functionality to java's
-    java.util.logging.Logger class.
-    """
-    def __init__(self, name: str):
-        self.__name = name
-
-    @staticmethod
-    def get_logger(name: str) -> 'Logger':
-        # TODO
-        return Logger(name)
-
-    @staticmethod
-    def warning(message: str):
-        print(message, file=sys.stderr)
+from ._FastICATest import FastICATest

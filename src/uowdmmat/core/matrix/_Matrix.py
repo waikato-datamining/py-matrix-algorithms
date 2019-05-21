@@ -137,11 +137,14 @@ class Matrix:
         return self.singular_value_decomposition[1].copy()
 
     def get_singular_values(self) -> 'Matrix':
-        return self.svd_S().diag()
+        return self.svd_S().transpose()
 
     def sum(self, axis: Optional[int] = None) -> Union['Matrix', real]:
         if axis is None or axis == -1:
-            return np.add.reduce(np.add.reduce(self.data))
+            result = np.add.reduce(np.add.reduce(self.data))
+            if axis == -1:
+                result = Matrix(result)
+            return result
         elif axis == 0 or axis == 1:
             result = Matrix(np.add.reduce(self.data, axis=axis))
             if axis == 1:
@@ -209,9 +212,9 @@ class Matrix:
         return Matrix(np.multiply(self.data, other.data))
 
     def scale_by_row_vector(self, vector: 'Matrix') -> 'Matrix':
-        must_be_row_vector(vector)
+        must_be_column_vector(vector)
         dimensions_must_match(self, vector, columns_to_rows=True)
-        return self.mul_by_vector(vector)
+        return self.mul_by_vector(vector.transpose())
 
     def scale_by_column_vector(self, vector: 'Matrix') -> 'Matrix':
         must_be_column_vector(vector)
@@ -232,12 +235,14 @@ class Matrix:
     def sub(self, other: Union['Matrix', real]) -> 'Matrix':
         if isinstance(other, Matrix):
             must_be_same_shape(self, other)
-        return Matrix(np.subtract(self.data, other.data))
+            other = other.data
+        return Matrix(np.subtract(self.data, other))
 
     def add(self, other: Union['Matrix', real]) -> 'Matrix':
         if isinstance(other, Matrix):
             must_be_same_shape(self, other)
-        return Matrix(np.add(self.data, other.data))
+            other = other.data
+        return Matrix(np.add(self.data, other))
 
     def pow_elementwise(self, exponent: real) -> 'Matrix':
         return Matrix(np.power(self.data, exponent))
@@ -262,13 +267,17 @@ class Matrix:
         self.data[row][column] = real(value)
 
     def set_row(self, row_index: int, row: 'Matrix'):
-        must_be_row_vector(row)
+        must_be_vector(row)
+        if row.is_column_vector():
+            row = row.transpose()
         dimensions_must_match(self, row, columns_to_columns=True)
         self.reset_cache()
         self.data[row_index] = row.data[0]
 
     def set_column(self, column_index: int, column: 'Matrix'):
-        must_be_column_vector(column)
+        must_be_vector(column)
+        if column.is_row_vector():
+            column = column.transpose()
         dimensions_must_match(self, column, rows_to_rows=True)
         self.reset_cache()
         self.data[:, column_index] = column.data[:, 0]
@@ -280,7 +289,12 @@ class Matrix:
         return Matrix(np.array(self.data[:, column_index])).transpose()
 
     def inverse(self) -> 'Matrix':
-        return Matrix(np.linalg.inv(self.data))
+        if self.is_square():
+            return Matrix(np.linalg.inv(self.data))
+        else:
+            raw = [[1 if i == j else 0 for i in range(self.num_rows())] for j in range(self.num_rows())]
+            rhs = np.array(raw, dtype=real)
+            return Matrix(np.linalg.lstsq(self.data, rhs, rcond=None)[0])
 
     def copy(self) -> 'Matrix':
         return Matrix(np.copy(self.data))
@@ -578,6 +592,9 @@ class Matrix:
 
     def tanh(self):
         return Matrix(np.tanh(self.data))
+
+    def is_square(self):
+        return self.num_rows() == self.num_columns()
 
 
 def must_be_row_vector(vector: 'Matrix'):
