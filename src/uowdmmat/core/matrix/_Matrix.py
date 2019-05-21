@@ -134,10 +134,14 @@ class Matrix:
 
     def svd_S(self) -> 'Matrix':
         self.make_singular_value_decomposition()
-        return self.singular_value_decomposition[1].copy()
+        n = self.singular_value_decomposition[1].num_elements()
+        raw = [[self.singular_value_decomposition[1].get_from_vector(i) if i == j else 0
+                for i in range(n)]
+               for j in range(n)]
+        return Matrix(np.array(raw, dtype=real))
 
     def get_singular_values(self) -> 'Matrix':
-        return self.svd_S().transpose()
+        return self.singular_value_decomposition[1].transpose()
 
     def sum(self, axis: Optional[int] = None) -> Union['Matrix', real]:
         if axis is None or axis == -1:
