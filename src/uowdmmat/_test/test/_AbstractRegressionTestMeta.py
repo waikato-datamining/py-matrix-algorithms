@@ -45,7 +45,10 @@ class AbstractRegressionTestMeta(GenericMeta):
         :return:        The base classes augmented with the TestCase class.
         """
         # Get the names of the base classes (so we don't create circular refs)
-        return (*bases, TestCase)
+        if TestCase not in bases:
+            return (*bases, TestCase)
+        else:
+            return bases
 
     @staticmethod
     def ensure_tests(namespace: Dict[str, Any]):

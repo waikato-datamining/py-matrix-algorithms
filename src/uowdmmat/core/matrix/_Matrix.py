@@ -574,6 +574,8 @@ class Matrix:
         return Matrix(np.array(raw))
 
     def get_eigenvectors_sorted(self, ascending: bool):
+        self.make_eigenvalue_decomposition()
+
         # Get eigenpairs
         eigenpairs = [(self.eigenvalue_decomposition[0].get_from_vector(i),
                        self.eigenvalue_decomposition[1].get_column(i))

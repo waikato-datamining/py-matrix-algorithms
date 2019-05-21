@@ -1,4 +1,4 @@
-#  __init__.py
+#  _EPOTest.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,6 +13,24 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from typing import List
 
-from ._GLSW import GLSW
-from ._EPO import EPO
+from ._GLSWTest import GLSWTest
+from ...test.misc import TestRegression, TestDataset
+from ....algorithm.glsw import EPO
+
+
+class EPOTest(GLSWTest[EPO]):
+    @TestRegression
+    def n_1(self):
+        self.subject.N = 1
+
+    @TestRegression
+    def n_3(self):
+        self.subject.N = 3
+
+    def get_datasets(self) -> List[TestDataset]:
+        return [TestDataset.BOLTS]
+
+    def instantiate_subject(self) -> EPO:
+        return EPO()
