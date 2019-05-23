@@ -1,4 +1,4 @@
-#  __init__.py
+#  _YGradientEPOTest.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,8 +13,14 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from typing import TypeVar
 
-from ._GLSW import GLSW
-from ._EPO import EPO
-from ._YGradientGLSW import YGradientGLSW
-from ._YGradientEPO import YGradientEPO
+from ._YGradientGLSWTest import YGradientGLSWTest
+from ....algorithm.glsw import YGradientEPO
+
+T = TypeVar('T', bound=YGradientEPO)
+
+
+class YGradientEPOTest(YGradientGLSWTest[T]):
+    def instantiate_subject(self) -> YGradientEPO:
+        return YGradientEPO()

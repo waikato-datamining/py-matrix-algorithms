@@ -17,3 +17,4 @@
 from ._GLSWTest import GLSWTest
 from ._EPOTest import EPOTest
 from ._YGradientGLSWTest import YGradientGLSWTest
+from ._YGradientEPOTest import YGradientEPOTest
