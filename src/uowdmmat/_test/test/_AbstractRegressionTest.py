@@ -113,10 +113,20 @@ class AbstractRegressionTest(Generic[T], metaclass=AbstractRegressionTestMeta):
 
         :return:    Reference file directory.
         """
-        path = (self.__class__.__module__ + '.' + self.__class__.__qualname__)\
-            .replace('.', os.sep)\
-            .replace('Test', '')
-        return os.path.join('..', 'resources', 'regression', path)
+        # Get the fully-qualified name of the class (in dotted form)
+        fully_qualified_name = self.__class__.__module__ + '.' + self.__class__.__qualname__
+
+        # Split into sub-level parts
+        name_parts = fully_qualified_name.split('.')
+
+        # Remove any "private" levels (module/package names starting with _)
+        name_parts = [part for part in name_parts if not part.startswith('_')]
+
+        # Remove the "Test" suffix from the class name
+        if name_parts[-1].endswith('Test'):
+            name_parts[-1] = name_parts[-1][:-4]
+
+        return os.path.join('..', 'resources', 'regression', *name_parts)
 
     def add_regression(self, tag: str, value: Union[Matrix, real]):
         """
