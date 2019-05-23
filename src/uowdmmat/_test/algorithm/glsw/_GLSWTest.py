@@ -20,7 +20,7 @@ from ...test.misc import Tags, TestRegression, TestDataset
 from ....algorithm.glsw import GLSW
 from ....core.matrix import Matrix, factory
 
-T = TypeVar('T')
+T = TypeVar('T', bound=GLSW)
 
 
 class GLSWTest(AbstractRegressionTest[T]):
@@ -50,5 +50,5 @@ class GLSWTest(AbstractRegressionTest[T]):
     def get_datasets(self) -> List[TestDataset]:
         return [TestDataset.BOLTS]
 
-    def instantiate_subject(self) -> T:
+    def instantiate_subject(self) -> GLSW:
         return GLSW()

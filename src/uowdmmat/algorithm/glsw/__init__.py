@@ -16,3 +16,4 @@
 
 from ._GLSW import GLSW
 from ._EPO import EPO
+from ._YGradientGLSW import YGradientGLSW

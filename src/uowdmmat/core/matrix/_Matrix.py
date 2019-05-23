@@ -424,7 +424,10 @@ class Matrix:
 
     def mean(self, axis: Optional[int] = None) -> Union['Matrix', real]:
         if axis is None or axis == -1:
-            return np.mean(self.data)
+            mean = np.mean(self.data)
+            if axis == -1:
+                mean = Matrix(mean)
+            return mean
         elif axis == 0:
             return Matrix(np.mean(self.data, axis))
         elif axis == 1:

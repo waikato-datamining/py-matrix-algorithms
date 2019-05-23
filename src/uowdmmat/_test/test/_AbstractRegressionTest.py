@@ -29,10 +29,10 @@ T = TypeVar('T')
 
 class AbstractRegressionTest(Generic[T], metaclass=AbstractRegressionTestMeta):
     """
-    Base class of all regression tests. Uses AugmentWithTestCaseMeta to ensure
-    TestCase is a base of all sub-classes without actually being a base of this
-    class. Hence method calls to TestCase methods show as warnings, but will be
-    resolved at run-time.
+    Base class of all regression tests. Uses AbstractRegressionTestMeta to ensure
+    TestCase is a base of all concrete sub-classes without actually being a base
+    of this class. Hence method calls to TestCase methods show as warnings, but
+    will be resolved at run-time.
     """
     def __init__(self, *args, **kwargs):
         args = (args[0][5:],)  # Strip the 'test_' prefix from the method name
