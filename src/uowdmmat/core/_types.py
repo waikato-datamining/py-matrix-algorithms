@@ -17,3 +17,10 @@
 import numpy as np
 
 real = np.float64
+
+# Constants
+ZERO = real(0)
+ONE = real(1)
+NAN = real('NaN')
+INF = real(np.PINF)
+NEG_INF = real(np.NINF)
