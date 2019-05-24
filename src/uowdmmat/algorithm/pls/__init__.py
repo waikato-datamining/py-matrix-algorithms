@@ -15,3 +15,4 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from ._AbstractPLS import AbstractPLS
+from ._AbstractMultiResponsePLS import AbstractMultiResponsePLS
