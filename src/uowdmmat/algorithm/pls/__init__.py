@@ -16,3 +16,4 @@
 
 from ._AbstractPLS import AbstractPLS
 from ._AbstractMultiResponsePLS import AbstractMultiResponsePLS
+from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
