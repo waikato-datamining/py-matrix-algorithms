@@ -14,7 +14,5 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ._AbstractPLS import AbstractPLS
-from ._AbstractMultiResponsePLS import AbstractMultiResponsePLS
-from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
-from ._PLS1 import PLS1
+from ._AbstractPLSTest import AbstractPLSTest
+from ._PLS1Test import PLS1Test
