@@ -274,17 +274,17 @@ class Matrix:
         must_be_vector(row)
         if row.is_column_vector():
             row = row.transpose()
-        dimensions_must_match(self, row, columns_to_columns=True)
+        replacement_length = min(row.num_columns(), self.num_columns())
         self.reset_cache()
-        self.data[row_index] = row.data[0]
+        self.data[row_index, :replacement_length] = row.data[0, :replacement_length]
 
     def set_column(self, column_index: int, column: 'Matrix'):
         must_be_vector(column)
         if column.is_row_vector():
             column = column.transpose()
-        dimensions_must_match(self, column, rows_to_rows=True)
+        replacement_length = min(column.num_rows(), self.num_rows())
         self.reset_cache()
-        self.data[:, column_index] = column.data[:, 0]
+        self.data[:replacement_length, column_index] = column.data[:replacement_length, 0]
 
     def get_row(self, row_index: int) -> 'Matrix':
         return Matrix(np.array(self.data[row_index]))
