@@ -110,11 +110,10 @@ class Matrix:
         Initialises the eigenvalue decomposition.
 
         N.B. The numpy eigenvalue solver may produce different eigenvalues/vectors to
-        the reference solver (OJAlgo in the Java matrix-algorithms repo) up to a factor
-        of -1.0. While these are still correct solutions to the decomposition,
-        implementations that rely on the exact direction of the eigenvectors may be
-        affected. Possible future solution is to enforce a standard quadrant that the
-        vectors must point into.
+        the reference solver (OJAlgo in the Java matrix-algorithms repo). While these
+        are still correct solutions to the decomposition, implementations that rely on
+        the exact direction of the eigenvectors may be affected. Possible future solution
+        is to enforce normalisation and a standard quadrant that the vectors must point into.
         """
         if self.eigenvalue_decomposition is None:
             eigenvalues, eigenvectors = np.linalg.eig(self.data)
