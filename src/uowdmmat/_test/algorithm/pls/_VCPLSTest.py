@@ -1,4 +1,4 @@
-#  __init__.py
+#  _VCPLSTest.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,10 +13,13 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from ._AbstractPLSTest import AbstractPLSTest
+from ....algorithm.pls import VCPLS
 
-from ._AbstractPLS import AbstractPLS
-from ._AbstractMultiResponsePLS import AbstractMultiResponsePLS
-from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
-from ._PLS1 import PLS1
-from ._VCPLS import VCPLS
 
+class VCPLSTest(AbstractPLSTest[VCPLS]):
+    """
+    Testcase for the VCPLS algorithm.
+    """
+    def instantiate_subject(self) -> VCPLS:
+        return VCPLS()
