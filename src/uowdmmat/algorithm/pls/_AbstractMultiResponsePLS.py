@@ -16,9 +16,9 @@
 from abc import abstractmethod
 from typing import List, Optional
 
-from uowdmmat.core import real, PreprocessingType
-from uowdmmat.core.matrix import Matrix, helper
-from uowdmmat.transformation import AbstractTransformation, Center, Standardize
+from ...core import real, PreprocessingType
+from ...core.matrix import Matrix, helper
+from ...transformation import AbstractTransformation, Center, Standardize
 from ._AbstractPLS import AbstractPLS
 
 
