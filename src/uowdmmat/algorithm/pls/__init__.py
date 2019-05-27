@@ -20,4 +20,4 @@ from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
 from ._PLS1 import PLS1
 from ._VCPLS import VCPLS
 from ._KernelPLS import KernelPLS
-
+from ._NIPALS import NIPALS, DeflationMode
