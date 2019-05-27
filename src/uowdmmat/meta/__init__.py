@@ -1,4 +1,4 @@
-#  meta.py
+#  __init__.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
