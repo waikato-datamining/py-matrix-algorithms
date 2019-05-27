@@ -505,11 +505,12 @@ class Matrix:
         if self is other:
             return True
 
-        if other is None or not isinstance(other, Matrix):
+        if other is None or self.__class__ is not other.__class__:
             return False
 
-        # TODO: Complete
-        raise NotImplementedError
+        diff: Matrix = self.sub(other)
+
+        return not diff.data.any()
 
     def __hash__(self):
         # TODO
