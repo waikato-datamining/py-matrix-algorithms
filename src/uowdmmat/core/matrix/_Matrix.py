@@ -157,15 +157,18 @@ class Matrix:
             raise ValueError('Acceptable values for axis are None, -1, 0 or 1. ' + str(axis) + 'provided.')
 
     def norm1(self) -> real:
-        # TODO
-        raise NotImplementedError
+        return real(np.linalg.norm(np.linalg.norm(self.data, 1, 0), 1))
 
     def norm2(self) -> real:
-        return np.sqrt(self.norm2_squared())
+        frobenius_norm: real = real(np.linalg.norm(self.data))
+        if self.is_vector():
+            return frobenius_norm
+        else:
+            return frobenius_norm / np.ma.sqrt(min(self.num_rows(), self.num_columns()))
 
     def norm2_squared(self) -> real:
-        # TODO
-        raise NotImplementedError
+        norm2 = self.norm2()
+        return np.multiply(norm2, norm2)
 
     def mul(self, other: Union['Matrix', Number]) -> 'Matrix':
         if isinstance(other, Matrix):

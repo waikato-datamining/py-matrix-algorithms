@@ -33,12 +33,20 @@ class MatrixTest(AbstractRegressionTest[Matrix]):
     def get_eigenvalues(self):
         self.subject = self.subject.get_eigenvalues()
 
+    @TestRegression
+    def norm2(self):
+        self.subject = self.input_data[0].norm2()
+
+    @TestRegression
+    def norm1(self):
+        self.subject = self.input_data[0].norm1()
+
     def setup_regressions(self, subject: Matrix, input_data: List[Matrix]):
         # Only regression testing the final configuration of the matrix
         self.add_regression(Tags.MATRIX, subject)
 
     def get_datasets(self) -> List[TestDataset]:
-        return []
+        return [TestDataset.BOLTS]
 
     def instantiate_subject(self) -> Matrix:
         return factory.randn(7, 7, seed=2)
