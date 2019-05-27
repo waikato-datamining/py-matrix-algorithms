@@ -34,8 +34,8 @@ class VCPLS(PLS1):
     NU: real = real(1e-7)  # The constant NU.
 
     def __init__(self):
-        self.lambda_: real = ONE
         super().__init__()
+        self.lambda_: real = ONE
 
     @staticmethod
     def validate_lambda_(value: real) -> bool:

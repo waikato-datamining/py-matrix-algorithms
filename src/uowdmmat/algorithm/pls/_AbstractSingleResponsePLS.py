@@ -23,11 +23,11 @@ from ...transformation import AbstractTransformation, Center, Standardize
 
 class AbstractSingleResponsePLS(AbstractPLS):
     def __init__(self):
+        super().__init__()
         self.class_mean: real = NAN  # The class mean
         self.class_std_dev: real = NAN  # The class stddev
         self.trans_predictors: Optional[AbstractTransformation] = None  # The transformation for the predictors
         self.trans_response: Optional[AbstractTransformation] = None  # The transformation for the response
-        super().__init__()
 
     def reset(self):
         """

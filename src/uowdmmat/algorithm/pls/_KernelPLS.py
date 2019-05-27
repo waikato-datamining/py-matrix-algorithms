@@ -34,6 +34,7 @@ class KernelPLS(AbstractMultiResponsePLS):
     SEED: int = 0
 
     def __init__(self):
+        super().__init__()
         self.K_orig: Optional[Matrix] = None  # Calibration data in feature space
         self.K_deflated: Optional[Matrix] = None
         self.T: Optional[Matrix] = None  # Scores on K
@@ -47,7 +48,6 @@ class KernelPLS(AbstractMultiResponsePLS):
         self.max_iter: int = 500  # Inner NIPALS loop maximum number of iterations
         self.center_X: Optional[Center] = None  # Center X transformation
         self.center_Y: Optional[Center] = None  # Center Y transformation
-        super().__init__()
 
     def initialize(self, predictors: Optional[Matrix] = None, response: Optional[Matrix] = None) -> Optional[str]:
         if predictors is None and response is None:

@@ -22,22 +22,9 @@ from ...transformation import Center
 
 class GLSW(AbstractAlgorithm):
     def __init__(self):
+        super().__init__()
         self.alpha: float = 1e-3
         self.G: Optional[Matrix] = None
-        super().__init__()
-
-    def __setattr__(self, key, value):
-        # Validate values
-        validator_name = 'validate_' + key
-        if hasattr(self, validator_name):
-            validator = getattr(self, validator_name)
-            if not validator(value):
-                raise ValueError('Validation of ' + key + ' failed')
-
-            # If validation passes, reset
-            self.reset()
-
-        super().__setattr__(key, value)
 
     @staticmethod
     def validate_alpha(value: float) -> bool:

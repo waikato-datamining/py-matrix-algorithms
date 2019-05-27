@@ -1,4 +1,4 @@
-#  __init__.py
+#  _JavaObjectMeta.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,11 +13,20 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from abc import ABCMeta
 
-"""
-Collection of tools to aid in the programming of this library.
-"""
 
-from ._JavaObject import JavaObject
-from ._Tag import *
-from ._util import *
+class JavaObjectMeta(ABCMeta):
+    """
+    Meta-class for creating objects that are more Java-like.
+    """
+    def __call__(cls, *args, **kwargs):
+        # Create the object as normal
+        instance = super().__call__(*args, **kwargs)
+
+        # If the class defines a constructor method, call it
+        if hasattr(instance, '__construct__'):
+            instance.__construct__(*args, **kwargs)
+
+        # Return the new instance
+        return instance

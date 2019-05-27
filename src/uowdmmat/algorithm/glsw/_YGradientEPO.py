@@ -33,8 +33,8 @@ class YGradientEPO(YGradientGLSW):
     - alpha: Defines how strongly GLSW downweights interferences
     """
     def __init__(self):
-        self.N: int = 5  # Number of eigenvectors to keep
         super().__init__()
+        self.N: int = 5  # Number of eigenvectors to keep
 
     @staticmethod
     def validate_N(value: int) -> bool:

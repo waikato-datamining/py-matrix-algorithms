@@ -23,22 +23,9 @@ from ...core.matrix import Matrix
 
 class AbstractPLS(AbstractAlgorithm):
     def __init__(self):
+        super().__init__()
         self.preprocessing_type: PreprocessingType = PreprocessingType.NONE  # The preprocessing type to perform
         self.num_components: int = 5  # The maximum number of components to generate
-        super().__init__()
-
-    def __setattr__(self, key, value):
-        # Validate values
-        validator_name = 'validate_' + key
-        if hasattr(self, validator_name):
-            validator = getattr(self, validator_name)
-            if not validator(value):
-                raise ValueError('Validation of ' + key + ' failed')
-
-            # If validation passes, reset
-            self.reset()
-
-        super().__setattr__(key, value)
 
     def initialize(self, predictors: Optional[Matrix] = None, response: Optional[Matrix] = None) -> Optional[str]:
         if predictors is None and response is None:

@@ -60,19 +60,6 @@ class PCA(AbstractAlgorithm):
         self.sum_of_eigenvalues = real(0)
         self.transformation = None
 
-    def __setattr__(self, key, value):
-        # Validate values
-        validator_name = 'validate_' + key
-        if hasattr(self, validator_name):
-            validator = getattr(self, validator_name)
-            if not validator(value):
-                raise ValueError('Validation of ' + key + ' failed')
-
-            # If validation passes, reset
-            self.reset()
-
-        super().__setattr__(key, value)
-
     @staticmethod
     def validate_variance(value: real):
         return real(0) < value < real(1)

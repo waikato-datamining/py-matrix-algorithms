@@ -15,18 +15,37 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from abc import ABC
 
+from ..meta import JavaObject
 from .java import Logger
 
 
-class LoggingObject(ABC):
+class LoggingObject(JavaObject):
     """
     Ancestor of objects with logging support.
     """
     def __init__(self):
-        self.logger = None  # The logger to use.
-        self.debug = False  # Whether to output debug information.
+        super().__init__()
+        self.logger: Logger = Logger.get_logger(self.__class__.__name__)  # The logger to use.
+        self.debug: bool = False  # Whether to output debug information.
+
+    def __construct__(self):
+        super().__construct__()
         self.initialize()
         self.reset()
+
+    def __setattr__(self, key, value):
+        # Validate values
+        validator_name = 'validate_' + key
+        if hasattr(self, validator_name):
+            validator = getattr(self, validator_name)
+            if not validator(value):
+                raise ValueError('Validation of ' + key + ' failed')
+
+            # If validation passes, reset, unless in __init__ phase
+            if self.init_complete():
+                self.reset()
+
+        super().__setattr__(key, value)
 
     def initialize(self):
         """
@@ -34,7 +53,7 @@ class LoggingObject(ABC):
 
         Default implementation does nothing.
         """
-        self.get_logger()
+        pass
 
     def reset(self):
         """
@@ -43,13 +62,3 @@ class LoggingObject(ABC):
         Default implementation does nothing.\
         """
         pass
-
-    def get_logger(self):
-        """
-        Returns the logger.
-
-        :return:    The logger.
-        """
-        if self.logger is None:
-            self.logger = Logger.get_logger(self.__class__.__name__)
-        return self.logger

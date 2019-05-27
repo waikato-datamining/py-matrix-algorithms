@@ -21,8 +21,8 @@ from ._GLSW import GLSW
 
 class EPO(GLSW):
     def __init__(self):
-        self.N: int = 5
         super().__init__()
+        self.N: int = 5
 
     @staticmethod
     def validate_N(value: int) -> bool:

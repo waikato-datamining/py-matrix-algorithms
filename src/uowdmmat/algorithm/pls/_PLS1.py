@@ -22,11 +22,11 @@ from ...core.matrix import Matrix, factory, helper
 
 class PLS1(AbstractSingleResponsePLS):
     def __init__(self):
+        super().__init__()
         self.r_hat: Optional[Matrix] = None  # The regression vector "r-hat"
         self.P: Optional[Matrix] = None  # The P matrix
         self.W: Optional[Matrix] = None  # The W matrix
         self.b_hat: Optional[Matrix] = None  # The b-hat vector
-        super().__init__()
 
     def reset(self):
         """

@@ -27,11 +27,11 @@ class AbstractMultiResponsePLS(AbstractPLS):
     Ancestor for PLS algorithms that work on multiple response variables.
     """
     def __init__(self):
+        super().__init__()
         self.class_mean: Optional[List[real]] = None
         self.class_std_dev: Optional[List[real]] = None
         self.trans_predictors: Optional[AbstractTransformation] = None
         self.trans_response: Optional[AbstractTransformation] = None
-        super().__init__()
 
     def reset(self):
         """

@@ -23,6 +23,7 @@ from ..transformation import Center
 
 class CCAFilter(AbstractAlgorithm):
     def __init__(self):
+        super().__init__()
         self.lambda_X: real = real(1e-2)
         self.lambda_Y: real = real(1e-2)
         self.kcca: int = 1
@@ -30,20 +31,6 @@ class CCAFilter(AbstractAlgorithm):
         self.center_Y: Optional[Center] = None
         self.proj_X: Optional[Matrix] = None
         self.proj_Y: Optional[Matrix] = None
-        super().__init__()
-
-    def __setattr__(self, key, value):
-        # Validate values
-        validator_name = 'validate_' + key
-        if hasattr(self, validator_name):
-            validator = getattr(self, validator_name)
-            if not validator(value):
-                raise ValueError('Validation of ' + key + ' failed')
-
-            # If validation passes, reset
-            self.reset()
-
-        super().__setattr__(key, value)
 
     @staticmethod
     def validate_kcca(value: int):

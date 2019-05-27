@@ -36,6 +36,7 @@ class NIPALS(AbstractMultiResponsePLS):
     - deflationMode: Mode for Y matrix deflation. Can be either CANONICAL or REGRESSION
     """
     def __init__(self):
+        super().__init__()
         self.X_scores: Optional[Matrix] = None  # Scores on X
         self.Y_scores: Optional[Matrix] = None  # Scores on Y
         self.X_loadings: Optional[Matrix] = None  # Loadings on X
@@ -52,7 +53,6 @@ class NIPALS(AbstractMultiResponsePLS):
         self.standardize_X: Optional[Standardize] = None  # Standarize X tranformation
         self.standardize_Y: Optional[Standardize] = None  # Standardize Y transformation
         self.deflation_mode: DeflationMode = DeflationMode.REGRESSION
-        super().__init__()
 
     def initialize(self, predictors: Optional[Matrix] = None, response: Optional[Matrix] = None) -> Optional[str]:
         if predictors is None and response is None:
