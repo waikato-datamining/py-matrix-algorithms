@@ -81,8 +81,6 @@ class NIPALS(AbstractMultiResponsePLS):
         return -1
 
     def do_perform_initialization(self, predictors: Matrix, response: Matrix) -> Optional[str]:
-        self.get_logger()
-
         # Init
         X: Matrix = predictors
         X = self.standardize_X.transform(X)

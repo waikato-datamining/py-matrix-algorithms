@@ -79,8 +79,6 @@ class KernelPLS(AbstractMultiResponsePLS):
         return -1
 
     def do_perform_initialization(self, predictors: Matrix, response: Matrix) -> Optional[str]:
-        self.get_logger()
-
         # Init
         num_components: int = self.num_components
         self.X = predictors
