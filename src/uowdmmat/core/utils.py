@@ -19,7 +19,7 @@ Helper functions.
 """
 from numbers import Number
 from typing import List, NoReturn, Tuple, Optional
-from numpy import format_float_positional
+from numpy import format_float_positional, exp as np_exp
 
 from ._types import real
 
@@ -305,3 +305,13 @@ def list_to_string(array: List[any], output_class: bool = False) -> str:
     """
     # TODO
     raise NotImplementedError
+
+
+def exp(x: real) -> real:
+    """
+    Returns Euler's number raised to the given power a.
+
+    :param x:   The exponent.
+    :return:    The result of e^x.
+    """
+    return np_exp(x)
