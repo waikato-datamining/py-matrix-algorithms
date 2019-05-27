@@ -17,3 +17,4 @@
 from ._AbstractPLSTest import AbstractPLSTest
 from ._PLS1Test import PLS1Test
 from ._VCPLSTest import VCPLSTest
+from ._KernelPLSTest import KernelPLSTest

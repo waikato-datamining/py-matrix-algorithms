@@ -14,10 +14,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ._AbstractPLS import AbstractPLS
-from ._AbstractMultiResponsePLS import AbstractMultiResponsePLS
-from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
-from ._PLS1 import PLS1
-from ._VCPLS import VCPLS
-from ._KernelPLS import KernelPLS
-
+from ._AbstractKernel import AbstractKernel
+from ._LinearKernel import LinearKernel
+from ._PolyKernel import PolyKernel
+from ._RBFKernel import RBFKernel

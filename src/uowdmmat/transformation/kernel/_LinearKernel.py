@@ -1,4 +1,4 @@
-#  __init__.py
+#  _LinearKernel.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,11 +13,28 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from typing import Optional
 
-from ._AbstractPLS import AbstractPLS
-from ._AbstractMultiResponsePLS import AbstractMultiResponsePLS
-from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
-from ._PLS1 import PLS1
-from ._VCPLS import VCPLS
-from ._KernelPLS import KernelPLS
+from ...core import real
+from ...core.matrix import Matrix
+from ._AbstractKernel import AbstractKernel
 
+
+class LinearKernel(AbstractKernel):
+    """
+    Linear Kernel.
+
+    K(x_i,y_j)=x_i^T*y_j
+    or also
+    K(X, Y)=X*Y^T
+    """
+    def apply_vector(self, x: Matrix, y: Matrix) -> real:
+        return x.vector_dot(y)
+
+    def apply_matrix(self, X: Matrix, Y: Optional[Matrix] = None) -> Matrix:
+        if Y is None:
+            Y = X
+        return X.mul(Y.transpose())
+
+    def __str__(self):
+        return 'Linear Kernel: K(x,y)=x^T*y'

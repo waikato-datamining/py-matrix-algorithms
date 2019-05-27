@@ -1,4 +1,4 @@
-#  __init__.py
+#  _KernelPLSTest.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,11 +13,27 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from ._AbstractPLSTest import AbstractPLSTest
+from ...test.misc import TestRegression
+from ....algorithm.pls import KernelPLS
+from ....transformation.kernel import LinearKernel, PolyKernel, RBFKernel
 
-from ._AbstractPLS import AbstractPLS
-from ._AbstractMultiResponsePLS import AbstractMultiResponsePLS
-from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
-from ._PLS1 import PLS1
-from ._VCPLS import VCPLS
-from ._KernelPLS import KernelPLS
 
+class KernelPLSTest(AbstractPLSTest[KernelPLS]):
+    """
+    Test case for the KernelPLS algorithm.
+    """
+    @TestRegression
+    def linear_kernel(self):
+        self.subject.kernel = LinearKernel()
+
+    @TestRegression
+    def poly_kernel(self):
+        self.subject.kernel = PolyKernel()
+
+    @TestRegression
+    def rbf_kernel(self):
+        self.subject.kernel = RBFKernel()
+
+    def instantiate_subject(self) -> KernelPLS:
+        return KernelPLS()
