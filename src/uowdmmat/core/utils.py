@@ -19,7 +19,7 @@ Helper functions.
 """
 from numbers import Number
 from typing import List, NoReturn, Tuple, Optional
-from numpy import format_float_positional, exp as np_exp
+import numpy as np
 
 from ._types import real
 
@@ -274,11 +274,11 @@ def real_to_string_fixed(value: real, after_decimal_point: int) -> str:
     if after_decimal_point < 0:
         return str(value)
 
-    return format_float_positional(value,
-                                   precision=after_decimal_point,
-                                   unique=False,
-                                   fractional=True,
-                                   trim='k')
+    return np.format_float_positional(value,
+                                      precision=after_decimal_point,
+                                      unique=False,
+                                      fractional=True,
+                                      trim='k')
 
 
 def get_list_dimensions(array: List[any]) -> int:
@@ -314,4 +314,14 @@ def exp(x: real) -> real:
     :param x:   The exponent.
     :return:    The result of e^x.
     """
-    return np_exp(x)
+    return np.exp(x)
+
+
+def sqrt(x: real) -> real:
+    """
+    Returns the square-root of the given number.
+
+    :param x:   The number to find the root of.
+    :return:    The square root of x.
+    """
+    return np.sqrt(x)
