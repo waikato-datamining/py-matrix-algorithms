@@ -42,7 +42,7 @@ class AbstractPLSTest(AbstractRegressionTest[T]):
     @staticmethod
     def merge_if_not_empty(tag_1: str, tag_2: str) -> str:
         if tag_1 != '' and tag_2 != '':
-            return os.sep.join(tag_1, tag_2)
+            return os.sep.join((tag_1, tag_2))
         else:
             return tag_1 + tag_2
 
