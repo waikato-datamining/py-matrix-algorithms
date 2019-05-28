@@ -31,24 +31,29 @@ class AbstractRegressionTestMeta(GenericMeta):
     it wasn't being called (possible short-cutting in python implementation).
     """
     def __new__(self, name, bases, namespace, **kwargs):
-        if not will_be_abstract(bases, namespace):
-            bases = self.augment_bases(bases)
+        bases = self.augment_bases(bases, namespace)
         self.ensure_tests(namespace)
         return super().__new__(self, name, bases, namespace, **kwargs)
 
     @staticmethod
-    def augment_bases(bases: Tuple) -> Tuple:
+    def augment_bases(bases: Tuple, namespace: Dict) -> Tuple:
         """
         Augments the base classes for the new class with the TestCase class.
 
-        :param bases:   The proposed bases for the class.
-        :return:        The base classes augmented with the TestCase class.
+        :param bases:       The proposed bases for the class.
+        :param namespace:   The namespace of the class.
+        :return:            The base classes augmented with the TestCase class.
         """
-        # Get the names of the base classes (so we don't create circular refs)
-        if TestCase not in bases:
-            return (*bases, TestCase)
+        if not will_be_abstract(bases, namespace):
+            if TestCase not in bases:
+                return (*bases, TestCase)
+            else:
+                return bases
         else:
-            return bases
+            if TestCase in bases:
+                return tuple(base for base in bases if base is not TestCase)
+            else:
+                return bases
 
     @staticmethod
     def ensure_tests(namespace: Dict[str, Any]):

@@ -16,6 +16,7 @@
 import os
 from abc import abstractmethod
 from typing import Optional, List, Union, TypeVar, Generic
+from unittest import TestCase
 
 from ._AbstractRegressionTestMeta import AbstractRegressionTestMeta
 from .misc import TestDataset, TestRegression, REGRESSION_TAG
@@ -27,7 +28,7 @@ from ...core.matrix import Matrix
 T = TypeVar('T')
 
 
-class AbstractRegressionTest(Generic[T], metaclass=AbstractRegressionTestMeta):
+class AbstractRegressionTest(TestCase, Generic[T], metaclass=AbstractRegressionTestMeta):
     """
     Base class of all regression tests. Uses AbstractRegressionTestMeta to ensure
     TestCase is a base of all concrete sub-classes without actually being a base
