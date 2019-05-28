@@ -21,3 +21,4 @@ Collection of tools to aid in the programming of this library.
 from ._JavaObject import JavaObject
 from ._Tag import *
 from ._util import *
+from ._switch import switch
