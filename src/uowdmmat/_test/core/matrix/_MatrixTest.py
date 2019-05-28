@@ -41,6 +41,14 @@ class MatrixTest(AbstractRegressionTest[Matrix]):
     def norm1(self):
         self.subject = self.input_data[0].norm1()
 
+    @Test
+    def column_is_sub_matrix(self):
+        for i in range(self.subject.num_columns()):
+            column = self.subject.get_column(i)
+            sub_matrix = self.subject.get_sub_matrix((0, self.subject.num_rows()),
+                                                     (i, i + 1))
+            self.assertEqual(column, sub_matrix)
+
     def setup_regressions(self, subject: Matrix, input_data: List[Matrix]):
         # Only regression testing the final configuration of the matrix
         self.add_regression(Tags.MATRIX, subject)
