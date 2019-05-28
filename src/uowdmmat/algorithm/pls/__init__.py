@@ -22,3 +22,4 @@ from ._VCPLS import VCPLS
 from ._KernelPLS import KernelPLS
 from ._NIPALS import NIPALS, DeflationMode
 from ._SIMPLS import SIMPLS
+from ._DIPLS import DIPLS
