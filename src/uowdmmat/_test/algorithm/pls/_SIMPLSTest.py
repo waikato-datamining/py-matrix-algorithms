@@ -1,4 +1,4 @@
-#  __init__.py
+#  _SIMPLSTest.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,10 +13,23 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 from ._AbstractPLSTest import AbstractPLSTest
-from ._PLS1Test import PLS1Test
-from ._VCPLSTest import VCPLSTest
-from ._KernelPLSTest import KernelPLSTest
-from ._NIPALSTest import NIPALSTest
-from ._SIMPLSTest import SIMPLSTest
+from ...test.misc import TestRegression
+from ....algorithm.pls import SIMPLS
+
+
+class SIMPLSTest(AbstractPLSTest[SIMPLS]):
+    @TestRegression
+    def num_coefficients_1(self):
+        self.subject.num_coefficients = 1
+
+    @TestRegression
+    def num_coefficients_2(self):
+        self.subject.num_coefficients = 2
+
+    @TestRegression
+    def num_coefficients_3(self):
+        self.subject.num_coefficients = 3
+
+    def instantiate_subject(self) -> SIMPLS:
+        return SIMPLS()
