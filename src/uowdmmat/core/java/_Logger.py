@@ -32,3 +32,7 @@ class Logger:
     @staticmethod
     def warning(message: str):
         print(message, file=sys.stderr)
+
+    @staticmethod
+    def info(message: str):
+        print(message, file=sys.stdout)
