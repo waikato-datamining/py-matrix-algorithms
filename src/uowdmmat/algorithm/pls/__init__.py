@@ -24,3 +24,4 @@ from ._NIPALS import NIPALS, DeflationMode
 from ._SIMPLS import SIMPLS
 from ._DIPLS import DIPLS
 from ._OPLS import OPLS
+from ._SparsePLS import SparsePLS

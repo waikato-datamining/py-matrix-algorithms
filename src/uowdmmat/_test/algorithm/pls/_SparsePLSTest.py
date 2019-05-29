@@ -1,4 +1,4 @@
-#  __init__.py
+#  _SparsePLSTest.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,13 +13,21 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from ...test.misc import TestRegression
 from ._AbstractPLSTest import AbstractPLSTest
-from ._PLS1Test import PLS1Test
-from ._VCPLSTest import VCPLSTest
-from ._KernelPLSTest import KernelPLSTest
-from ._NIPALSTest import NIPALSTest
-from ._SIMPLSTest import SIMPLSTest
-from ._DIPLSTest import DIPLSTest
-from ._OPLSTest import OPLSTest
-from ._SparsePLSTest import SparsePLSTest
+from ....algorithm.pls import SparsePLS
+
+
+class SparsePLSTest(AbstractPLSTest[SparsePLS]):
+    @TestRegression
+    def lambda_0(self):
+        self.subject.lambda_ = 0
+
+    @TestRegression
+    def lambda_05(self):
+        self.subject.lambda_ = 0.001
+
+    def instantiate_subject(self) -> SparsePLS:
+        spls: SparsePLS = SparsePLS()
+        spls.num_components = 2
+        return spls
