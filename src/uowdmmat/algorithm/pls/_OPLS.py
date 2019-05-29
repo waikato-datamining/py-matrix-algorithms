@@ -18,7 +18,7 @@ from typing import Optional, List
 from uowdmmat.algorithm.pls import AbstractSingleResponsePLS, AbstractPLS, PLS1
 from uowdmmat.core import real
 from uowdmmat.core.matrix import Matrix, factory
-from uowdmmat.meta import switch
+from uowdmmat.meta import switch, default, case
 
 
 class OPLS(AbstractSingleResponsePLS):
@@ -76,14 +76,14 @@ class OPLS(AbstractSingleResponsePLS):
         :param name:    The name of the matrix.
         :return:        The matrix, None if not available.
         """
-        with switch(name) as case:
+        with switch(name):
             if case('P_orth'):
                 return self.P_orth
             if case('W_orth'):
                 return self.W_orth
             if case('T_orth'):
                 return self.T_orth
-            if case():
+            if default():
                 return None
 
     def has_loadings(self) -> bool:

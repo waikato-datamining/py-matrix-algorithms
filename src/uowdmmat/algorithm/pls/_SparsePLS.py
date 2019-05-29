@@ -19,7 +19,7 @@ from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
 from ._NIPALS import NIPALS
 from ...core import ZERO, real
 from ...core.matrix import Matrix, factory
-from ...meta import switch
+from ...meta import switch, case, default
 from ...transformation import Standardize
 
 
@@ -103,12 +103,12 @@ class SparsePLS(AbstractSingleResponsePLS):
         :param name:    The name of the matrix.
         :return:        The matrix, None if not available.
         """
-        with switch(name) as case:
+        with switch(name):
             if case('W'):
                 return self.W
             if case('B'):
                 return self.B_pls
-            if case():
+            if default():
                 return None
 
     def has_loadings(self) -> bool:

@@ -21,7 +21,7 @@ from ._SIMPLS import SIMPLS
 from ...core import real, ZERO, ONE
 from ...core.matrix import Matrix, factory
 from ...core.utils import sqrt
-from ...meta import switch
+from ...meta import switch, case
 
 
 class PRM(AbstractSingleResponsePLS):
@@ -93,7 +93,7 @@ class PRM(AbstractSingleResponsePLS):
                 'W']
 
     def get_matrix(self, name: str) -> Optional[Matrix]:
-        with switch(name) as case:
+        with switch(name):
             if case('B'):
                 return self.final_regression_coefficients
             if case('Wr'):

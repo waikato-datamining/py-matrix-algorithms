@@ -19,7 +19,7 @@ from typing import Optional, List
 from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
 from ...core import ZERO, real, ONE, NAN
 from ...core.matrix import Matrix, factory
-from ...meta import switch, break_
+from ...meta import switch, break_, case
 from ...transformation import Center
 
 
@@ -120,7 +120,7 @@ class DIPLS(AbstractSingleResponsePLS):
             return 'Number of source and target samples has to be > 1.'
 
         # Initialise Xs, Xt, X, y
-        with switch(self.model_adaption_strategy) as case:
+        with switch(self.model_adaption_strategy):
             if case(ModelAdaptionStrategy.UNSUPERVISED):
                 X_s: Matrix = predictors.get_rows((0, self.ns))
                 X_t: Matrix = predictors.get_rows((self.ns, predictors.num_rows()))
@@ -217,7 +217,7 @@ class DIPLS(AbstractSingleResponsePLS):
         recentered: Optional[Matrix] = None
 
         # Recenter
-        with switch(self.model_adaption_strategy) as case:
+        with switch(self.model_adaption_strategy):
             if case(ModelAdaptionStrategy.UNSUPERVISED):
                 recentered = self.X_t_center.transform(predictors)
                 break_()
