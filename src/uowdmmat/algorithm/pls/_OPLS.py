@@ -15,10 +15,12 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import Optional, List
 
-from uowdmmat.algorithm.pls import AbstractSingleResponsePLS, AbstractPLS, PLS1
-from uowdmmat.core import real
-from uowdmmat.core.matrix import Matrix, factory
-from uowdmmat.meta import switch, default, case
+from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
+from ._AbstractPLS import AbstractPLS
+from ._PLS1 import PLS1
+from ...core import real
+from ...core.matrix import Matrix, factory
+from ...meta import switch, default, case
 
 
 class OPLS(AbstractSingleResponsePLS):
