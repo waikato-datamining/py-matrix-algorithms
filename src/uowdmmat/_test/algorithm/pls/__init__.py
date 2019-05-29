@@ -21,3 +21,4 @@ from ._KernelPLSTest import KernelPLSTest
 from ._NIPALSTest import NIPALSTest
 from ._SIMPLSTest import SIMPLSTest
 from ._DIPLSTest import DIPLSTest
+from ._OPLSTest import OPLSTest
