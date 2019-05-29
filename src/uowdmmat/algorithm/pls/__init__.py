@@ -25,3 +25,4 @@ from ._SIMPLS import SIMPLS
 from ._DIPLS import DIPLS
 from ._OPLS import OPLS
 from ._SparsePLS import SparsePLS
+from ._PRM import PRM
