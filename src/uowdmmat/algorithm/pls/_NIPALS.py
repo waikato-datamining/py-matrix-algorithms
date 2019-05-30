@@ -107,6 +107,10 @@ class NIPALS(AbstractMultiResponsePLS):
 
         eps: real = real(1e-10)
         for k in range(num_components):
+            if Y.transpose().mul(Y).all(lambda e: e < eps):
+                self.logger.warning('Y residual constant at iteration ' + str(k))
+                break
+
             res: NipalsLoopResult = self.nipals_loop(X, Y)
             xk_weight: Matrix = res.X_weights
             yk_weight: Matrix = res.Y_weights
@@ -140,9 +144,9 @@ class NIPALS(AbstractMultiResponsePLS):
             self.Y_loadings.set_column(k, yk_loading)
 
         self.X = X
-        self.X_rotations = self.X_weights.mul((self.X_loadings.transpose().mul(self.X_weights)).inverse())
+        self.X_rotations = self.X_weights.mul((self.X_loadings.transpose().mul(self.X_weights)).pseudo_inverse())
         if Y.num_columns() > 1:
-            self.Y_rotations = self.Y_weights.mul((self.Y_loadings.transpose().mul(self.Y_weights)).inverse())
+            self.Y_rotations = self.Y_weights.mul((self.Y_loadings.transpose().mul(self.Y_weights)).pseudo_inverse())
         else:
             self.Y_rotations = factory.filled(1, 1, ONE)
 
@@ -205,7 +209,7 @@ class NIPALS(AbstractMultiResponsePLS):
                 Y_weight = Y_weight.div(Y_weight.norm2() + eps)
 
             # 4) Calculate ykScores
-            Y_score: Matrix = Y.mul(Y_weight).div(Y_weight.norm2() + eps)
+            Y_score: Matrix = Y.mul(Y_weight).div(Y_weight.norm2_squared() + eps)
 
             X_weight_diff: Matrix = X_weight.sub(X_weight_old)
 
@@ -216,6 +220,7 @@ class NIPALS(AbstractMultiResponsePLS):
                 break
 
             # Update stopping conditions
+            X_weight_old = X_weight
             iterations += 1
 
         return NipalsLoopResult(X_weight, Y_weight, iterations)
@@ -268,8 +273,6 @@ class NIPALS(AbstractMultiResponsePLS):
         self.Y_weights = None
         self.coef = None
         self.X = None
-        self.norm_Y_weights = False
-        self.deflation_mode = DeflationMode.REGRESSION
         self.X_rotations = None
         self.Y_rotations = None
         self.standardize_X = Standardize()

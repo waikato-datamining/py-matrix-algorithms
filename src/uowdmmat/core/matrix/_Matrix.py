@@ -612,6 +612,9 @@ class Matrix:
     def is_square(self):
         return self.num_rows() == self.num_columns()
 
+    def pseudo_inverse(self):
+        return Matrix(np.linalg.pinv(self.data))
+
 
 def must_be_row_vector(vector: 'Matrix'):
     if not vector.is_row_vector():
