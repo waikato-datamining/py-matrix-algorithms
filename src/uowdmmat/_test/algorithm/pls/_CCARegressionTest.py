@@ -1,4 +1,4 @@
-#  __init__.py
+#  _CCARegressionTest.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,15 +13,26 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 from ._AbstractPLSTest import AbstractPLSTest
-from ._PLS1Test import PLS1Test
-from ._VCPLSTest import VCPLSTest
-from ._KernelPLSTest import KernelPLSTest
-from ._NIPALSTest import NIPALSTest
-from ._SIMPLSTest import SIMPLSTest
-from ._DIPLSTest import DIPLSTest
-from ._OPLSTest import OPLSTest
-from ._SparsePLSTest import SparsePLSTest
-from ._PRMTest import PRMTest
-from ._CCARegressionTest import CCARegressionTest
+from ...test.misc import TestRegression
+from ....algorithm.pls import CCARegression, DeflationMode
+
+
+class CCARegressionTest(AbstractPLSTest[CCARegression]):
+    """
+    Test case for the NIPALS algorithm.
+    """
+    @TestRegression
+    def deflation_mode_canonical(self):
+        self.subject.deflation_mode = DeflationMode.CANONICAL
+
+    @TestRegression
+    def deflation_mode_regression(self):
+        self.subject.deflation_mode = DeflationMode.REGRESSION
+
+    @TestRegression
+    def norm_Y_weights_true(self):
+        self.subject.norm_Y_weights = True
+
+    def instantiate_subject(self) -> CCARegression:
+        return CCARegression()

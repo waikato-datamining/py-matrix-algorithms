@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from ._AbstractPLSTest import AbstractPLSTest
 from ...test.misc import TestRegression
-from ....algorithm.pls import OPLS, NIPALS, KernelPLS, PLS1, SIMPLS, SparsePLS, PRM
+from ....algorithm.pls import OPLS, NIPALS, KernelPLS, PLS1, SIMPLS, SparsePLS, PRM, CCARegression
 
 
 class OPLSTest(AbstractPLSTest[OPLS]):
@@ -39,6 +39,10 @@ class OPLSTest(AbstractPLSTest[OPLS]):
     @TestRegression
     def base_SIMPLS(self):
         self.subject.base_PLS = SIMPLS()
+
+    @TestRegression
+    def base_CCARegression(self):
+        self.subject.base_PLS = CCARegression()
 
     @TestRegression
     def base_PRM(self):
