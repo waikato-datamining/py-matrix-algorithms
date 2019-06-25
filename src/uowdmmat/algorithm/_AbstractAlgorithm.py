@@ -15,6 +15,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from abc import abstractmethod
 
+from ..core.matrix import Matrix
 from ..core import LoggingObject
 
 
@@ -40,6 +41,16 @@ class AbstractAlgorithm(LoggingObject):
         """
         super().reset()
         self.initialised = False
+        
+    @abstractmethod
+    def transform(self, predictors: Matrix) -> Matrix:
+        """
+        Implements transformation on a set of predictor data.
+        
+        :param predictors:  Predictor values. 
+        :return:            Predicted values.
+        """
+        pass
 
     @abstractmethod
     def to_string(self) -> str:
