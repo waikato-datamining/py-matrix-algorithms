@@ -14,6 +14,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from abc import abstractmethod
+from typing import Optional
 
 from .matrix import Matrix
 from ._Filter import Filter
@@ -25,7 +26,7 @@ class SupervisedFilter(Filter):
     training before their transform method can be used.
     """
     @abstractmethod
-    def initialize(self, predictors: Matrix, response: Matrix) -> Matrix:
+    def initialize(self, predictors: Matrix, response: Matrix) -> Optional[str]:
         """
         Initialises using the provided data.
         

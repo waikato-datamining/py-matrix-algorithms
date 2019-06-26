@@ -53,7 +53,7 @@ class CCAFilter(AbstractAlgorithm, SupervisedFilter):
         self.proj_X = None
         self.proj_Y = None
 
-    def initialize(self, x: Optional[Matrix] = None, y: Optional[Matrix] = None) -> str:
+    def initialize(self, x: Optional[Matrix] = None, y: Optional[Matrix] = None) -> Optional[str]:
         if x is None or y is None:
             super().initialize()
             self.kcca = 1

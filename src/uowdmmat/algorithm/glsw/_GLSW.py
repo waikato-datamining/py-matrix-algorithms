@@ -35,7 +35,7 @@ class GLSW(AbstractAlgorithm, SupervisedFilter):
         super().reset()
         self.G = None
 
-    def initialize(self, x1: Optional[Matrix] = None, x2: Optional[Matrix] = None) -> str:
+    def initialize(self, x1: Optional[Matrix] = None, x2: Optional[Matrix] = None) -> Optional[str]:
         if x1 is None and x2 is None:
             super().initialize()
             self.alpha = 1e-3
@@ -46,7 +46,7 @@ class GLSW(AbstractAlgorithm, SupervisedFilter):
 
             self.reset()
 
-            result: str = self.check(x1, x2)
+            result: Optional[str] = self.check(x1, x2)
 
             if result is None:
                 result = self.do_initialize(x1, x2)
