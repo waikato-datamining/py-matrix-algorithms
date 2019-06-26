@@ -1,4 +1,4 @@
-#  _AbstractAlgorithm.py
+#  _Filter.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,37 +13,23 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
-from ..core import LoggingObject
+from .matrix import Matrix
 
 
-class AbstractAlgorithm(LoggingObject):
+class Filter(ABC):
     """
-    Ancestor for algorithms.
+    Filter API that exposes a method transform(Matrix) which takes
+    a matrix and returns a matrix based on this filter's transformation rules.
     """
-    def __init__(self):
-        super().__init__()
-        self.initialised: bool = False  # Whether the algorithm has been initialised.
-
-    def is_initialised(self):
-        """
-        Returns whether the algorithm has been trained.
-
-        :return:    True if trained.
-        """
-        return self.initialised
-
-    def reset(self):
-        """
-        Resets the scheme.
-        """
-        super().reset()
-        self.initialised = False
-
     @abstractmethod
-    def to_string(self) -> str:
-        pass
+    def transform(self, predictors: Matrix) -> Matrix:
+        """
+        Transform a given matrix into another matrix based on the
+        filter's implementation.
 
-    def __str__(self):
-        return self.to_string()
+        :param predictors:  Input matrix.
+        :return:            Transformed matrix.
+        """
+        pass

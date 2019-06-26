@@ -18,6 +18,7 @@ from typing import Optional, Tuple
 
 from math import sqrt
 
+from ...core import Filter
 from .._AbstractAlgorithm import AbstractAlgorithm
 from .approxfun import NegEntropyApproximationFunction, LogCosH
 from ...core.error import MatrixAlgorithmsError
@@ -26,7 +27,7 @@ from ...core.matrix.factory import randn, zeros
 from ...transformation import Center
 
 
-class FastICA(AbstractAlgorithm):
+class FastICA(AbstractAlgorithm, Filter):
     def __init__(self):
         super().__init__()
         self.num_components: int = 5

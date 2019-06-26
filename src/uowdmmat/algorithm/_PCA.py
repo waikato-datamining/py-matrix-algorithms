@@ -15,16 +15,13 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import Optional, List
 
-from uowdmmat.core import utils
-from uowdmmat.core.matrix import factory
-from uowdmmat.transformation import Center, Standardize
-from ..core import real
-from ..core.matrix import Matrix
-from ..transformation import AbstractTransformation
+from ..transformation import Center, Standardize, AbstractTransformation
+from ..core import real, utils, Filter
+from ..core.matrix import Matrix, factory
 from ._AbstractAlgorithm import AbstractAlgorithm
 
 
-class PCA(AbstractAlgorithm):
+class PCA(AbstractAlgorithm, Filter):
     def __init__(self):
         super().__init__()
         self.variance: real = real(0.95)

@@ -16,10 +16,11 @@
 
 from abc import abstractmethod, ABC
 
+from ..core import Filter
 from ..core.matrix import Matrix
 
 
-class AbstractTransformation(ABC):
+class AbstractTransformation(Filter, ABC):
     def __init__(self):
         self.configured: bool = False
 
