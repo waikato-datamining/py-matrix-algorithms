@@ -15,14 +15,14 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import Optional
 
-from ..core import Filter
+from ..core import SupervisedFilter
 from ._AbstractAlgorithm import AbstractAlgorithm
 from ..core import real
 from ..core.matrix import Matrix, factory
 from ..transformation import Center
 
 
-class CCAFilter(AbstractAlgorithm, Filter):
+class CCAFilter(AbstractAlgorithm, SupervisedFilter):
     def __init__(self):
         super().__init__()
         self.lambda_X: real = real(1e-2)

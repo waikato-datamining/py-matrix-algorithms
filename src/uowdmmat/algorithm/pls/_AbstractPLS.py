@@ -16,13 +16,13 @@
 from abc import abstractmethod
 from typing import List, Optional
 
-from ...core import Filter
+from ...core import SupervisedFilter
 from ...algorithm import AbstractAlgorithm
 from ...core import PreprocessingType
 from ...core.matrix import Matrix
 
 
-class AbstractPLS(AbstractAlgorithm, Filter):
+class AbstractPLS(AbstractAlgorithm, SupervisedFilter):
     def __init__(self):
         super().__init__()
         self.preprocessing_type: PreprocessingType = PreprocessingType.NONE  # The preprocessing type to perform

@@ -1,4 +1,4 @@
-#  __init__.py
+#  _SupervisedFilter.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,10 +13,24 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from abc import abstractmethod
 
-from ._types import real, ZERO, ONE, NAN, INF, NEG_INF
-from ._LoggingObject import LoggingObject
-from ._PreprocessingType import PreprocessingType
+from .matrix import Matrix
 from ._Filter import Filter
-from ._MultiFilter import MultiFilter
-from ._SupervisedFilter import SupervisedFilter
+
+
+class SupervisedFilter(Filter):
+    """
+    Interface for filters which are supervised, and therefore require
+    training before their transform method can be used.
+    """
+    @abstractmethod
+    def initialize(self, predictors: Matrix, response: Matrix) -> Matrix:
+        """
+        Initialises using the provided data.
+        
+        :param predictors:  The input data.
+        :param response:    The dependent variable(s).
+        :return:            None if successful, otherwise error message.
+        """
+        pass
