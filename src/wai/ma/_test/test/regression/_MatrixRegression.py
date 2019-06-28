@@ -15,8 +15,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import Tuple, List
 
-from uowdmmat.core.matrix import helper
-from ....core.matrix import Matrix
+from ....core.matrix import Matrix, helper
 from ._AbstractRegression import AbstractRegression
 
 

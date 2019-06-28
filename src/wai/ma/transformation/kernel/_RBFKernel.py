@@ -13,10 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from uowdmmat.core import ONE, real, NAN
-from uowdmmat.core.matrix import Matrix
-from uowdmmat.core.utils import exp
-from uowdmmat.transformation.kernel._AbstractKernel import AbstractKernel
+from ...core import ONE, real, NAN
+from ...core.matrix import Matrix
+from ...core.utils import exp
+from ._AbstractKernel import AbstractKernel
 
 
 class RBFKernel(AbstractKernel):

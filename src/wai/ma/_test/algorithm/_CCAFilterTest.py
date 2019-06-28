@@ -15,10 +15,10 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import List
 
-from uowdmmat._test.test import AbstractRegressionTest, T
-from uowdmmat._test.test.misc import TestRegression, Tags, TestDataset
-from uowdmmat.algorithm import CCAFilter
-from uowdmmat.core.matrix import Matrix
+from ..test import AbstractRegressionTest, T
+from ..test.misc import TestRegression, Tags, TestDataset
+from ...algorithm import CCAFilter
+from ...core.matrix import Matrix
 
 
 class CCAFilterTest(AbstractRegressionTest[CCAFilter]):
