@@ -23,6 +23,6 @@ Github
 Steps:
 * start new release (version: `vX.Y.Z`)
 * enter release notes, i.e., significant changes since last release
-* upload `python-matrix-algorithms-X.Y.Z.tar.gz` previously generated with `setyp.py`
+* upload `python-matrix-algorithms-X.Y.Z.tar.gz` previously generated with `setup.py`
 * publish
 

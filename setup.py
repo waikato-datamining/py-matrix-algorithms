@@ -14,11 +14,10 @@
 # setup.py
 # Copyright (C) 2018 Fracpete (fracpete at waikato dot ac dot nz)
 
-import os
-from setuptools import setup
+from setuptools import setup, find_namespace_packages
 
 
-def _read(f):
+def _read(f) -> bytes:
     """
     Reads in the content of the file.
     :param f: the file to read
@@ -30,7 +29,7 @@ def _read(f):
 
 
 setup(
-    name="py-matrix-algorithms",
+    name="wai.ma",
     description="Python library of 2-dimensional matrix algorithms.",
     long_description=(
         _read('DESCRIPTION.rst') + b'\n' +
@@ -46,9 +45,9 @@ setup(
     package_dir={
         '': 'src'
     },
-    packages=[
-        "algorithm",
-        "transformation",
+    packages=find_namespace_packages(where="src"),
+    namespace_packages=[
+        "wai"
     ],
     version="0.0.1",
     author='Peter "fracpete" Reutemann',
@@ -56,4 +55,5 @@ setup(
     install_requires=[
         "numpy"
     ],
+    include_package_data=True
 )
