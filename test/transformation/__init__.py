@@ -19,3 +19,4 @@ from ._PassThroughTest import PassThroughTest
 from ._CenterTest import CenterTest
 from ._StandardizeTest import StandardizeTest
 from ._RowNormTest import RowNormTest
+from ._SavitzkyGolayTest import SavitzkyGolayTest
