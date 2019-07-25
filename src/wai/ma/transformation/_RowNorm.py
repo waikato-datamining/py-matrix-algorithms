@@ -40,7 +40,6 @@ class RowNorm(AbstractTransformation):
         for i in range(self.std_devs.num_rows()):
             if self.std_devs.get(i, 0) == real(0):
                 self.std_devs.set(i, 0, 1)
-        self.configured = True
 
     def do_transform(self, data: Matrix) -> Matrix:
         result = data.copy()
