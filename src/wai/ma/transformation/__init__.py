@@ -17,6 +17,7 @@
 # Aliases
 from ._AbstractTransformation import AbstractTransformation
 from ._Center import Center
+from ._FFT import FFT, OutputMode
 from ._RowNorm import RowNorm
 from ._Standardize import Standardize
 from ._SavitzkyGolay import SavitzkyGolay

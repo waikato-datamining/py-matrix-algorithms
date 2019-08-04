@@ -45,6 +45,7 @@ Planned:
 * [Savitzky-Golay]()
 * [Savitzky-Golay 2]()
 * [Standardize]()
+* [FFT]()
 
 ## Installation
 

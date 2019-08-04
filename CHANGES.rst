@@ -10,3 +10,8 @@ Changelog
 -------------------
 
 - Modified RowNorm to reconfigure itself for every matrix it sees.
+
+0.0.3 (????-??-??)
+-------------------
+
+- Added FFT as a transformation.
