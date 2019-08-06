@@ -14,73 +14,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from enum import Enum
-from typing import Tuple
 
 import numpy as np
 
 from ..core.matrix import Matrix
 from ._AbstractTransformation import AbstractTransformation
-
-
-class FFT(AbstractTransformation):
-    def __init__(self):
-        super().__init__()
-
-        # Options
-        self.orthonormalisation: bool = False
-        self.output_mode: OutputMode = OutputMode.AMPLITUDE_ONLY
-
-    def configure(self, data: Matrix):
-        # No config needed
-        self.configured = True
-
-    def do_transform(self, data: Matrix) -> Matrix:
-        return Matrix(
-            format_output(
-                self.output_mode,
-                fft(data.data, self.orthonormalisation)
-            )
-        )
-
-    def do_inverse_transform(self, data: Matrix) -> Matrix:
-        return Matrix(
-            ifft(
-                inverse_format_output(self.output_mode, data.data),
-                self.orthonormalisation
-            )
-        )
-
-
-def fft(array: np.ndarray, orthonormalise: bool) -> np.ndarray:
-    """
-    Gets the FFT of the given array.
-
-    :param array:           The array to FFT.
-    :param orthonormalise:  Whether to use orthogonal normalisation.
-    :return:                The FFT of the array.
-    """
-    return np.fft.fftshift(
-        np.fft.fft(
-            array,
-            axis=1,
-            norm="ortho" if orthonormalise else None
-        )
-    )
-
-
-def ifft(array: np.ndarray, orthonormalise: bool) -> np.ndarray:
-    """
-    Gets the inverse FFT of the given array.
-
-    :param array:           The array to inverse FFT.
-    :param orthonormalise:  Whether to use orthogonal normalisation.
-    :return:                The inverse FFT of the array.
-    """
-    return np.fft.ifft(
-        np.fft.ifftshift(array),
-        axis=1,
-        norm="ortho" if orthonormalise else None
-    )
 
 
 class OutputMode(Enum):
@@ -96,89 +34,270 @@ class OutputMode(Enum):
     AMPL_ANGLE_PAIRS = 12
 
 
-def pairwise_concatenate(array1: np.ndarray, array2: np.ndarray) -> np.ndarray:
-    """
-    Concatenate the columns of two arrays in order of matching pairs.
-    Inverse function of pairwise_separate.
+class FFT(AbstractTransformation):
+    def __init__(self):
+        super().__init__()
 
-    :param array1:  The first array.
-    :param array2:  The second array.
-    :return:        The concatenated array.
-    """
-    # Create a list of column slices
-    slices = []
+        # Options
+        self.orthonormalisation: bool = False
+        self.output_mode: OutputMode = OutputMode.AMPLITUDE_ONLY
 
-    # Add the columns from the source arrays
-    for i in range(array1.shape[1]):
-        slices.append(array1[:, i])
-        slices.append(array2[:, i])
+    def __setattr__(self, key, value):
+        # Can set output mode by int as well
+        if key == "output_mode" and isinstance(value, int):
+            value = OutputMode(value)
 
-    # Concatenate the columns
-    return np.stack(slices, axis=1)
+        # Otherwise just as normal
+        super().__setattr__(key, value)
+
+    def configure(self, data: Matrix):
+        # No config needed
+        self.configured = True
+
+    def do_transform(self, data: Matrix) -> Matrix:
+        samples: np.ndarray = data.data
+
+        fourier: np.ndarray = self.fft(samples)
+
+        internal_formatted: np.ndarray = self.internal_format(fourier)
+
+        output_formatted: np.ndarray = self.format_output(internal_formatted)
+
+        return Matrix(output_formatted)
+
+    def do_inverse_transform(self, data: Matrix) -> Matrix:
+        output_formatted: np.ndarray = data.data
+
+        internal_formatted: np.ndarray = self.inverse_format_output(output_formatted)
+
+        fourier: np.ndarray = self.internal_unformat(internal_formatted)
+
+        samples: np.ndarray = self.ifft(fourier)
+
+        return Matrix(samples)
+
+    def fft(self, array: np.ndarray) -> np.ndarray:
+        """
+        Gets the FFT of the given array.
+
+        :param array:           The array to FFT.
+        :return:                The FFT of the array.
+        """
+        return np.fft.fftshift(
+            np.fft.fft(
+                array,
+                axis=1,
+                norm="ortho" if self.orthonormalisation else None
+            )
+        )
+
+    def ifft(self, array: np.ndarray) -> np.ndarray:
+        """
+        Gets the inverse FFT of the given array.
+
+        :param array:           The array to inverse FFT.
+        :return:                The inverse FFT of the array.
+        """
+        return np.fft.ifft(
+            np.fft.ifftshift(array),
+            axis=1,
+            norm="ortho" if self.orthonormalisation else None
+        )
+
+    @staticmethod
+    def internal_format(fourier: np.ndarray) -> np.ndarray:
+        """
+        Formats the Fourier transform (complex) array into a real
+        array consisting of the real components, optionally paired with
+        the necessary imaginary components of the complex numbers.
+
+        :param fourier:     The result of the FFT.
+        :return:            The internally-formatted array.
+        """
+        # Get the number of columns in the array
+        num_columns: int = fourier.shape[1]
+
+        # Whether we need the imaginary component of the Nyquist frequency
+        need_nyquist: bool = num_columns % 2 == 0
+
+        # Initialise the formatted columns with the real part of the zero-frequency term
+        columns = [np.real(fourier[:, num_columns // 2])]
+
+        # Add the real and imaginary parts of the positive frequencies
+        for i in range(num_columns // 2 + 1, num_columns):
+            column = fourier[:, i]
+            columns.append(np.real(column))
+            columns.append(np.imag(column))
+
+        # Add the real part of the Nyquist frequency if needed
+        if need_nyquist:
+            columns.append(np.real(fourier[:, 0]))
+
+        # Return the stacked columns
+        return np.stack(columns, axis=1)
+
+    @staticmethod
+    def internal_unformat(internal_formatted: np.ndarray) -> np.ndarray:
+        """
+        Inverse of internal format. Restores FFT result from internally-formatted
+        array.
+
+        :param internal_formatted:  The internally-formatted array.
+        :return:                    The FFT.
+        """
+        # Get the number of columns
+        num_columns: int = internal_formatted.shape[1]
+
+        # Work out if we have a Nyquist frequency component
+        has_nyquist: bool = num_columns % 2 == 0
+
+        # Create lists of the real and imaginary columns,
+        # initialised with the zero-frequency term
+        real_columns = [internal_formatted[:, 0]]
+        imag_columns = [np.zeros_like(real_columns[0])]
+
+        # Add the formatted columns to their respective lists
+        for i in range(1, num_columns):
+            respective_list = real_columns if i % 2 == 1 else imag_columns
+            respective_list.append(internal_formatted[:, i])
+
+        # Add the (zero) imaginary part of the Nyquist term,
+        # if it's present
+        if has_nyquist:
+            imag_columns.append(np.zeros_like(real_columns[0]))
+
+        # Recreate the negative frequencies
+        real_columns = [column for column in reversed(real_columns[1:])] + real_columns
+        imag_columns = [-1 * column for column in reversed(imag_columns[1:])] + imag_columns
+
+        # If we has a Nyquist frequency, we now have two,
+        # so discard the end one
+        if has_nyquist:
+            real_columns = real_columns[:-1]
+            imag_columns = imag_columns[:-1]
+
+        # Recompose the real and imaginary parts
+        real = np.stack(real_columns, axis=1)
+        imag = 1j * np.stack(imag_columns, axis=1)
+
+        # Return the complex sum
+        return real + imag
+
+    def format_output(self, array: np.ndarray) -> np.ndarray:
+        """
+        Formats the (complex) output array based on the given mode. Inverse
+        function of inverse_format_output.
+
+        :param array:   The complex array.
+        :return:        The formatted array
+        """
+        if self.output_mode is OutputMode.REAL_COMPONENT_ONLY:
+            return format_real_component_only(array)
+        elif self.output_mode is OutputMode.IMAG_COMPONENT_ONLY:
+            return format_imag_component_only(array)
+        elif self.output_mode is OutputMode.REAL_AND_IMAG_PAIRS:
+            return format_real_and_imag_pairs(array)
+        elif self.output_mode is OutputMode.AMPLITUDE_ONLY:
+            return format_amplitude_only(array)
+        elif self.output_mode is OutputMode.PHASE_ANGLE_ONLY:
+            return format_phase_angle_only(array)
+        elif self.output_mode is OutputMode.AMPL_ANGLE_PAIRS:
+            return format_ampl_angle_pairs(array)
+
+    def inverse_format_output(self, array: np.ndarray) -> np.ndarray:
+        """
+        Removes the formatting on the given array for the given output mode.
+        Inverse function of format_output.
+
+        :param array:   The formatted array.
+        :return:        The unformatted array.
+        """
+        if self.output_mode is OutputMode.REAL_AND_IMAG_PAIRS:
+            return inverse_format_real_and_imag_pairs(array)
+        elif self.output_mode is OutputMode.AMPL_ANGLE_PAIRS:
+            return inverse_format_ampl_angle_pairs(array)
+        else:
+            raise ValueError("Inverse transform only available for modes pair modes, not " + self.output_mode.name)
 
 
-def pairwise_separate(array: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Separates an array into two sub-arrays, one with the even columns
-    and one with the odd columns of the source. Inverse function of
-    pairwise_concatenate.
+def format_real_component_only(array: np.ndarray) -> np.ndarray:
+    columns = [array[:, 0]]
 
-    :param array:   The source array to separate.
-    :return:        The two sub-arrays.
-    """
-    # Create lists to hold the column slices
-    slices1, slices2 = [], []
+    for i in range(1, array.shape[1], 2):
+        columns.append(array[:, i])
 
-    # Add the columns from the source array to either list
-    for i in range(0, array.shape[1], 2):
-        slices1.append(array[:, i])
-        slices2.append(array[:, i + 1])
-
-    # Return the concatenations of the columns
-    return np.stack(slices1, axis=1), np.stack(slices2, axis=1)
+    return np.stack(columns, axis=1)
 
 
-def format_output(mode: OutputMode, array: np.ndarray) -> np.ndarray:
-    """
-    Formats the (complex) output array based on the given mode. Inverse
-    function of inverse_format_output.
+def format_imag_component_only(array: np.ndarray) -> np.ndarray:
+    columns = [np.zeros_like(array[:, 0])]
 
-    :param mode:    The format mode to use.
-    :param array:   The complex array.
-    :return:        The formatted array
-    """
-    if mode is OutputMode.REAL_COMPONENT_ONLY:
-        return np.real(array)
-    elif mode is OutputMode.IMAG_COMPONENT_ONLY:
-        return np.imag(array)
-    elif mode is OutputMode.REAL_AND_IMAG_PAIRS:
-        return pairwise_concatenate(np.real(array), np.imag(array))
-    elif mode is OutputMode.AMPLITUDE_ONLY:
-        return np.abs(array)
-    elif mode is OutputMode.PHASE_ANGLE_ONLY:
-        return np.angle(array)
-    elif mode is OutputMode.AMPL_ANGLE_PAIRS:
-        return pairwise_concatenate(np.abs(array), np.angle(array))
-    else:
-        raise ValueError("Unexpected output mode: " + str(mode))
+    for i in range(2, array.shape[1], 2):
+        columns.append(array[:, i])
+
+    if array.shape[1] % 2 == 0:
+        columns.append(np.zeros_like(array[:, 0]))
+
+    return np.stack(columns, axis=1)
 
 
-def inverse_format_output(mode: OutputMode, array: np.ndarray) -> np.ndarray:
-    """
-    Removes the formatting on the given array for the given output mode.
-    Inverse function of format_output.
+def format_real_and_imag_pairs(array: np.ndarray) -> np.ndarray:
+    return array
 
-    :param mode:    The format mode to use.
-    :param array:   The formatted array.
-    :return:        The unformatted array.
-    """
-    if mode is OutputMode.REAL_AND_IMAG_PAIRS:
-        real, imag = pairwise_separate(array)
-        return real + 1j * imag
-    elif mode is OutputMode.AMPL_ANGLE_PAIRS:
-        ampl, angle = pairwise_separate(array)
-        return ampl * (np.cos(angle) + 1j * np.sin(angle))
-    elif isinstance(mode, OutputMode):
-        raise ValueError("Inverse transform only available for modes pair modes, not " + mode.name)
-    else:
-        raise ValueError("Unexpected output mode: " + str(mode))
+
+def format_amplitude_only(array: np.ndarray) -> np.ndarray:
+    columns = [array[:, 0] + 0j]
+
+    for i in range(2, array.shape[1], 2):
+        columns.append(array[:, i - 1] + 1j * array[:, i])
+
+    if array.shape[1] % 2 == 0:
+        columns.append(array[:, -1] + 0j)
+
+    return np.abs(np.stack(columns, axis=1))
+
+
+def format_phase_angle_only(array: np.ndarray) -> np.ndarray:
+    columns = [array[:, 0] + 0j]
+
+    for i in range(2, array.shape[1], 2):
+        columns.append(array[:, i - 1] + 1j * array[:, i])
+
+    if array.shape[1] % 2 == 0:
+        columns.append(array[:, -1] + 0j)
+
+    return np.angle(np.stack(columns, axis=1))
+
+
+def format_ampl_angle_pairs(array: np.ndarray) -> np.ndarray:
+    columns = [array[:, 0]]
+
+    for i in range(2, array.shape[1], 2):
+        compl = array[:, i - 1] + 1j * array[:, i]
+        columns.append(np.abs(compl))
+        columns.append(np.angle(compl))
+
+    if array.shape[1] % 2 == 0:
+        columns.append(array[:, -1])
+
+    return np.stack(columns, axis=1)
+
+
+def inverse_format_real_and_imag_pairs(array: np.ndarray) -> np.ndarray:
+    return array
+
+
+def inverse_format_ampl_angle_pairs(array: np.ndarray) -> np.ndarray:
+    columns = [array[:, 0]]
+
+    for i in range(2, array.shape[1], 2):
+        ampl = array[:, i - 1]
+        angle = array[:, i]
+        compl = ampl * (np.cos(angle) + 1j * np.sin(angle))
+        columns.append(np.real(compl))
+        columns.append(np.imag(compl))
+
+    if array.shape[1] % 2 == 0:
+        columns.append(array[:, -1])
+
+    return np.stack(columns, axis=1)
