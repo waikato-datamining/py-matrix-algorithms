@@ -45,7 +45,7 @@ class YGradientEPO(YGradientGLSW):
             super().initialize()
             self.N = 5
         else:
-            super().initialize(x1, x2)
+            return super().initialize(x1, x2)
 
     def get_weight_matrix(self, C: Matrix) -> Matrix:
         """
