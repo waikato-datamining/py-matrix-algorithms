@@ -59,7 +59,7 @@ class OPLS(AbstractSingleResponsePLS):
             super().initialize()
             self.base_PLS = PLS1()
         else:
-            super().initialize(predictors, response)
+            return super().initialize(predictors, response)
 
     def get_matrix_names(self) -> List[str]:
         """
