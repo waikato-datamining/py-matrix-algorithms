@@ -27,7 +27,9 @@ class NIPALS(AbstractMultiResponsePLS):
     Nonlinear Iterative Partial Least Squares
 
     Implementation oriented at scikit-learn's NIPALS implementation:
-    <a href="https://github.com/scikit-learn/scikit-learn/blob/ed5e127b/sklearn/cross_decomposition/pls_.py#L455">Github scikit-learn NIPALS</a>
+    <a href="https://github.com/scikit-learn/scikit-learn/blob/ed5e127b/sklearn/cross_decomposition/pls_.py#L455">
+        Github scikit-learn NIPALS
+    </a>
 
     Parameters:
     - tol: Iterative convergence tolerance

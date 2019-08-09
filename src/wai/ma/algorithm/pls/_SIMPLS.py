@@ -24,7 +24,7 @@ from ...core.utils import sqrt
 class SIMPLS(AbstractSingleResponsePLS):
     def __init__(self):
         super().__init__()
-        self.num_coefficients:int = 0  # The number of coefficients in W to keep (0 keep all)
+        self.num_coefficients: int = 0  # The number of coefficients in W to keep (0 keep all)
         self.W: Optional[Matrix] = None  # The W matrix
         self.B: Optional[Matrix] = None  # The B matrix (used for prediction)
         self.Q: Optional[Matrix] = None  # Q matrix to regress T (XW) on y

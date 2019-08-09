@@ -13,6 +13,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from abc import ABC
 from typing import Optional
 
 from ._AbstractPLS import AbstractPLS
@@ -21,7 +22,7 @@ from ...core.matrix import Matrix, helper
 from ...transformation import AbstractTransformation, Center, Standardize
 
 
-class AbstractSingleResponsePLS(AbstractPLS):
+class AbstractSingleResponsePLS(AbstractPLS, ABC):
     def __init__(self):
         super().__init__()
         self.class_mean: real = NAN  # The class mean

@@ -167,7 +167,7 @@ class SparsePLS(AbstractSingleResponsePLS):
             y_j = y.sub(X.mul(self.B_pls))
 
         if self.debug:
-            self.logger.info('Selected following features ' +\
+            self.logger.info('Selected following features ' +
                              '(' + str(len(self.A)) + '/' + str(X.num_columns()) + '): ')
             l: List[str] = [str(a) for a in sorted(self.A)]
             self.logger.info(','.join(l))

@@ -74,7 +74,7 @@ class SavitzkyGolayFilter(AbstractTransformation):
     coef: List[real] = [real(x) for x in [2.0 / 10.0,
                                           1.0 / 10.0,
                                           0.0,
-                                          -1.0 / 10.0
+                                          -1.0 / 10.0,
                                           -2.0 / 10.0]]
 
     def configure(self, data: Matrix):

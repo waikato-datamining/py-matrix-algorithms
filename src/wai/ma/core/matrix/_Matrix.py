@@ -585,7 +585,7 @@ class Matrix:
         # Get eigenpairs
         eigenpairs = [(self.eigenvalue_decomposition[0].get_from_vector(i),
                        self.eigenvalue_decomposition[1].get_column(i))
-                       for i in range(self.num_rows())]
+                      for i in range(self.num_rows())]
 
         eigenpairs.sort(key=lambda v: v[0], reverse=not ascending)
 

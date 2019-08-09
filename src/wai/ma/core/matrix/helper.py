@@ -120,7 +120,7 @@ def read(filename: str, header: bool, separator: str) -> Matrix:
         for j in range(min(len(cells), result.num_columns())):
             try:
                 result.set(i, j, real(cells[j]))
-            except:
+            except Exception:
                 print('Failed to parse row=' + str(i + 1 if header else i) + ' col=' + str(j) + ': ' + str(cells[j]),
                       file=sys.stderr)
                 print_stack_trace()

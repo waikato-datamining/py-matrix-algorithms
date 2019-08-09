@@ -74,9 +74,15 @@ class AbstractMultiResponsePLS(AbstractPLS):
 
         if result is None:
             if response.num_columns() < self.get_min_columns_response():
-                result = 'Algorithm requires at least ' + str(self.get_min_columns_response()) + ' response columns, found: ' + str(response.num_columns())
+                result = 'Algorithm requires at least ' + \
+                         str(self.get_min_columns_response()) + \
+                         ' response columns, found: ' + \
+                         str(response.num_columns())
             elif self.get_max_columns_response() != -1 and response.num_columns() > self.get_max_columns_response():
-                result = 'Algorithm can handle at most ' + str(self.get_max_columns_response()) + ' response columns, found: ' + str(response.num_columns())
+                result = 'Algorithm can handle at most ' + \
+                         str(self.get_max_columns_response()) + \
+                         ' response columns, found: ' + \
+                         str(response.num_columns())
 
         return result
 
