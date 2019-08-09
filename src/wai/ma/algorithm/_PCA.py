@@ -184,7 +184,7 @@ class PCA(AbstractAlgorithm, Filter):
             values[n] = new_vals
 
         if self.debug:
-            self.get_logger().info('num_cols_act: ' + str(num_cols_act))
+            self.logger.info('num_cols_act: ' + str(num_cols_act))
 
         # Generate matrix based on actual number of retained columns
         result = factory.zeros(data.num_rows(), num_cols_act)
