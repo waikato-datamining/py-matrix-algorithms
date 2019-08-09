@@ -15,4 +15,4 @@ Changelog
 -------------------
 
 - Added FFT as a transformation.
-- Fixed bug in YGradientEPO.initialize(Matrix, Matrix) where any error message wasn't being returned.
+- Fixed bug in initialize(Matrix, Matrix) for YGradientEPO and OPLS where any error message wasn't being returned.
