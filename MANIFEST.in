@@ -2,3 +2,4 @@ recursive-include test *.py
 recursive-include resources *.csv
 include DESCRIPTION.rst
 include CHANGES.rst
+include LICENSE
