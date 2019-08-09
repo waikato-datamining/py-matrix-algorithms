@@ -15,12 +15,13 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import Optional, List
 
+from wai.common import switch, default, case
+
 from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
 from ._AbstractPLS import AbstractPLS
 from ._PLS1 import PLS1
 from ...core import real
 from ...core.matrix import Matrix, factory
-from ...meta import switch, default, case
 
 
 class OPLS(AbstractSingleResponsePLS):

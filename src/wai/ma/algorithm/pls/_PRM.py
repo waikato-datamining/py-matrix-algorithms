@@ -15,13 +15,13 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import Optional, List
 
+from wai.common import switch, case
 
 from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
 from ._SIMPLS import SIMPLS
 from ...core import real, ZERO, ONE
 from ...core.matrix import Matrix, factory
 from ...core.utils import sqrt
-from ...meta import switch, case
 
 
 class PRM(AbstractSingleResponsePLS):

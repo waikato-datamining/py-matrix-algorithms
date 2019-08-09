@@ -13,11 +13,13 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import GenericMeta, Tuple, List, Dict, Any
+from typing import GenericMeta, Tuple, Dict, Any
 from unittest import TestCase, defaultTestLoader
 
+from wai.common.decorator import has_tag
+from wai.common.abc import will_be_abstract
+
 from .misc import TEST_TAG
-from wai.ma.meta import has_tag, will_be_abstract
 
 
 class AbstractRegressionTestMeta(GenericMeta):

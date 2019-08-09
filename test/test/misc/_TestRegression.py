@@ -13,8 +13,9 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from wai.common.decorator import Tag, sequence
+
 from ._Test import Test
-from wai.ma.meta import Tag, decorator_sequence
 
 REGRESSION_TAG = 'regression-method'  # Regression TAG
 
@@ -23,4 +24,4 @@ def TestRegression(method):
     """
     Test decorator that will add the REGRESSION_TAG tag to the executed method.
     """
-    return decorator_sequence(Tag(REGRESSION_TAG), Test)(method)
+    return sequence(Tag(REGRESSION_TAG), Test)(method)

@@ -53,7 +53,8 @@ setup(
     author='Peter "fracpete" Reutemann',
     author_email='fracpete@waikato.ac.nz',
     install_requires=[
-        "numpy"
+        "numpy",
+        "wai.common"
     ],
     include_package_data=True
 )

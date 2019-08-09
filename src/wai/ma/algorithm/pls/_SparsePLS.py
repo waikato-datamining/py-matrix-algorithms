@@ -15,11 +15,12 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import Optional, Set, List
 
+from wai.common import switch, case, default
+
 from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
 from ._NIPALS import NIPALS
 from ...core import ZERO, real
 from ...core.matrix import Matrix, factory
-from ...meta import switch, case, default
 from ...transformation import Standardize
 
 

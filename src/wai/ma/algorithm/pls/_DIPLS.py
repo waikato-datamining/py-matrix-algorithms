@@ -16,10 +16,11 @@
 from enum import Enum, auto
 from typing import Optional, List
 
+from wai.common import switch, break_, case
+
 from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
 from ...core import ZERO, real, ONE, NAN
 from ...core.matrix import Matrix, factory
-from ...meta import switch, break_, case
 from ...transformation import Center
 
 

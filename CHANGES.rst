@@ -16,3 +16,4 @@ Changelog
 
 - Added FFT as a transformation.
 - Fixed bug in initialize(Matrix, Matrix) for YGradientEPO and OPLS where any error message wasn't being returned.
+- Removed utilities to wai.common, and import them back to here.

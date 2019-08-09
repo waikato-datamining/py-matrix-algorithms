@@ -18,10 +18,12 @@ from abc import abstractmethod
 from typing import Optional, List, Union, TypeVar, Generic
 from unittest import TestCase
 
+from wai.common.decorator import has_tag
+
 from ._AbstractRegressionTestMeta import AbstractRegressionTestMeta
 from .misc import TestDataset, TestRegression, REGRESSION_TAG
 from wai.ma.core import real
-from wai.ma.meta import print_stack_trace, has_tag
+from wai.ma.meta import print_stack_trace
 from ._RegressionManager import RegressionManager
 from wai.ma.core.matrix import Matrix
 
