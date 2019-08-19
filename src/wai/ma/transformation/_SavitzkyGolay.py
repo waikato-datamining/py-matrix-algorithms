@@ -90,7 +90,7 @@ class SavitzkyGolay(AbstractTransformation):
         return helper.multi_concat(1, *smoothed_columns)
 
     def do_inverse_transform(self, data: Matrix) -> Matrix:
-        pass
+        raise NotImplementedError("SavitzkyGolay does not have an inverse transform")
 
 
 def determine_coefficients(num_left: int, num_right: int, poly_order: int, der_order: int) -> List[real]:
