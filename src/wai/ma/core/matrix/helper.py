@@ -16,7 +16,7 @@
 import sys
 from functools import partial
 from numbers import Number
-from typing import List
+from typing import List, IO, Union
 
 import numpy as np
 
@@ -93,7 +93,7 @@ def equal(m1: Matrix, m2: Matrix, epsilon: real = real(0)) -> bool:
     return True
 
 
-def read(filename: str, header: bool, separator: str) -> Matrix:
+def read(filename: Union[str, IO[str]], header: bool, separator: str) -> Matrix:
     """
     Reads the matrix from the given CSV file.
 
@@ -102,8 +102,12 @@ def read(filename: str, header: bool, separator: str) -> Matrix:
     :param separator:   The column separator used.
     :return:            The matrix.
     """
-    with open(filename, 'r') as file:
-        lines = [line for line in file]
+    if isinstance(filename, str):
+        with open(filename, 'r') as file:
+            lines = [line for line in file]
+    else:
+        lines = [line for line in filename]
+
     if len(lines) == 0:
         raise RuntimeError('No rows in file: ' + filename)
 
@@ -161,9 +165,12 @@ def data_to_string(data: Matrix, separator: str, num_dec: int, result: List[str]
         result.append(line_gen(row))
 
 
-def write(data: Matrix, filename: str, header: bool, separator: str, num_dec: int, scientific: bool = False):
-    with open(filename, 'w') as file:
-        file.writelines((line + '\n' for line in to_lines(data, header, separator, num_dec, scientific)))
+def write(data: Matrix, filename: Union[str, IO[str]], header: bool, separator: str, num_dec: int, scientific: bool = False):
+    if isinstance(filename, str):
+        with open(filename, 'w') as file:
+            file.writelines((line + '\n' for line in to_lines(data, header, separator, num_dec, scientific)))
+    else:
+        filename.writelines((line + '\n' for line in to_lines(data, header, separator, num_dec, scientific)))
 
 
 def to_string(data: Matrix, header: bool = True, separator: str = '\t', num_dec: int = 6) -> str:
