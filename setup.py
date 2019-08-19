@@ -54,7 +54,8 @@ setup(
     author_email='fracpete@waikato.ac.nz',
     install_requires=[
         "numpy",
-        "wai.common"
+        "wai.common",
+        "wai.test"
     ],
     include_package_data=True
 )

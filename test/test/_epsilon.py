@@ -1,4 +1,4 @@
-#  __init__.py
+#  _epsilon.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,7 +13,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from wai.ma.core import real
 
-from ._TestDataset import TestDataset
-from ._TestRegression import TestRegression, REGRESSION_TAG
-from ._Test import Test, TEST_TAG
+# Tolerance
+EPSILON: real = real(1e-6)

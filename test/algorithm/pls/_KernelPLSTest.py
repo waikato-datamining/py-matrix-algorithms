@@ -13,27 +13,34 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from ._AbstractPLSTest import AbstractPLSTest
-from ...test.misc import TestRegression
+from wai.test.decorators import RegressionTest
+
 from wai.ma.algorithm.pls import KernelPLS
+from wai.ma.core.matrix import Matrix
 from wai.ma.transformation.kernel import LinearKernel, PolyKernel, RBFKernel
 
+from ._AbstractPLSTest import AbstractPLSTest
 
-class KernelPLSTest(AbstractPLSTest[KernelPLS]):
+
+class KernelPLSTest(AbstractPLSTest):
     """
     Test case for the KernelPLS algorithm.
     """
-    @TestRegression
-    def linear_kernel(self):
-        self.subject.kernel = LinearKernel()
+    @classmethod
+    def subject_type(cls):
+        return KernelPLS
 
-    @TestRegression
-    def poly_kernel(self):
-        self.subject.kernel = PolyKernel()
+    @RegressionTest
+    def linear_kernel(self, subject: KernelPLS, *resources: Matrix):
+        subject.kernel = LinearKernel()
+        return self.standard_regression(subject, *resources)
 
-    @TestRegression
-    def rbf_kernel(self):
-        self.subject.kernel = RBFKernel()
+    @RegressionTest
+    def poly_kernel(self, subject: KernelPLS, *resources: Matrix):
+        subject.kernel = PolyKernel()
+        return self.standard_regression(subject, *resources)
 
-    def instantiate_subject(self) -> KernelPLS:
-        return KernelPLS()
+    @RegressionTest
+    def rbf_kernel(self, subject: KernelPLS, *resources: Matrix):
+        subject.kernel = RBFKernel()
+        return self.standard_regression(subject, *resources)

@@ -13,24 +13,25 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import List
+from wai.test.decorators import RegressionTest
+
+from wai.ma.algorithm.glsw import EPO
+from wai.ma.core.matrix import Matrix
 
 from ._GLSWTest import GLSWTest
-from ...test.misc import TestRegression, TestDataset
-from wai.ma.algorithm.glsw import EPO
 
 
-class EPOTest(GLSWTest[EPO]):
-    @TestRegression
-    def n_1(self):
-        self.subject.N = 1
+class EPOTest(GLSWTest):
+    @classmethod
+    def subject_type(cls):
+        return EPO
 
-    @TestRegression
-    def n_3(self):
-        self.subject.N = 3
+    @RegressionTest
+    def n_1(self, subject: EPO, *resources: Matrix):
+        subject.N = 1
+        return self.standard_regression(subject, *resources)
 
-    def get_datasets(self) -> List[TestDataset]:
-        return [TestDataset.BOLTS]
-
-    def instantiate_subject(self) -> EPO:
-        return EPO()
+    @RegressionTest
+    def n_3(self, subject: EPO, *resources: Matrix):
+        subject.N = 3
+        return self.standard_regression(subject, *resources)

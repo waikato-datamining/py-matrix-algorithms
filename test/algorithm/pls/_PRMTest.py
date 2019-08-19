@@ -13,10 +13,12 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from ._AbstractPLSTest import AbstractPLSTest
 from wai.ma.algorithm.pls import PRM
 
+from ._AbstractPLSTest import AbstractPLSTest
 
-class PRMTest(AbstractPLSTest[PRM]):
-    def instantiate_subject(self) -> PRM:
-        return PRM()
+
+class PRMTest(AbstractPLSTest):
+    @classmethod
+    def subject_type(cls):
+        return PRM

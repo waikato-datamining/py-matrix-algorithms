@@ -13,23 +13,30 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from ._AbstractPLSTest import AbstractPLSTest
-from ...test.misc import TestRegression
+from wai.test.decorators import RegressionTest
+
 from wai.ma.algorithm.pls import SIMPLS
+from wai.ma.core.matrix import Matrix
+
+from ._AbstractPLSTest import AbstractPLSTest
 
 
-class SIMPLSTest(AbstractPLSTest[SIMPLS]):
-    @TestRegression
-    def num_coefficients_1(self):
-        self.subject.num_coefficients = 1
+class SIMPLSTest(AbstractPLSTest):
+    @classmethod
+    def subject_type(cls):
+        return SIMPLS
 
-    @TestRegression
-    def num_coefficients_2(self):
-        self.subject.num_coefficients = 2
+    @RegressionTest
+    def num_coefficients_1(self, subject: SIMPLS, *resources: Matrix):
+        subject.num_coefficients = 1
+        return self.standard_regression(subject, *resources)
 
-    @TestRegression
-    def num_coefficients_3(self):
-        self.subject.num_coefficients = 3
+    @RegressionTest
+    def num_coefficients_2(self, subject: SIMPLS, *resources: Matrix):
+        subject.num_coefficients = 2
+        return self.standard_regression(subject, *resources)
 
-    def instantiate_subject(self) -> SIMPLS:
-        return SIMPLS()
+    @RegressionTest
+    def num_coefficients_3(self, subject: SIMPLS, *resources: Matrix):
+        subject.num_coefficients = 3
+        return self.standard_regression(subject, *resources)

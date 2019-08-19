@@ -13,21 +13,31 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from ...test.misc import TestRegression
-from ._AbstractPLSTest import AbstractPLSTest
+from wai.test.decorators import RegressionTest
+
 from wai.ma.algorithm.pls import SparsePLS
+from wai.ma.core.matrix import Matrix
+
+from ._AbstractPLSTest import AbstractPLSTest
 
 
-class SparsePLSTest(AbstractPLSTest[SparsePLS]):
-    @TestRegression
-    def lambda_0(self):
-        self.subject.lambda_ = 0
+class SparsePLSTest(AbstractPLSTest):
+    @classmethod
+    def subject_type(cls):
+        return SparsePLS
 
-    @TestRegression
-    def lambda_05(self):
-        self.subject.lambda_ = 0.001
-
-    def instantiate_subject(self) -> SparsePLS:
+    @classmethod
+    def instantiate_subject(cls) -> SparsePLS:
         spls: SparsePLS = SparsePLS()
         spls.num_components = 2
         return spls
+
+    @RegressionTest
+    def lambda_0(self, subject: SparsePLS, *resources: Matrix):
+        subject.lambda_ = 0
+        return self.standard_regression(subject, *resources)
+
+    @RegressionTest
+    def lambda_05(self, subject: SparsePLS, *resources: Matrix):
+        subject.lambda_ = 0.001
+        return self.standard_regression(subject, *resources)

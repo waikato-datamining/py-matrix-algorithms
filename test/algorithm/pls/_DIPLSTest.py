@@ -13,56 +13,61 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import List
+from wai.test.decorators import RegressionTest, Test
 
-from ._AbstractPLSTest import AbstractPLSTest
-from ...test.misc import TestRegression, Tags, Test
 from wai.ma.algorithm.pls import DIPLS
 from wai.ma.core.matrix import Matrix
 from wai.ma.core.matrix.factory import randn_like
 
+from ._AbstractPLSTest import AbstractPLSTest
+from ...test import Tags
 
-class DIPLSTest(AbstractPLSTest[DIPLS]):
-    @TestRegression
-    def lambda_01(self):
-        self.subject.lambda_ = 0.01
 
-    def setup_regressions(self, subject: DIPLS, input_data: List[Matrix]):
-        x_source_domain: Matrix = input_data[0]
-        y_source_domain: Matrix = input_data[1]
+class DIPLSTest(AbstractPLSTest):
+    @classmethod
+    def subject_type(cls):
+        return DIPLS
+
+    @RegressionTest
+    def lambda_01(self, subject: DIPLS, bolts: Matrix, bolts_response: Matrix):
+        subject.lambda_ = 0.01
+        return self.standard_regression(subject, bolts, bolts_response)
+
+    def standard_regression(self, subject: DIPLS, *resources: Matrix):
+        x_source_domain, y_source_domain = resources
         x_target_domain: Matrix = x_source_domain.add(randn_like(x_source_domain, 0, 1, 2))
         y_target_domain: Matrix = y_source_domain.add(randn_like(y_source_domain, 1, 1, 2))
         x_target_domain_unlabeled: Matrix = x_source_domain.add(randn_like(x_source_domain, 100, 1, 2))
 
+        result = {}
+
         # Initialise supervised
         subject.initialize_supervised(x_source_domain, x_target_domain, y_source_domain, y_target_domain)
-        self.add_default_pls_matrices(subject, x_target_domain, Tags.SUPERVISED)
+        result.update(self.add_default_pls_matrices(subject, x_target_domain, Tags.SUPERVISED))
         subject.reset()
 
         # Initialise unsupervised
         subject.initialize_unsupervised(x_source_domain, x_target_domain, y_source_domain)
-        self.add_default_pls_matrices(subject, x_target_domain, Tags.UNSUPERVISED)
+        result.update(self.add_default_pls_matrices(subject, x_target_domain, Tags.UNSUPERVISED))
         subject.reset()
 
         # Initialise semisupervised
         subject.initialize_semisupervised(x_source_domain, x_target_domain, x_target_domain_unlabeled,
                                           y_source_domain, y_target_domain)
-        self.add_default_pls_matrices(subject, x_target_domain, Tags.SEMISUPERVISED)
+        result.update(self.add_default_pls_matrices(subject, x_target_domain, Tags.SEMISUPERVISED))
+
+        return result
 
     @Test
-    def check_transformed_num_components(self):
-        X: Matrix = self.input_data[0]
+    def check_transformed_num_components(self, subject: DIPLS, bolts: Matrix, bolts_response: Matrix):
+        X, Y = bolts, bolts_response
         X_2: Matrix = X.add(randn_like(X, 0, 0, 2))
-        Y: Matrix = self.input_data[1]
 
         for i in range(1, 5):
-            self.subject.num_components = i
-            self.subject.initialize_unsupervised(X, X_2, Y)
-            transform: Matrix = self.subject.transform(X)
+            subject.num_components = i
+            subject.initialize_unsupervised(X, X_2, Y)
+            transform: Matrix = subject.transform(X)
             self.assertEqual(i, transform.num_columns())
 
             # Reset
-            self.subject = self.instantiate_subject()
-
-    def instantiate_subject(self) -> DIPLS:
-        return DIPLS()
+            subject = self.instantiate_subject()

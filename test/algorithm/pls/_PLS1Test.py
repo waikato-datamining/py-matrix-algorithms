@@ -13,17 +13,15 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import TypeVar
-
-from ._AbstractPLSTest import AbstractPLSTest
 from wai.ma.algorithm.pls import PLS1
 
-T = TypeVar('T', bound=PLS1)
+from ._AbstractPLSTest import AbstractPLSTest
 
 
-class PLS1Test(AbstractPLSTest[T]):
+class PLS1Test(AbstractPLSTest):
     """
     Testcase for the PLS1 algorithm.
     """
-    def instantiate_subject(self) -> PLS1:
-        return PLS1()
+    @classmethod
+    def subject_type(cls):
+        return PLS1

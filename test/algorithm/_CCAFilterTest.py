@@ -13,35 +13,42 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import List
+from typing import Tuple
 
-from ..test import AbstractRegressionTest, T
-from ..test.misc import TestRegression, Tags, TestDataset
+from wai.test.decorators import RegressionTest
 from wai.ma.algorithm import CCAFilter
 from wai.ma.core.matrix import Matrix
 
+from ..test import AbstractMatrixAlgorithmTest, Tags, TestDataset
 
-class CCAFilterTest(AbstractRegressionTest[CCAFilter]):
-    @TestRegression
-    def lambda_X_10(self):
-        self.subject.lambda_X = 10
 
-    @TestRegression
-    def lambda_Y_10(self):
-        self.subject.lambda_Y = 10
+class CCAFilterTest(AbstractMatrixAlgorithmTest):
+    @classmethod
+    def subject_type(cls):
+        return CCAFilter
 
-    def setup_regressions(self, subject: T, input_data: List[Matrix]):
-        X: Matrix = self.input_data[0]
-        Y: Matrix = self.input_data[1]
+    @RegressionTest
+    def lambda_X_10(self, subject: CCAFilter, *resources: Matrix):
+        subject.lambda_X = 10
+        return self.standard_regression(subject, *resources)
 
-        self.subject.initialize(X, Y)
+    @RegressionTest
+    def lambda_Y_10(self, subject: CCAFilter, *resources: Matrix):
+        subject.lambda_Y = 10
+        return self.standard_regression(subject, *resources)
 
-        self.add_regression(Tags.TRANSFORM, self.subject.transform(X))
-        self.add_regression(Tags.PROJECTION + '-X', self.subject.proj_X)
-        self.add_regression(Tags.PROJECTION + '-Y', self.subject.proj_Y)
+    def standard_regression(self, subject: CCAFilter, *resources: Matrix):
+        bolts, bolts_response = resources
 
-    def get_datasets(self) -> List[TestDataset]:
-        return [TestDataset.BOLTS, TestDataset.BOLTS_RESPONSE]
+        subject.initialize(bolts, bolts_response)
 
-    def instantiate_subject(self) -> CCAFilter:
-        return CCAFilter()
+        return {
+            Tags.TRANSFORM: subject.transform(bolts),
+            Tags.PROJECTION + '-X': subject.proj_X,
+            Tags.PROJECTION + '-Y': subject.proj_Y
+        }
+
+    @classmethod
+    def get_datasets(cls) -> Tuple[TestDataset, TestDataset]:
+        return TestDataset.BOLTS, TestDataset.BOLTS_RESPONSE
+

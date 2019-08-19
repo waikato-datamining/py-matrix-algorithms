@@ -13,36 +13,42 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import List
+from abc import ABC
+from typing import Tuple
 
-from ..test import AbstractRegressionTest, T
-from ..test.misc import Test, Tags, TestDataset
+from wai.test.decorators import Test
 from wai.ma.core.matrix import Matrix
+from wai.ma.transformation import AbstractTransformation
+
+from ..test import AbstractMatrixAlgorithmTest, TestDataset, Tags
 
 
-class AbstractTransformationTest(AbstractRegressionTest[T]):
+class AbstractTransformationTest(AbstractMatrixAlgorithmTest, ABC):
     """
     Abstract tranformation test. Regression for transform and inverse-transform.
     """
     @Test
-    def check_inv_transform_eq_input(self):
-        input: Matrix = self.input_data[0]
-        transform: Matrix = self.subject.transform(input)
-        inverse_transform: Matrix = self.subject.inverse_transform(transform)
-
-        # Check if input == inverse_transform
-        is_equal: bool = input.sub(inverse_transform).abs().all(lambda v: v < 1e-7)
-        self.assertTrue(is_equal)
-
-    def setup_regressions(self, subject: T, input_data: List[Matrix]):
-        X: Matrix = input_data[0]
-        subject.configure(X)
-
-        transform: Matrix = subject.transform(X)
+    def check_inv_transform_eq_input(self, subject: AbstractTransformation, bolts: Matrix):
+        transform: Matrix = subject.transform(bolts)
         inverse_transform: Matrix = subject.inverse_transform(transform)
 
-        self.add_regression(Tags.TRANSFORM, transform)
-        self.add_regression(Tags.INVERSE_TRANSFORM, inverse_transform)
+        # Check if input == inverse_transform
+        is_equal: bool = bolts.sub(inverse_transform).abs().all(lambda v: v < 1e-7)
+        self.assertTrue(is_equal)
 
-    def get_datasets(self) -> List[TestDataset]:
-        return [TestDataset.BOLTS]
+    def standard_regression(self, subject: AbstractTransformation, *resources: Matrix):
+        bolts, = resources
+
+        subject.configure(bolts)
+
+        transform: Matrix = subject.transform(bolts)
+        inverse_transform: Matrix = subject.inverse_transform(transform)
+
+        return {
+            Tags.TRANSFORM: transform,
+            Tags.INVERSE_TRANSFORM: inverse_transform
+        }
+
+    @classmethod
+    def get_datasets(cls) -> Tuple[TestDataset]:
+        return TestDataset.BOLTS,

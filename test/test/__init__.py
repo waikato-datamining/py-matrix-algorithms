@@ -13,6 +13,5 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-from ._AbstractRegressionTest import AbstractRegressionTest, T
-from ._RegressionManager import RegressionManager
+from ._AbstractMatrixAlgorithmTest import AbstractMatrixAlgorithmTest
+from ._TestDataset import TestDataset

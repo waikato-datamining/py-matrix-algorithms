@@ -14,30 +14,27 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
-from typing import TypeVar, List, Optional
+from abc import ABC
+from typing import Optional, Tuple
 
-from ...test import AbstractRegressionTest
-from ...test.misc import Test, Tags, TestDataset
+from wai.test.decorators import Test
 from wai.ma.algorithm.pls import AbstractPLS
 from wai.ma.core.matrix import Matrix
 
-T = TypeVar('T', bound=AbstractPLS)
+from ...test import AbstractMatrixAlgorithmTest, TestDataset, Tags
 
 
-class AbstractPLSTest(AbstractRegressionTest[T]):
+class AbstractPLSTest(AbstractMatrixAlgorithmTest, ABC):
     @Test
-    def check_transformed_num_components(self):
-        X: Matrix = self.input_data[0]
-        Y: Matrix = self.input_data[1]
-
+    def check_transformed_num_components(self, subject: AbstractPLS, bolts: Matrix, bolts_response: Matrix):
         for i in range(1, 5):
-            self.subject.num_components = i
-            self.subject.initialize(X, Y)
-            transform: Matrix = self.subject.transform(X)
+            subject.num_components = i
+            subject.initialize(bolts, bolts_response)
+            transform: Matrix = subject.transform(bolts)
             self.assertEqual(i, transform.num_columns())
 
             # Reset
-            self.subject = self.instantiate_subject()
+            subject = self.instantiate_subject()
 
     @staticmethod
     def merge_if_not_empty(tag_1: str, tag_2: str) -> str:
@@ -46,33 +43,36 @@ class AbstractPLSTest(AbstractRegressionTest[T]):
         else:
             return tag_1 + tag_2
 
-    def setup_regressions(self, subject: AbstractPLS, input_data: List[Matrix]):
+    def standard_regression(self, subject: AbstractPLS, *resources: Matrix):
         # Extract data
-        X: Matrix = input_data[0]
-        y: Matrix = input_data[1]
+        bolts, bolts_response = resources
 
         # Initialise PLS
-        results: Optional[str] = subject.initialize(X, y)
+        results: Optional[str] = subject.initialize(bolts, bolts_response)
         if results is not None:
             self.fail('Algorithm#initialize failed with result: ' + results)
 
-        self.add_default_pls_matrices(subject, X)
+        return self.add_default_pls_matrices(subject, bolts)
 
     def add_default_pls_matrices(self, algorithm: AbstractPLS, x: Matrix, sub_tag: str = ''):
         """
         Adds default PLS matrices, that is predictions, transformations, loadings and
         model parameter matrices.
         """
-        self.add_predictions(algorithm, x, sub_tag)
-        self.add_transformation(algorithm, x, sub_tag)
-        self.add_loadings(algorithm, sub_tag)
-        self.add_matrices(algorithm, sub_tag)
+        result = {}
+
+        result.update(self.add_predictions(algorithm, x, sub_tag))
+        result.update(self.add_transformation(algorithm, x, sub_tag))
+        result.update(self.add_loadings(algorithm, sub_tag))
+        result.update(self.add_matrices(algorithm, sub_tag))
+
+        return result
 
     def add_transformation(self, algorithm: AbstractPLS, x: Matrix, sub_tag: str = ''):
         """
         Add transformation to the regression group.
         """
-        self.add_regression(self.merge_if_not_empty(sub_tag, Tags.TRANSFORM), algorithm.transform(x))
+        return {self.merge_if_not_empty(sub_tag, Tags.TRANSFORM): algorithm.transform(x)}
 
     def add_predictions(self, algorithm: AbstractPLS, x: Matrix, sub_tag: str = ''):
         """
@@ -81,7 +81,9 @@ class AbstractPLSTest(AbstractRegressionTest[T]):
         # Add predictions
         if algorithm.can_predict():
             preds: Matrix = algorithm.predict(x)
-            self.add_regression(self.merge_if_not_empty(sub_tag, Tags.PREDICTIONS), preds)
+            return {self.merge_if_not_empty(sub_tag, Tags.PREDICTIONS): preds}
+
+        return {}
 
     def add_loadings(self, algorithm: AbstractPLS, sub_tag: str = ''):
         """
@@ -89,16 +91,22 @@ class AbstractPLSTest(AbstractRegressionTest[T]):
         """
         # Add loadings
         if algorithm.has_loadings():
-            self.add_regression(self.merge_if_not_empty(sub_tag, Tags.LOADINGS), algorithm.get_loadings())
+            return {self.merge_if_not_empty(sub_tag, Tags.LOADINGS): algorithm.get_loadings()}
+
+        return {}
 
     def add_matrices(self, algorithm: AbstractPLS, sub_tag: str = ''):
         """
         Add model matrices to the regression group.
         """
         # Add matrices
+        result = {}
         for matrix_name in algorithm.get_matrix_names():
             tag: str = Tags.MATRIX + '-' + matrix_name
-            self.add_regression(self.merge_if_not_empty(sub_tag, tag), algorithm.get_matrix(matrix_name))
+            result.update({self.merge_if_not_empty(sub_tag, tag): algorithm.get_matrix(matrix_name)})
 
-    def get_datasets(self) -> List[TestDataset]:
-        return [TestDataset.BOLTS, TestDataset.BOLTS_RESPONSE]
+        return result
+
+    @classmethod
+    def get_datasets(cls) -> Tuple[TestDataset, TestDataset]:
+        return TestDataset.BOLTS, TestDataset.BOLTS_RESPONSE

@@ -13,20 +13,22 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from ._AbstractTransformationTest import AbstractTransformationTest
-from ..test.misc import Test
+from wai.test.decorators import Test
+
 from wai.ma.core.matrix import Matrix
 from wai.ma.transformation import PassThrough
 
+from ._AbstractTransformationTest import AbstractTransformationTest
 
-class PassThroughTest(AbstractTransformationTest[PassThrough]):
+
+class PassThroughTest(AbstractTransformationTest):
+    @classmethod
+    def subject_type(cls):
+        return PassThrough
+
     @Test
-    def result_unchanged(self):
-        X: Matrix = self.input_data[0]
-        transform: Matrix = self.subject.transform(X)
+    def result_unchanged(self, subject: PassThrough, bolts: Matrix):
+        transform: Matrix = subject.transform(bolts)
 
-        is_equal: bool = X.sub(transform).abs().all(lambda v: v < 1e-7)
+        is_equal: bool = bolts.sub(transform).abs().all(lambda v: v < 1e-7)
         self.assertTrue(is_equal)
-
-    def instantiate_subject(self) -> PassThrough:
-        return PassThrough()

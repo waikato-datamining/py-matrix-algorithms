@@ -13,13 +13,15 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from ._AbstractPLSTest import AbstractPLSTest
 from wai.ma.algorithm.pls import VCPLS
 
+from ._AbstractPLSTest import AbstractPLSTest
 
-class VCPLSTest(AbstractPLSTest[VCPLS]):
+
+class VCPLSTest(AbstractPLSTest):
     """
     Testcase for the VCPLS algorithm.
     """
-    def instantiate_subject(self) -> VCPLS:
-        return VCPLS()
+    @classmethod
+    def subject_type(cls):
+        return VCPLS

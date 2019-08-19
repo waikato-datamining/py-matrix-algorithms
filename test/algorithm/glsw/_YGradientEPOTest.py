@@ -13,14 +13,12 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import TypeVar
-
-from ._YGradientGLSWTest import YGradientGLSWTest
 from wai.ma.algorithm.glsw import YGradientEPO
 
-T = TypeVar('T', bound=YGradientEPO)
+from ._YGradientGLSWTest import YGradientGLSWTest
 
 
-class YGradientEPOTest(YGradientGLSWTest[T]):
-    def instantiate_subject(self) -> YGradientEPO:
-        return YGradientEPO()
+class YGradientEPOTest(YGradientGLSWTest):
+    @classmethod
+    def subject_type(cls):
+        return YGradientEPO

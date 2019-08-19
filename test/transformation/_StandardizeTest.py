@@ -13,18 +13,23 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from ..test.misc import Test
-from ..transformation import AbstractTransformationTest
+from wai.test.decorators import Test
+
 from wai.ma.core import real
 from wai.ma.core.matrix import Matrix, helper
 from wai.ma.transformation import Standardize
 
+from ..transformation import AbstractTransformationTest
 
-class StandardizeTest(AbstractTransformationTest[Standardize]):
+
+class StandardizeTest(AbstractTransformationTest):
+    @classmethod
+    def subject_type(cls):
+        return Standardize
+
     @Test
-    def check_zero_variance(self):
-        X: Matrix = self.input_data[0]
-        transform: Matrix = self.subject.transform(X)
+    def check_zero_variance(self, subject: Standardize, bolts: Matrix):
+        transform: Matrix = subject.transform(bolts)
 
         actual_mean: real = transform.mean()
         expected_mean: real = real(0.0)
@@ -35,6 +40,3 @@ class StandardizeTest(AbstractTransformationTest[Standardize]):
         for i in range(transform.num_columns()):
             actual_std: real = helper.stdev(transform, i)
             self.assertAlmostEqual(expected_std, actual_std, delta=1e-7)
-
-    def instantiate_subject(self) -> Standardize:
-        return Standardize()

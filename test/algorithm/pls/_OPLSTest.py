@@ -13,44 +13,58 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from ._AbstractPLSTest import AbstractPLSTest
-from ...test.misc import TestRegression
+from wai.test.decorators import Test, Skip, RegressionTest
+
 from wai.ma.algorithm.pls import OPLS, NIPALS, KernelPLS, PLS1, SIMPLS, SparsePLS, PRM, CCARegression
+from wai.ma.core.matrix import Matrix
+
+from ._AbstractPLSTest import AbstractPLSTest
 
 
-class OPLSTest(AbstractPLSTest[OPLS]):
+class OPLSTest(AbstractPLSTest):
+    @classmethod
+    def subject_type(cls):
+        return OPLS
+
+    @Test
+    @Skip("OPLS.transform(X) removes the signal from X_test that is"
+          "orthogonal to y_train and does not change its shape")
     def check_transformed_num_components(self):
         # Do nothing since OPLS.transform(X) removes the signal from X_test that is
         # orthogonal to y_train and does not change its shape
-        pass
+        super().check_transformed_num_components()
 
-    @TestRegression
-    def base_NIPALS(self):
-        self.subject.base_PLS = NIPALS()
+    @RegressionTest
+    def base_NIPALS(self, subject: OPLS, *resources: Matrix):
+        subject.base_PLS = NIPALS()
+        return self.standard_regression(subject, *resources)
 
-    @TestRegression
-    def base_KernelPLS(self):
-        self.subject.base_PLS = KernelPLS()
+    @RegressionTest
+    def base_KernelPLS(self, subject: OPLS, *resources: Matrix):
+        subject.base_PLS = KernelPLS()
+        return self.standard_regression(subject, *resources)
 
-    @TestRegression
-    def base_PLS1(self):
-        self.subject.base_PLS = PLS1()
+    @RegressionTest
+    def base_PLS1(self, subject: OPLS, *resources: Matrix):
+        subject.base_PLS = PLS1()
+        return self.standard_regression(subject, *resources)
 
-    @TestRegression
-    def base_SIMPLS(self):
-        self.subject.base_PLS = SIMPLS()
+    @RegressionTest
+    def base_SIMPLS(self, subject: OPLS, *resources: Matrix):
+        subject.base_PLS = SIMPLS()
+        return self.standard_regression(subject, *resources)
 
-    @TestRegression
-    def base_CCARegression(self):
-        self.subject.base_PLS = CCARegression()
+    @RegressionTest
+    def base_CCARegression(self, subject: OPLS, *resources: Matrix):
+        subject.base_PLS = CCARegression()
+        return self.standard_regression(subject, *resources)
 
-    @TestRegression
-    def base_PRM(self):
-        self.subject.base_PLS = PRM()
+    @RegressionTest
+    def base_PRM(self, subject: OPLS, *resources: Matrix):
+        subject.base_PLS = PRM()
+        return self.standard_regression(subject, *resources)
 
-    @TestRegression
-    def base_SparsePLS(self):
-        self.subject.base_PLS = SparsePLS()
-
-    def instantiate_subject(self) -> OPLS:
-        return OPLS()
+    @RegressionTest
+    def base_SparsePLS(self, subject: OPLS, *resources: Matrix):
+        subject.base_PLS = SparsePLS()
+        return self.standard_regression(subject, *resources)

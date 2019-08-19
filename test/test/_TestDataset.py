@@ -1,4 +1,4 @@
-#  _Tag.py
+#  _TestDataset.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,30 +13,28 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import os
+from enum import Enum
+from unittest import TestCase
+
+from wai.ma.meta import print_stack_trace
+from wai.ma.core.matrix import Matrix, helper
 
 
-def Tag(tag: str):
+class TestDataset(Enum):
     """
-    Decorator that adds the given tag to the decorated function.
-
-    :param tag:     The tag to add to the function.
+    Test datasets that represent a file in the 'resources' folder.
     """
-    def apply_tag(method):
-        if not hasattr(method, '__tags'):
-            method.__tags = set()
-        method.__tags.add(tag)
-        return method
+    BOLTS = os.path.join('resources', 'bolts.csv')
+    BOLTS_RESPONSE = os.path.join('resources', 'bolts_response.csv')
 
-    return apply_tag
+    def __str__(self):
+        return self.value
 
+    def load(self) -> Matrix:
+        """
+        Load a matrix from a given input path.
 
-def has_tag(method, tag: str) -> bool:
-    """
-    Checks if the given method has the given tag.
-
-    :param method:  The method to check.
-    :param tag:     The tag to check for.
-    :return:        True if the tag exists on the method,
-                    False if not.
-    """
-    return hasattr(method, '__tags') and tag in method.__tags
+        :return:    Matrix stored in input path.
+        """
+        return helper.read(self.value, True, ',')

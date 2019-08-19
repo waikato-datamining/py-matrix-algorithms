@@ -13,26 +13,33 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from ._AbstractPLSTest import AbstractPLSTest
-from ...test.misc import TestRegression
+from wai.test.decorators import RegressionTest
+
 from wai.ma.algorithm.pls import CCARegression, DeflationMode
+from wai.ma.core.matrix import Matrix
+
+from ._AbstractPLSTest import AbstractPLSTest
 
 
-class CCARegressionTest(AbstractPLSTest[CCARegression]):
+class CCARegressionTest(AbstractPLSTest):
     """
     Test case for the NIPALS algorithm.
     """
-    @TestRegression
-    def deflation_mode_canonical(self):
-        self.subject.deflation_mode = DeflationMode.CANONICAL
+    @classmethod
+    def subject_type(cls):
+        return CCARegression
 
-    @TestRegression
-    def deflation_mode_regression(self):
-        self.subject.deflation_mode = DeflationMode.REGRESSION
+    @RegressionTest
+    def deflation_mode_canonical(self, subject: CCARegression, *resources: Matrix):
+        subject.deflation_mode = DeflationMode.CANONICAL
+        return self.standard_regression(subject, *resources)
 
-    @TestRegression
-    def norm_Y_weights_true(self):
-        self.subject.norm_Y_weights = True
+    @RegressionTest
+    def deflation_mode_regression(self, subject: CCARegression, *resources: Matrix):
+        subject.deflation_mode = DeflationMode.REGRESSION
+        return self.standard_regression(subject, *resources)
 
-    def instantiate_subject(self) -> CCARegression:
-        return CCARegression()
+    @RegressionTest
+    def norm_Y_weights_true(self, subject: CCARegression, *resources: Matrix):
+        subject.norm_Y_weights = True
+        return self.standard_regression(subject, *resources)

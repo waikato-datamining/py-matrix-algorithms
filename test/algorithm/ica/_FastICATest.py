@@ -13,51 +13,64 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import List
+from typing import Tuple
 
-from ...test import AbstractRegressionTest
-from ...test.misc import TestRegression, TestDataset
+from wai.test.decorators import RegressionTest
+
 from wai.ma.algorithm.ica import FastICA, Algorithm
 from wai.ma.algorithm.ica.approxfun import LogCosH, Cube, Exponential
 from wai.ma.core.matrix import Matrix
 
+from ...test import AbstractMatrixAlgorithmTest, TestDataset
 
-class FastICATest(AbstractRegressionTest[FastICA]):
-    @TestRegression
-    def deflation(self):
-        self.subject.algorithm = Algorithm.DEFLATION
 
-    @TestRegression
-    def parallel(self):
-        self.subject.algorithm = Algorithm.PARALLEL
+class FastICATest(AbstractMatrixAlgorithmTest):
+    @classmethod
+    def subject_type(cls):
+        return FastICA
 
-    @TestRegression
-    def white_false(self):
-        self.subject.whiten = False
+    @RegressionTest
+    def deflation(self, subject: FastICA, *resources: Matrix):
+        subject.algorithm = Algorithm.DEFLATION
+        return self.standard_regression(subject, *resources)
 
-    @TestRegression
-    def logcosh(self):
-        self.subject.fun = LogCosH()
+    @RegressionTest
+    def parallel(self, subject: FastICA, *resources: Matrix):
+        subject.algorithm = Algorithm.PARALLEL
+        return self.standard_regression(subject, *resources)
 
-    @TestRegression
-    def cube(self):
-        self.subject.fun = Cube()
+    @RegressionTest
+    def white_false(self, subject: FastICA, *resources: Matrix):
+        subject.whiten = False
+        return self.standard_regression(subject, *resources)
 
-    @TestRegression
-    def exp(self):
-        self.subject.fun = Exponential()
+    @RegressionTest
+    def logcosh(self, subject: FastICA, *resources: Matrix):
+        subject.fun = LogCosH()
+        return self.standard_regression(subject, *resources)
 
-    def setup_regressions(self, subject: FastICA, input_data: List[Matrix]):
-        X: Matrix = input_data[0]
+    @RegressionTest
+    def cube(self, subject: FastICA, *resources: Matrix):
+        subject.fun = Cube()
+        return self.standard_regression(subject, *resources)
 
-        transform: Matrix = self.subject.transform(X)
-        self.add_regression('transform', transform)
-        self.add_regression('components', self.subject.components)
-        self.add_regression('mixing', self.subject.mixing)
-        self.add_regression('sources', self.subject.sources)
+    @RegressionTest
+    def exp(self, subject: FastICA, *resources: Matrix):
+        subject.fun = Exponential()
+        return self.standard_regression(subject, *resources)
 
-    def get_datasets(self) -> List[TestDataset]:
-        return [TestDataset.BOLTS]
+    def standard_regression(self, subject: FastICA, *resources: Matrix):
+        X, = resources
 
-    def instantiate_subject(self) -> FastICA:
-        return FastICA()
+        transform: Matrix = subject.transform(X)
+
+        return {
+            'transform': transform,
+            'components': subject.components,
+            'mixing': subject.mixing,
+            'sources': subject.sources
+        }
+
+    @classmethod
+    def get_datasets(cls) -> Tuple[TestDataset]:
+        return TestDataset.BOLTS,

@@ -13,39 +13,46 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import List
+from typing import Tuple
 
+from wai.test.decorators import RegressionTest
 from wai.ma.algorithm import PCA
 from wai.ma.core.matrix import Matrix
-from ..test import AbstractRegressionTest
-from ..test.misc import TestRegression, Tags, TestDataset
+
+from ..test import TestDataset, AbstractMatrixAlgorithmTest, Tags
 
 
-class PCATest(AbstractRegressionTest[PCA]):
-    @TestRegression
-    def center(self):
-        self.subject.center = True
+class PCATest(AbstractMatrixAlgorithmTest):
+    @classmethod
+    def subject_type(cls):
+        return PCA
 
-    @TestRegression
-    def max_cols_3(self):
-        self.subject.max_columns = 3
+    @RegressionTest
+    def center(self, subject: PCA, bolts: Matrix):
+        subject.center = True
+        return self.standard_regression(subject, bolts)
 
-    def setup_regressions(self, subject: PCA, input_data: List[Matrix]):
+    @RegressionTest
+    def max_cols_3(self, subject: PCA, bolts: Matrix):
+        subject.max_columns = 3
+        return self.standard_regression(subject, bolts)
+
+    def standard_regression(self, subject: PCA, *resources: Matrix):
         # Get input
-        X: Matrix = self.input_data[0]
+        bolts, = resources
 
         # Get matrices
-        transformed: Matrix = subject.transform(X)
+        transformed: Matrix = subject.transform(bolts)
         loadings: Matrix = subject.loadings
         scores: Matrix = subject.scores
 
         # Add regressions
-        self.add_regression(Tags.TRANSFORM, transformed)
-        self.add_regression(Tags.LOADINGS, loadings)
-        self.add_regression(Tags.SCORES, scores)
+        return {
+            Tags.TRANSFORM: transformed,
+            Tags.LOADINGS: loadings,
+            Tags.SCORES: scores,
+        }
 
-    def get_datasets(self) -> List[TestDataset]:
-        return [TestDataset.BOLTS]
-
-    def instantiate_subject(self) -> PCA:
-        return PCA()
+    @classmethod
+    def get_datasets(cls) -> Tuple[TestDataset]:
+        return TestDataset.BOLTS,

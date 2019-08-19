@@ -13,42 +13,48 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import TypeVar, List
+from typing import Tuple
 
-from ...test import AbstractRegressionTest
-from ...test.misc import Tags, TestRegression, TestDataset
+from wai.test.decorators import RegressionTest
+
 from wai.ma.algorithm.glsw import GLSW
 from wai.ma.core.matrix import Matrix, factory
 
-T = TypeVar('T', bound=GLSW)
+from ...test import AbstractMatrixAlgorithmTest, Tags, TestDataset
 
 
-class GLSWTest(AbstractRegressionTest[T]):
+class GLSWTest(AbstractMatrixAlgorithmTest):
+    @classmethod
+    def subject_type(cls):
+        return GLSW
+
     def add_glsw_regressions(self, subject: GLSW, x: Matrix):
         # Add regressions
-        self.add_regression(Tags.TRANSFORM, subject.transform(x))
-        self.add_regression(Tags.PROJECTION, subject.G)
+        return {
+            Tags.TRANSFORM: subject.transform(x),
+            Tags.PROJECTION: subject.G
+        }
 
-    @TestRegression
-    def alpha_1(self):
-        self.subject.alpha = 1
+    @RegressionTest
+    def alpha_1(self, subject: GLSW, *resources: Matrix):
+        subject.alpha = 1
+        return self.standard_regression(subject, *resources)
 
-    @TestRegression
-    def alpha_100(self):
-        self.subject.alpha = 100
+    @RegressionTest
+    def alpha_100(self, subject: GLSW, *resources: Matrix):
+        subject.alpha = 100
+        return self.standard_regression(subject, *resources)
 
-    def setup_regressions(self, subject: GLSW, input_data: List[Matrix]):
+    def standard_regression(self, subject: GLSW, *resources: Matrix):
         # Get inputs: Simulate second instrument as x1 with noise
-        x_first_instrument: Matrix = input_data[0]
+        x_first_instrument, = resources
         x_second_instrument: Matrix = x_first_instrument.add(factory.randn_like(x_first_instrument, 0, 0.0, 0.1))
 
         # Init GLSW
         subject.initialize(x_first_instrument, x_second_instrument)
 
-        self.add_glsw_regressions(subject, x_first_instrument)
+        return self.add_glsw_regressions(subject, x_first_instrument)
 
-    def get_datasets(self) -> List[TestDataset]:
-        return [TestDataset.BOLTS]
-
-    def instantiate_subject(self) -> GLSW:
-        return GLSW()
+    @classmethod
+    def get_datasets(cls) -> Tuple[TestDataset]:
+        return TestDataset.BOLTS,

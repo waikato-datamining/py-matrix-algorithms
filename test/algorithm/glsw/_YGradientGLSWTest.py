@@ -13,30 +13,30 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import List, TypeVar
+from typing import Tuple
 
-from ._GLSWTest import GLSWTest
-from ...test.misc import TestDataset
+from test.test import TestDataset
 from wai.ma.algorithm.glsw import YGradientGLSW
 from wai.ma.core.matrix import Matrix
 
-T = TypeVar('T', bound=YGradientGLSW)
+from ._GLSWTest import GLSWTest
 
 
-class YGradientGLSWTest(GLSWTest[T]):
-    def setup_regressions(self, subject: YGradientGLSW, input_data: List[Matrix]):
+class YGradientGLSWTest(GLSWTest):
+    @classmethod
+    def subject_type(cls):
+        return YGradientGLSW
+
+    def standard_regression(self, subject: YGradientGLSW, *resources: Matrix):
         # Get inputs: Simulate second instrument as x1 with noise
-        X: Matrix = input_data[0]
-        y: Matrix = input_data[1]
+        X, y = resources
 
         # Init GLSW
         subject.initialize(X, y)
 
         # Add regressions
-        self.add_glsw_regressions(subject, X)
+        return self.add_glsw_regressions(subject, X)
 
-    def get_datasets(self) -> List[TestDataset]:
-        return [TestDataset.BOLTS, TestDataset.BOLTS_RESPONSE]
-
-    def instantiate_subject(self) -> YGradientGLSW:
-        return YGradientGLSW()
+    @classmethod
+    def get_datasets(cls) -> Tuple[TestDataset, TestDataset]:
+        return TestDataset.BOLTS, TestDataset.BOLTS_RESPONSE
