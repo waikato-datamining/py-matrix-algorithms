@@ -15,15 +15,16 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from numbers import Number
-from typing import Optional, Union, List, Tuple, Callable, Set
+from typing import Optional, Union, List, Tuple, Callable, Set, IO
 
 import numpy as np
 
+from .._Serialisable import Serialisable
 from ..error import MatrixAlgorithmsError, InvalidAxisError, InvalidShapeError
 from .._types import real
 
 
-class Matrix:
+class Matrix(Serialisable):
     def __init__(self, data: Optional[np.ndarray] = None):
         if data is not None:
             if data.ndim > 2:
@@ -614,6 +615,16 @@ class Matrix:
 
     def pseudo_inverse(self):
         return Matrix(np.linalg.pinv(self.data))
+
+    def serialise_state(self, stream: IO[bytes]):
+        # Write the number of rows and columns
+        stream.write(self.serialise_to_bytes(self.num_rows()))
+        stream.write(self.serialise_to_bytes(self.num_columns()))
+
+        # Write each data element in order
+        for row_index in range(self.num_rows()):
+            for column_index in range(self.num_columns()):
+                stream.write(self.serialise_to_bytes(self.get(row_index, column_index)))
 
 
 def must_be_row_vector(vector: 'Matrix'):

@@ -17,6 +17,7 @@
 from ._types import real, ZERO, ONE, NAN, INF, NEG_INF
 from ._LoggingObject import LoggingObject
 from ._PreprocessingType import PreprocessingType
+from ._Serialisable import Serialisable
 from ._Filter import Filter
 from ._MultiFilter import MultiFilter
 from ._SupervisedFilter import SupervisedFilter

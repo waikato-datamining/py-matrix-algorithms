@@ -14,16 +14,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, List
+from typing import Optional, List, IO
 
 import numpy as np
 
-from ..core import real
+from ..core import real, Serialisable
 from ..core.matrix import factory, helper, Matrix
 from ._AbstractTransformation import AbstractTransformation
 
 
-class SavitzkyGolay(AbstractTransformation):
+class SavitzkyGolay(AbstractTransformation, Serialisable):
     def __init__(self):
         super().__init__()
         self.polynomial_order: int = 2
@@ -91,6 +91,14 @@ class SavitzkyGolay(AbstractTransformation):
 
     def do_inverse_transform(self, data: Matrix) -> Matrix:
         raise NotImplementedError("SavitzkyGolay does not have an inverse transform")
+
+    def serialise_state(self, stream: IO[bytes]):
+        # Can't serialise our state until we've been configured
+        if not self.configured:
+            raise RuntimeError("Can't serialise state of unconfigured Savitzky-Golay")
+
+        # Serialise out our coefficients
+        self.coefficients.serialise_state(stream)
 
 
 def determine_coefficients(num_left: int, num_right: int, poly_order: int, der_order: int) -> List[real]:

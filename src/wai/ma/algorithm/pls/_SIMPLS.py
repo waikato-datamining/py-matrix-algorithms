@@ -13,15 +13,15 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import Optional, List
+from typing import Optional, List, IO
 
 from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
-from ...core import real, utils
+from ...core import real, utils, Serialisable
 from ...core.matrix import Matrix, factory
 from ...core.utils import sqrt
 
 
-class SIMPLS(AbstractSingleResponsePLS):
+class SIMPLS(AbstractSingleResponsePLS, Serialisable):
     def __init__(self):
         super().__init__()
         self.num_coefficients: int = 0  # The number of coefficients in W to keep (0 keep all)
@@ -194,3 +194,11 @@ class SIMPLS(AbstractSingleResponsePLS):
         :return:            The predictions.
         """
         return predictors.mul(self.B)
+
+    def serialise_state(self, stream: IO[bytes]):
+        # Can't serialise our state until we've been initialised
+        if not self.initialised:
+            raise RuntimeError("Can't serialise state of uninitialised SIMPLS")
+
+        # Serialise out our W matrix
+        self.W.serialise_state(stream)
