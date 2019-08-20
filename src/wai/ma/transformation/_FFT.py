@@ -16,6 +16,7 @@
 from enum import Enum
 
 import numpy as np
+from wai.common import switch, case, default
 
 from ..core.matrix import Matrix
 from ._AbstractTransformation import AbstractTransformation
@@ -191,18 +192,19 @@ class FFT(AbstractTransformation):
         :param array:   The complex array.
         :return:        The formatted array
         """
-        if self.output_mode is OutputMode.REAL_COMPONENT_ONLY:
-            return format_real_component_only(array)
-        elif self.output_mode is OutputMode.IMAG_COMPONENT_ONLY:
-            return format_imag_component_only(array)
-        elif self.output_mode is OutputMode.REAL_AND_IMAG_PAIRS:
-            return format_real_and_imag_pairs(array)
-        elif self.output_mode is OutputMode.AMPLITUDE_ONLY:
-            return format_amplitude_only(array)
-        elif self.output_mode is OutputMode.PHASE_ANGLE_ONLY:
-            return format_phase_angle_only(array)
-        elif self.output_mode is OutputMode.AMPL_ANGLE_PAIRS:
-            return format_ampl_angle_pairs(array)
+        with switch(self.output_mode):
+            if case(OutputMode.REAL_COMPONENT_ONLY):
+                return format_real_component_only(array)
+            if case(OutputMode.IMAG_COMPONENT_ONLY):
+                return format_imag_component_only(array)
+            if case(OutputMode.REAL_AND_IMAG_PAIRS):
+                return format_real_and_imag_pairs(array)
+            if case(OutputMode.AMPLITUDE_ONLY):
+                return format_amplitude_only(array)
+            if case(OutputMode.PHASE_ANGLE_ONLY):
+                return format_phase_angle_only(array)
+            if case(OutputMode.AMPL_ANGLE_PAIRS):
+                return format_ampl_angle_pairs(array)
 
     def inverse_format_output(self, array: np.ndarray) -> np.ndarray:
         """
@@ -212,12 +214,13 @@ class FFT(AbstractTransformation):
         :param array:   The formatted array.
         :return:        The unformatted array.
         """
-        if self.output_mode is OutputMode.REAL_AND_IMAG_PAIRS:
-            return inverse_format_real_and_imag_pairs(array)
-        elif self.output_mode is OutputMode.AMPL_ANGLE_PAIRS:
-            return inverse_format_ampl_angle_pairs(array)
-        else:
-            raise ValueError("Inverse transform only available for modes pair modes, not " + self.output_mode.name)
+        with switch(self.output_mode):
+            if case(OutputMode.REAL_AND_IMAG_PAIRS):
+                return inverse_format_real_and_imag_pairs(array)
+            if case(OutputMode.AMPL_ANGLE_PAIRS):
+                return inverse_format_ampl_angle_pairs(array)
+            if default():
+                raise ValueError("Inverse transform only available for modes pair modes, not " + self.output_mode.name)
 
 
 def format_real_component_only(array: np.ndarray) -> np.ndarray:
