@@ -67,7 +67,8 @@ class SavitzkyGolayTest(AbstractTransformationTest):
 
         return {
             Tags.TRANSFORM: transform,
-            "coefficients": subject.coefficients
+            "coefficients": subject.coefficients,
+            "serialised": subject.get_serialised_state()
         }
 
     @staticmethod

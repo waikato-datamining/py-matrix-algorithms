@@ -40,3 +40,10 @@ class SIMPLSTest(AbstractPLSTest):
     def num_coefficients_3(self, subject: SIMPLS, *resources: Matrix):
         subject.num_coefficients = 3
         return self.standard_regression(subject, *resources)
+
+    def standard_regression(self, subject: SIMPLS, *resources: Matrix):
+        regression = super().standard_regression(subject, *resources)
+        regression.update({
+            "serialised": subject.get_serialised_state()
+        })
+        return regression
