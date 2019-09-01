@@ -78,3 +78,26 @@ class Serialisable(ABC):
             return b
         else:
             raise TypeError("serialise_to_bytes only supports int and float types")
+
+    @staticmethod
+    def serialise_big_int(value: int) -> bytes:
+        """
+        Serialises an integer to binary. Can handle values that fall
+        outside the 32-bit range of serialise_to_bytes.
+
+        :param value:   The integer to serialise.
+        :return:        The bytes representation of the value.
+        """
+        # Get the number of bits required to represent this value.
+        bit_length: int = value.bit_length()
+
+        # Get the number of bytes required to represent this value
+        byte_length: int = (bit_length // 8) + (1 if bit_length % 8 != 0 else 0)
+
+        # Get the binary representation of the integer
+        b = value.to_bytes(byte_length, "little" if LITTLE_ENDIAN else "big", signed=True)
+
+        # Prepend it with the binary representation of the bit length
+        b = Serialisable.serialise_to_bytes(byte_length) + b
+
+        return b
