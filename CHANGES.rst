@@ -23,3 +23,8 @@ Changelog
 - Added a Serialisable interface, which allows objects to write their state to a binary stream. SavitzkyGolay
   and SIMPLS implement this.
 - Added Equidistance resampling filter.
+
+0.0.4 (????-??-??)
+-------------------
+
+- Standardize now implements Serialisable interface.

@@ -14,15 +14,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from typing import Optional, IO
 
-from ..core import real
+from ..core import real, Serialisable
 from ..core.matrix import Matrix
 from ..core.matrix.helper import column_stdevs, column_means
 from ._AbstractTransformation import AbstractTransformation
 
 
-class Standardize(AbstractTransformation):
+class Standardize(AbstractTransformation, Serialisable):
     def __init__(self):
         super().__init__()
         self.means: Optional[Matrix] = None
@@ -59,3 +59,12 @@ class Standardize(AbstractTransformation):
 
     def get_std_devs(self) -> Matrix:
         return self.std_devs
+
+    def serialise_state(self, stream: IO[bytes]):
+        # Can't serialise our state until we've been configured
+        if not self.configured:
+            raise RuntimeError("Can't serialise state of unconfigured Standardize")
+
+        # Serialise out our mean and standard deviation coefficient matrices
+        self.means.serialise_state(stream)
+        self.std_devs.serialise_state(stream)
