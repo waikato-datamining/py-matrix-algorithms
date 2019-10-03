@@ -63,7 +63,7 @@ class Serialisable(ABC):
         return stream.read()
 
     @staticmethod
-    def serialise_to_bytes(value: Union[int, float]) -> bytes:
+    def serialise_to_bytes(value: Union[int, float, str]) -> bytes:
         """
         Helper method to serialise common types to bytes.
 
@@ -76,8 +76,12 @@ class Serialisable(ABC):
         elif isinstance(value, float):
             b = struct.pack("<d" if LITTLE_ENDIAN else ">d", value)
             return b
+        elif isinstance(value, str):
+            b = value.encode(encoding="utf-8")
+            b = Serialisable.serialise_to_bytes(len(b)) + b
+            return b
         else:
-            raise TypeError("serialise_to_bytes only supports int and float types")
+            raise TypeError("serialise_to_bytes only supports int, float and str types")
 
     @staticmethod
     def serialise_big_int(value: int) -> bytes:

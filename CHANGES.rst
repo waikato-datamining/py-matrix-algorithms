@@ -28,3 +28,4 @@ Changelog
 -------------------
 
 - Standardize now implements Serialisable interface.
+- Serialisable can now serialise strings.
