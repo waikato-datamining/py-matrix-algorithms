@@ -24,7 +24,7 @@ Changelog
   and SIMPLS implement this.
 - Added Equidistance resampling filter.
 
-0.0.4 (????-??-??)
+0.0.4 (2019-10-04)
 -------------------
 
 - Standardize now implements Serialisable interface.
