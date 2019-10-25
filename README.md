@@ -2,7 +2,7 @@
 
 Python library of 2-dimensional matrix algorithms.
 
-## Algorithms
+### Algorithms
 
 Available:
 
@@ -32,11 +32,11 @@ Planned:
 * [mwPLS]()
 * [biPLS](https://www.academia.edu/14468430/Sequential_application_of_backward_interval_partial_least_squares_and_genetic_algorithms_for_the_selection_of_relevant_spectral_regions)
 
-## Filters
+### Filters
 
 * [Downsample]()
 
-## Transformations
+### Transformations
 
 * [Center]()
 * [MultiplicativeScatterCorrection]()
@@ -49,9 +49,64 @@ Planned:
 
 ## Installation
 
-TODO
+Install from the PyPI index:
 
+```bash
+pip install wai.ma
+```
 
 ## Examples
 
-TODO
+To use an algorithm:
+
+```python
+# For example, the SIMPLS algorithm
+from wai.ma.algorithm.pls import SIMPLS
+
+# Create the algorithm object
+simpls: SIMPLS = SIMPLS()
+simpls.num_coefficients = 5  # Set any parameters to desired values
+
+# Get some training data
+from wai.ma.core.matrix import Matrix, helper
+train_predictors: Matrix = helper.read("train_predictors.csv", False, ",")
+train_response: Matrix = helper.read("train_response.csv", False, ",")
+
+# Train the algorithm
+simpls.initialize(train_predictors, train_response)
+
+# Get some test data
+test_predictors: Matrix = helper.read("test_predictors.csv", False, ",")
+
+# Get the predicted response
+test_predicted_response: Matrix = simpls.predict(test_predictors)
+
+# Compare with actual response, or use in some other way...
+```
+
+To use a transformation:
+
+```python
+# For example, the Savitzky-Golay transformation
+from wai.ma.transformation import SavitzkyGolay
+
+# Create the transformation object
+sg: SavitzkyGolay = SavitzkyGolay()
+sg.num_points_right = sg.num_points_left = 4  # Set any parameters to desired values
+
+# Get some configuration data
+from wai.ma.core.matrix import Matrix, helper
+train: Matrix = helper.read("train.csv", False, ",")
+
+# Configure the transformation (if not configured, will automatically
+# do so with the first set of data given to transform). 
+sg.configure(train)
+
+# Get some test data
+test: Matrix = helper.read("test.csv", False, ",")
+
+# Transform the test data
+test_transformed: Matrix = sg.transform(test)
+
+# Further use of transformed data...
+```
