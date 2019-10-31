@@ -30,7 +30,7 @@ Changelog
 - Standardize now implements Serialisable interface.
 - Serialisable can now serialise strings.
 
-0.0.5 (2019-??-??)
+0.0.5 (2019-11-01)
 ------------------
 
 - Added Log transformation.
