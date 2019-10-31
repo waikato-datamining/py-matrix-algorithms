@@ -2,5 +2,5 @@
 # https://caremad.io/posts/2013/07/setup-vs-requirement/
 -e .
 numpy>=1.16.3,<=1.16.4
-wai.common==0.0.2
+wai.common==0.0.17
 wai.test==0.0.3

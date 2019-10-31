@@ -18,6 +18,7 @@
 from ._AbstractTransformation import AbstractTransformation
 from ._Center import Center
 from ._FFT import FFT, OutputMode
+from ._Log import Log
 from ._RowNorm import RowNorm
 from ._Standardize import Standardize
 from ._SavitzkyGolay import SavitzkyGolay
@@ -28,3 +29,4 @@ from ._PassThrough import PassThrough
 center = Center.quick_apply
 row_norm = RowNorm.quick_apply
 standardize = Standardize.quick_apply
+log = Log.quick_apply

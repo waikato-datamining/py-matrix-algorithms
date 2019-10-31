@@ -39,6 +39,7 @@ Planned:
 ### Transformations
 
 * [Center]()
+* [Log]()
 * [MultiplicativeScatterCorrection]()
 * [Passthrough]()
 * [RowNorm]()

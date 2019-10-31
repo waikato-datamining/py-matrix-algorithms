@@ -29,3 +29,9 @@ Changelog
 
 - Standardize now implements Serialisable interface.
 - Serialisable can now serialise strings.
+
+0.0.5 (2019-??-??)
+------------------
+
+- Added Log transformation.
+- Updated to wai.common v0.0.17
