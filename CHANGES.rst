@@ -35,3 +35,8 @@ Changelog
 
 - Added Log transformation.
 - Updated to wai.common v0.0.17
+
+0.0.6 (2019-11-18)
+------------------
+
+- Added tranformations based on scikit-learn: PowerTransformer, QuantileTranformer and RobustScalar.

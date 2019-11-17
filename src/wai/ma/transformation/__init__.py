@@ -19,6 +19,9 @@ from ._AbstractTransformation import AbstractTransformation
 from ._Center import Center
 from ._FFT import FFT, OutputMode
 from ._Log import Log
+from ._PowerTransformer import PowerTransformer
+from ._QuantileTransformer import QuantileTransformer
+from ._RobustScaler import RobustScaler
 from ._RowNorm import RowNorm
 from ._Standardize import Standardize
 from ._SavitzkyGolay import SavitzkyGolay

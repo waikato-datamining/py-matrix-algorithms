@@ -49,13 +49,14 @@ setup(
     namespace_packages=[
         "wai"
     ],
-    version="0.0.5",
+    version="0.0.6",
     author='Peter "fracpete" Reutemann',
     author_email='fracpete@waikato.ac.nz',
     install_requires=[
         "numpy",
         "wai.common",
-        "wai.test"
+        "wai.test",
+        "scikit-learn"
     ],
     include_package_data=True
 )

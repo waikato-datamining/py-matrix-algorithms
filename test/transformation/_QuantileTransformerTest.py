@@ -1,4 +1,4 @@
-#  __init__.py
+#  _QuantileTransformerTest.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,15 +13,12 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from wai.ma.transformation import QuantileTransformer
 
-from ._AbstractTransformationTest import AbstractTransformationTest
-from ._PassThroughTest import PassThroughTest
-from ._CenterTest import CenterTest
-from ._FFTTest import FFTTest
-from ._LogTest import LogTest
-from ._PowerTransformerTest import PowerTransformerTest
-from ._QuantileTransformerTest import QuantileTransformerTest
-from ._RobustScalerTest import RobustScalarTest
-from ._StandardizeTest import StandardizeTest
-from ._RowNormTest import RowNormTest
-from ._SavitzkyGolayTest import SavitzkyGolayTest
+from ..transformation import AbstractTransformationTest
+
+
+class QuantileTransformerTest(AbstractTransformationTest):
+    @classmethod
+    def subject_type(cls):
+        return QuantileTransformer
