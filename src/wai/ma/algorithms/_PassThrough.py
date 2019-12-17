@@ -1,4 +1,4 @@
-#  __init__.py
+#  _PassThrough.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -14,5 +14,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ._Axis import Axis
-from ._Matrix import Matrix
+from ..core.algorithm import MatrixAlgorithm
+from ..core.matrix import Matrix
+
+
+class PassThrough(MatrixAlgorithm):
+    def _do_transform(self, data: Matrix) -> Matrix:
+        return data
+
+    def _do_inverse_transform(self, data: Matrix) -> Matrix:
+        return data

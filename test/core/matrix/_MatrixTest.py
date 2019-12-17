@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import Tuple
 
-from wai.ma.core.matrix import Matrix, factory
+from wai.ma.core.matrix import Matrix, factory, Axis
 from wai.test.decorators import RegressionTest, Test
 
 from ...test import TestDataset, Tags, AbstractMatrixAlgorithmTest
@@ -40,7 +40,7 @@ class MatrixTest(AbstractMatrixAlgorithmTest):
 
     @RegressionTest
     def get_eigenvectors(self, subject: Matrix, bolts: Matrix):
-        return self.standard_regression(subject.get_eigenvectors())
+        return self.standard_regression(subject.head(subject.num_columns()).get_eigenvectors())
 
     @RegressionTest
     def get_eigenvalues(self, subject: Matrix, bolts: Matrix):
@@ -61,6 +61,30 @@ class MatrixTest(AbstractMatrixAlgorithmTest):
             sub_matrix = subject.get_sub_matrix((0, subject.num_rows()),
                                                 (i, i + 1))
             self.assertEqual(column, sub_matrix)
+
+    @Test
+    def aggregations_are_right_shape(self, subject: Matrix, bolts: Matrix):
+        """
+        Tests that the row and column aggregations are the correct shape.
+
+        :param subject:     The test matrix.
+        :param bolts:       The bolts matrix.
+        """
+        for aggregation in (bolts.maximum,
+                            bolts.minimum,
+                            bolts.median,
+                            bolts.mean,
+                            bolts.standard_deviation,
+                            bolts.total,
+                            bolts.norm1):
+            with self.subTest(aggregation.__name__):
+                bolts_columns = bolts.mean(Axis.COLUMNS)
+                self.assertTrue(bolts_columns.is_row_vector())
+                self.assertEqual(bolts_columns.num_columns(), 7)
+
+                bolts_rows = bolts.mean(Axis.ROWS)
+                self.assertTrue(bolts_rows.is_column_vector())
+                self.assertEqual(bolts_rows.num_rows(), 40)
 
     def standard_regression(self, subject: Matrix, *resources):
         # Only regression testing the final configuration of the matrix

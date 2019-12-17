@@ -14,5 +14,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ._Axis import Axis
-from ._Matrix import Matrix
+from ._Cube import Cube
+from ._Exponential import Exponential
+from ._LogCosH import LogCosH
+from ._NegEntropyApproximationFunction import NegEntropyApproximationFunction

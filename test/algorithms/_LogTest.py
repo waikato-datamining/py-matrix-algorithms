@@ -1,4 +1,4 @@
-#  __init__.py
+#  _LogTest.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,6 +13,25 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from wai.test.decorators import RegressionTest, ExceptionTest
+from wai.ma.core.matrix import Matrix
+from wai.ma.algorithms import Log
 
-from ._Axis import Axis
-from ._Matrix import Matrix
+from ._MatrixAlgorithmTest import MatrixAlgorithmTest
+
+
+class LogTest(MatrixAlgorithmTest):
+    @classmethod
+    def subject_type(cls):
+        return Log
+
+    @RegressionTest
+    def base_10(self, subject: Log, *resources: Matrix):
+        subject.base = 10
+        return self.standard_regression(subject, *resources)
+
+    @ExceptionTest(ValueError)
+    def zeroes_raise(self, subject: Log, *resources: Matrix):
+        bolts, bolts_response = resources
+        subject.offset = 0
+        subject.transform(bolts)

@@ -1,4 +1,4 @@
-#  __init__.py
+#  _MatrixInversionError.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -14,5 +14,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ._Axis import Axis
-from ._Matrix import Matrix
+
+class MatrixInversionError(RuntimeError):
+    """
+    Exception for when a matrix cannot be inverted.
+    """
+    prefix: str = 'Could not invert matrix. '
+
+    def __init__(self, message: str):
+        super().__init__(self.prefix + message)

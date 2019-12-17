@@ -15,9 +15,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 from enum import Enum
-from unittest import TestCase
 
-from wai.ma.meta import print_stack_trace
 from wai.ma.core.matrix import Matrix, helper
 
 

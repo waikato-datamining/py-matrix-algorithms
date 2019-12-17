@@ -14,5 +14,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ._Axis import Axis
-from ._Matrix import Matrix
+from ._InvalidAxisError import InvalidAxisError
+from ._InvalidShapeError import InvalidShapeError
+from ._InverseTransformError import InverseTransformError
+from ._MatrixAlgorithmsError import MatrixAlgorithmsError
+from ._MatrixInversionError import MatrixInversionError
+from ._UnconfiguredAlgorithmError import UnconfiguredAlgorithmError
+from ._UninvertibleAlgorithmError import UninvertibleAlgorithmError

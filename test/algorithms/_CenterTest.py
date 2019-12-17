@@ -1,4 +1,4 @@
-#  __init__.py
+#  _CenterTest.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,6 +13,23 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from wai.test.decorators import Test
+from wai.ma.core import real
+from wai.ma.core.matrix import Matrix
+from wai.ma.algorithms import Center
 
-from ._Axis import Axis
-from ._Matrix import Matrix
+from ._MatrixAlgorithmTest import MatrixAlgorithmTest
+
+
+class CenterTest(MatrixAlgorithmTest):
+    @classmethod
+    def subject_type(cls):
+        return Center
+
+    @Test
+    def mean_is_zero(self, subject: Center, *resources: Matrix):
+        bolts, bolts_response = resources
+        transform: Matrix = subject.configure_and_transform(bolts)
+        actual: real = transform.mean()
+        expected: real = real(0.0)
+        self.assertAlmostEqual(actual, expected, delta=1e-7)

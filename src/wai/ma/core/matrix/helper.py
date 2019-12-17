@@ -21,10 +21,10 @@ from typing import List, IO, Union
 import numpy as np
 
 from ...core.utils import real_to_string_fixed
-from ...meta import print_stack_trace
 from . import factory
 from ._Matrix import Matrix
 from .._types import real
+from ._Axis import Axis
 
 
 def delete_col(data: Matrix, col: int) -> Matrix:
@@ -36,34 +36,12 @@ def delete_cols(data: Matrix, cols: List[int]) -> Matrix:
     return data.get_sub_matrix((0, data.num_rows()), cols)
 
 
-def row_as_vector(data: Matrix, row: int) -> Matrix:
-    return data.get_row(row)
-
-
-def mean(mat: Matrix, index: int, column: bool = True) -> real:
-    if column:
-        return column_mean(mat, index)
-    else:
-        return row_mean(mat, index)
-
-
-def stdev(mat: Matrix, index: int, column: bool = True) -> real:
-    if column:
-        return column_stdev(mat, index)
-    else:
-        return row_stdev(mat, index)
-
-
-def column_as_vector(m: Matrix, column_index: int) -> Matrix:
-    return m.get_column(column_index)
-
-
 def euclidean_distance(x: Matrix, y: Matrix, squared: bool) -> Matrix:
     xx: Matrix = row_norms(x, True)
     yy: Matrix = row_norms(y, True)
 
-    distances: Matrix = x.mul(y.transpose())
-    distances = distances.mul(-2)
+    distances: Matrix = x.matrix_multiply(y.transpose())
+    distances = distances.matrix_multiply(-2)
     distances = distances.add(xx)
     distances = distances.add(yy)
 
@@ -82,7 +60,7 @@ def row_norms(x: Matrix, squared: bool) -> Matrix:
 
 
 def equal(m1: Matrix, m2: Matrix, epsilon: real = real(0)) -> bool:
-    if not m1.same_shape_as(m2):
+    if not m1.is_same_shape_as(m2):
         return False
 
     for row in range(m1.num_rows()):
@@ -127,7 +105,6 @@ def read(filename: Union[str, IO[str]], header: bool, separator: str) -> Matrix:
             except Exception:
                 print('Failed to parse row=' + str(i + 1 if header else i) + ' col=' + str(j) + ': ' + str(cells[j]),
                       file=sys.stderr)
-                print_stack_trace()
 
     return result
 
@@ -177,60 +154,20 @@ def to_string(data: Matrix, header: bool = True, separator: str = '\t', num_dec:
     return '\n'.join(to_lines(data, header, separator, num_dec))
 
 
-def dim(m: Matrix) -> str:
-    return str(m.num_rows()) + ' x ' + str(m.num_columns())
-
-
-def inverse(m: Matrix) -> Matrix:
-    return m.inverse()
-
-
-def row_mean(mat: Matrix, index: int) -> real:
-    return row_means(mat).get(index, 0)
-
-
-def row_means(mat: Matrix) -> Matrix:
-    result = Matrix(np.mean(mat.data, 1, real))
-    result = result.transpose()
-    return result
-
-
-def column_mean(mat: Matrix, index: int) -> real:
-    return column_means(mat).get(0, index)
-
-
-def column_means(mat: Matrix) -> Matrix:
-    return Matrix(np.mean(mat.data, 0, real))
-
-
-def row_stdev(mat: Matrix, index: int) -> real:
-    return row_stdevs(mat).get(index, 0)
-
-
-def row_stdevs(mat: Matrix) -> Matrix:
-    stdevs = Matrix(np.std(mat.data, 1, real, ddof=1))
-    stdevs = stdevs.transpose()
-    return stdevs
-
-
-def column_stdev(mat: Matrix, index: int) -> real:
-    return column_stdevs(mat).get(0, index)
-
-
-def column_stdevs(mat: Matrix) -> Matrix:
-    return Matrix(np.std(mat.data, 0, real, ddof=1))
-
-
 def fill_diagonal(mat: Matrix, value: Number):
     i = 0
     while i < mat.num_rows() and i < mat.num_columns():
-        mat.data[i][i] = real(value)
+        mat._data[i][i] = real(value)
         i += 1
 
 
 def solve(A: Matrix, b: Matrix) -> Matrix:
-    return Matrix(np.linalg.solve(A.data, b.data))
+    return Matrix(np.linalg.solve(A._data, b._data))
 
 
-def multi_concat(axis: int, *matrices: Matrix) -> Matrix:
-    return Matrix(np.concatenate([matrix.data for matrix in matrices], axis))
+def multi_concat(axis: Axis, *matrices: Matrix) -> Matrix:
+    if axis is Axis.BOTH:
+        raise ValueError("Must choose a specific axis for concatenation")
+
+    return Matrix(np.concatenate([matrix._data for matrix in matrices],
+                                 axis=0 if axis is Axis.ROWS else 1))

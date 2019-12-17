@@ -1,4 +1,4 @@
-#  __init__.py
+#  _Axis.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,6 +13,13 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from enum import Enum, auto
 
-from ._Axis import Axis
-from ._Matrix import Matrix
+
+class Axis(Enum):
+    """
+    Enumeration of axis references to matrices.
+    """
+    BOTH = auto()
+    COLUMNS = auto()
+    ROWS = auto()

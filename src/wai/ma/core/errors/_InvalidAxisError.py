@@ -1,4 +1,4 @@
-#  __init__.py
+#  _InvalidAxisError.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,6 +13,12 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from ._MatrixAlgorithmsError import MatrixAlgorithmsError
 
-from ._Axis import Axis
-from ._Matrix import Matrix
+
+class InvalidAxisError(MatrixAlgorithmsError):
+    """
+    Exception for selecting an axis of a matrix.
+    """
+    def __init__(self, axis: int):
+        super().__init__(f"Axis has to be either 0 or 1 but was {axis}")

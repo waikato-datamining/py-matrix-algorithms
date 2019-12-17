@@ -50,6 +50,7 @@ Planned:
 * [Savitzky-Golay 2]()
 * [Standardize]()
 * [FFT]()
+* [Wavelet](https://www.mathworks.com/help/wavelet/ug/fast-wavelet-transform-fwt-algorithm.html)
 
 ## Installation
 

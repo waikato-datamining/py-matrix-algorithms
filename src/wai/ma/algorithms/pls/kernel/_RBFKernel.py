@@ -1,4 +1,4 @@
-#  _LoggingObject.py
+#  _RBFKernel.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,33 +13,29 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from logging import getLogger, Logger, DEBUG, NOTSET
-from typing import Optional
+from ....core import ONE, real, NAN
+from ....core.matrix import Matrix
+from ....core.utils import exp
+from ._AbstractKernel import AbstractKernel
 
 
-class LoggingObject:
+class RBFKernel(AbstractKernel):
     """
-    Ancestor of objects with logging support.
+    Radial Basis Function Kernel.
+
+    K(x,y) = exp(-1*||x - y||^2/(2*sigma^2))
+    or
+    K(x,y) = exp(-1*gamma*||x - y||^2), with gamma=2*sigma^2
     """
-    def get_logger(self) -> Logger:
-        if self._logger is None:
-            self._logger = getLogger(self.__class__.__qualname__)
-        return self._logger
-
-    logger = property(get_logger)
-
-    def get_debug(self):
-        return self.logger.isEnabledFor(DEBUG)
-
-    def set_debug(self, value: bool) -> None:
-        if value:
-            self.logger.setLevel(DEBUG)
-        else:
-            self.logger.setLevel(NOTSET)
-
-    debug = property(get_debug, set_debug)
-
     def __init__(self):
+        self.gamma: real = ONE  # Gamma parameter
         super().__init__()
 
-        self._logger: Optional[Logger] = None
+    def apply_vector(self, x: Matrix, y: Matrix) -> real:
+        norm_2: real = x.sub(y).norm2()
+        if self.gamma is NAN:
+            self.gamma = ONE / x.num_columns()
+        return exp(-ONE * self.gamma * norm_2)
+
+    def __str__(self):
+        return 'RBF Kernel: K(x,y) = exp(-1*gamma*||x - y||^2), gamma=' + str(self.gamma)

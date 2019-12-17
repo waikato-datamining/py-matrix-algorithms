@@ -14,5 +14,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ._Axis import Axis
-from ._Matrix import Matrix
+#from ._CCAFilterTest import CCAFilterTest
+from ._CenterTest import CenterTest
+from ._FFTTest import FFTTest
+from ._LogTest import LogTest
+from ._PassThroughTest import PassThroughTest
+#from ._PCATest import PCATest
+from ._PowerTransformerTest import PowerTransformerTest
+from ._QuantileTransformerTest import QuantileTransformerTest
+from ._RobustScalerTest import RobustScalarTest
+from ._RowNormTest import RowNormTest
+from ._SavitzkyGolayTest import SavitzkyGolayTest
+from ._StandardizeTest import StandardizeTest

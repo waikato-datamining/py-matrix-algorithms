@@ -13,6 +13,9 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-from ._Axis import Axis
-from ._Matrix import Matrix
+from ._ConfiguredMatrixAlgorithm import ConfiguredMatrixAlgorithm
+from ._MatrixAlgorithm import MatrixAlgorithm
+from ._PredictingSupervisedMatrixAlgorithm import PredictingSupervisedMatrixAlgorithm
+from ._SupervisedMatrixAlgorithm import SupervisedMatrixAlgorithm
+from ._SupervisedMatrixAlgorithmWithResponseTransform import SupervisedMatrixAlgorithmWithResponseTransform
+from ._UnsupervisedMatrixAlgorithm import UnsupervisedMatrixAlgorithm

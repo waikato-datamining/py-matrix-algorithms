@@ -325,3 +325,35 @@ def sqrt(x: real) -> real:
     :return:    The square root of x.
     """
     return np.sqrt(x)
+
+
+def normalise(value: real, mean: real, std_dev: real) -> real:
+    """
+    Normalises a value against a given mean/standard deviation.
+
+    :param value:       The value to normalise.
+    :param mean:        The mean of the distribution.
+    :param std_dev:     The standard deviation of the distribution.
+    :return:            The normalised value.
+    """
+    # Avoid divide-by-zero error
+    if std_dev == 0.0:
+        return value - mean
+
+    return (value - mean) / std_dev
+
+
+def unnormalise(value: real, mean: real, std_dev: real) -> real:
+    """
+    Inverse of normalise.
+
+    :param value:       The value to un-normalise.
+    :param mean:        The mean of the distribution.
+    :param std_dev:     The standard deviation of the distribution.
+    :return:            The un-normalised value.
+    """
+    # Avoid divide-by-zero error
+    if std_dev == 0.0:
+        return value + mean
+
+    return value * std_dev + mean

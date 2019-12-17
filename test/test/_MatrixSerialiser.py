@@ -41,14 +41,14 @@ class MatrixSerialiser(RegressionSerialiser[Matrix]):
     @classmethod
     def compare(cls, result: Matrix, reference: Matrix) -> Optional[str]:
         # Check for shape
-        if not reference.same_shape_as(result):
+        if not reference.is_same_shape_as(result):
             return 'Shapes of the expected and actual matrices do not match.\n' + \
                    'Expected shape: ' + reference.shape_string() + '\n' + \
                    'Actual shape: ' + result.shape_string()
 
         # Check for values
-        diff: Matrix = reference.sub(result).abs()
-        which = diff.which(lambda v: v > EPSILON)
+        diff: Matrix = reference.subtract(result).abs()
+        which = diff.where(lambda v: v > EPSILON)
         if len(which) > 0:
             return 'Values in the expected and actual matrices do not match.\n' + \
                    'Absolute differences:\n' + \

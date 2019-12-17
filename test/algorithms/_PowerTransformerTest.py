@@ -1,4 +1,4 @@
-#  __init__.py
+#  _PowerTransformerTest.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,6 +13,12 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from wai.ma.algorithms import PowerTransformer
 
-from ._Axis import Axis
-from ._Matrix import Matrix
+from ._MatrixAlgorithmTest import MatrixAlgorithmTest
+
+
+class PowerTransformerTest(MatrixAlgorithmTest):
+    @classmethod
+    def subject_type(cls):
+        return PowerTransformer

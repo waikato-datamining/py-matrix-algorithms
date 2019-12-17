@@ -1,4 +1,4 @@
-#  _LoggingObject.py
+#  _Center.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,33 +13,33 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from logging import getLogger, Logger, DEBUG, NOTSET
+
 from typing import Optional
 
+from ..core.algorithm import UnsupervisedMatrixAlgorithm
+from ..core.matrix import Matrix, Axis
 
-class LoggingObject:
+
+class Center(UnsupervisedMatrixAlgorithm):
     """
-    Ancestor of objects with logging support.
+    Centers the data in the matrix columns according to the mean.
     """
-    def get_logger(self) -> Logger:
-        if self._logger is None:
-            self._logger = getLogger(self.__class__.__qualname__)
-        return self._logger
-
-    logger = property(get_logger)
-
-    def get_debug(self):
-        return self.logger.isEnabledFor(DEBUG)
-
-    def set_debug(self, value: bool) -> None:
-        if value:
-            self.logger.setLevel(DEBUG)
-        else:
-            self.logger.setLevel(NOTSET)
-
-    debug = property(get_debug, set_debug)
-
     def __init__(self):
         super().__init__()
 
-        self._logger: Optional[Logger] = None
+        self._means: Optional[Matrix] = None
+
+    def _do_reset(self):
+        self._means = None
+
+    def _do_configure(self, X: Matrix):
+        self._means = X.mean(Axis.COLUMNS)
+
+        if self.debug:
+            self.logger.info("Means: " + self._means.row_str(0))
+
+    def _do_transform(self, X: Matrix) -> Matrix:
+        return X.subtract(self._means)
+
+    def _do_inverse_transform(self, X: Matrix) -> Matrix:
+        return X.add(self._means)

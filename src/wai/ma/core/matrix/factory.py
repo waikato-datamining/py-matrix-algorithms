@@ -23,7 +23,6 @@ from numbers import Number
 from typing import List, Union
 
 import numpy as np
-from numpy import random
 
 from ._Matrix import Matrix
 from .._types import real
@@ -148,8 +147,9 @@ def randn(rows: int, columns: int, seed: int = 1, mean: real = real(0), std: rea
     :param std:         The standard deviation of the normal distribution.
     :return:            The matrix.
     """
-    random.seed(seed)
-    data = random.rand(rows, columns)
+    np.random.seed(seed)
+    data = np.random.rand(rows, columns)
+    data = data.astype(real)
     np.multiply(data, std)
     np.add(data, mean)
     return Matrix(data)
@@ -178,8 +178,8 @@ def rand(rows: int, columns: int, seed: int = 1) -> Matrix:
     :param seed:        The seed value to initialise the PRNG with.
     :return:            The matrix.
     """
-    random.seed(seed)
-    return Matrix(random.rand(rows, columns))
+    np.random.seed(seed)
+    return Matrix(np.random.rand(rows, columns))
 
 
 def rand_like(other: Matrix, seed: int) -> Matrix:

@@ -1,4 +1,4 @@
-#  __init__.py
+#  _UnconfiguredAlgorithmException.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,6 +13,16 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from typing import Type
 
-from ._Axis import Axis
-from ._Matrix import Matrix
+from ._MatrixAlgorithmsError import MatrixAlgorithmsError
+
+
+class UnconfiguredAlgorithmError(MatrixAlgorithmsError):
+    """
+    Exception thrown when an algorithm that requires configuration
+    tries to perform an operation that requires configuration before
+    that configuration has occurred.
+    """
+    def __init__(self, algorithm: Type['MatrixAlgorithm']):
+        super().__init__(f"Algorithm {algorithm.__name__} requires configuration")
