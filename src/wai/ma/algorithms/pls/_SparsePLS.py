@@ -252,7 +252,7 @@ class SparsePLS(AbstractSingleResponsePLS):
         :return:        Direction vector.
         """
         Z_p: Matrix = X.transpose().matrix_multiply(y_j)
-        z_norm: real = Z_p.abs().median()  # R package spls uses median norm
+        z_norm: real = Z_p.abs().median().as_scalar()  # R package spls uses median norm
         Z_p = Z_p.div(z_norm)
         Z_P_sign: Matrix = Z_p.sign()
         val_b: Matrix = Z_p.abs().sub(self.lambda_ * Z_p.abs().maximum())

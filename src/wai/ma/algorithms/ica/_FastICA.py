@@ -36,8 +36,8 @@ class FastICA(MatrixAlgorithm):
         self._tol: float = 1e-4
         self._components: Optional[Matrix] = None
         self._sources: Optional[Matrix] = None
-        self.algorithm: Optional[Algorithm] = None
-        self._center: Optional[Center] = None
+        self.algorithm: Algorithm = Algorithm.DEFLATION
+        self._center: Center = Center()
         self._whitening: Optional[Matrix] = None
         self._mixing: Optional[Matrix] = None
 
@@ -94,24 +94,24 @@ class FastICA(MatrixAlgorithm):
 
         for j in range(self._num_components):
             w: Matrix = W_init.get_row(j).transpose()
-            w = w.divide(w.pow(2).total(as_real=False).sqrt().as_scalar())
+            w = w.divide(w.pow(2).total().sqrt().as_scalar())
             for i in range(self._max_iter):
-                res: Tuple[Matrix, Matrix] = self.fun.apply(w.transpose().matrix_multiply(X).transpose())
+                res: Tuple[Matrix, Matrix] = self.fun.apply(w.t().matrix_multiply(X).transpose())
 
                 gwtx: Matrix = res[0]
                 g_wtx: Matrix = res[1]
 
-                w1: Matrix = X.multiply(gwtx).mean(Axis.ROWS).sub(w.multiply(g_wtx.mean()))
+                w1: Matrix = X.multiply(gwtx.t()).mean(Axis.ROWS).subtract(w.multiply(g_wtx.mean()))
                 w1 = self.decorrelate(w1, W, j)
 
-                w1 = w1.divide(w1.pow(2).total(as_real=False).sqrt().as_scalar())
-                lim = w1.multiply(w).total(as_real=False).abs().subtract(1.0).abs().as_scalar()
+                w1 = w1.divide(w1.pow(2).total().sqrt().as_scalar())
+                lim = w1.multiply(w).total().abs().subtract(1.0).abs().as_scalar()
 
                 w = w1
                 if lim < self._tol:
                     break
 
-            W.set_row(j, w)
+            W.set_row(j, w.t())
 
         return W
 
@@ -132,9 +132,9 @@ class FastICA(MatrixAlgorithm):
             gwtx: Matrix = res[0]
             g_wtx: Matrix = res[1]
 
-            arg: Matrix = gwtx.matrix_multiply(X.transpose()).divide(p).subtract(W.multiply(g_wtx))  # Scale by row?
+            arg: Matrix = gwtx.matrix_multiply(X.transpose()).divide(p).subtract(W.multiply(g_wtx.t()))  # Scale by row?
             W1: Matrix = self.symmetric_decorrelation(arg)
-            lim = W1.matrix_multiply(W.transpose()).diag().abs().subtract(1.0).abs().maximum()
+            lim = W1.matrix_multiply(W.transpose()).diag().abs().subtract(1.0).abs().maximum().as_scalar()
             W = W1
             if lim < self._tol:
                 break
@@ -177,7 +177,7 @@ class FastICA(MatrixAlgorithm):
         # np.dot(np.dot(u * (1. / np.sqrt(s)), u.T), W)
         s_sqrt: Matrix = s.sqrt()
         s_inv: Matrix = s_sqrt.apply_elementwise(lambda x: 1.0 / x)
-        u_mule_s: Matrix = u.scale_by_row_vector(s_inv)
+        u_mule_s: Matrix = u.multiply(s_inv.t())
         return u_mule_s.matrix_multiply(u.transpose()).matrix_multiply(W)
 
     def to_string(self) -> str:
@@ -209,17 +209,18 @@ class FastICA(MatrixAlgorithm):
 
         # Whiten data
         if self.whiten:
-            X = self._center.transform(X.transpose()).transpose()
+            self._center.reset()
+            X = self._center.configure_and_transform(X.transpose()).transpose()
             U: Matrix = X.svd_U()
             d: Matrix = X.get_singular_values()
             k: int = min_NP  # Rank k
             d = d.get_rows((0, k))  # Only get non-zero singular values
             d_inv_elements: Matrix = d.apply_elementwise(lambda a: 1.0 / a)
-            tmp: Matrix = U.scale_by_row_vector(d_inv_elements).transpose()
+            tmp: Matrix = U.multiply(d_inv_elements.t()).transpose()
             self._whitening = tmp.get_rows((0, min(tmp.num_rows(), self._num_components)))
 
             X1 = self._whitening.matrix_multiply(X)
-            X1 = X1.matrix_multiply(sqrt(p))
+            X1 = X1.multiply(sqrt(p))
         else:
             X1 = X
 
@@ -245,7 +246,7 @@ class FastICA(MatrixAlgorithm):
         return self._sources
 
     def reconstruct(self) -> Matrix:
-        if self.is_initialised():
+        if self._sources is not None:
             return self._center.inverse_transform(self._sources.matrix_multiply(self._mixing.transpose()).transpose()).transpose()
         else:
             raise MatrixAlgorithmsError('FastICA has not yet been initialized!')

@@ -17,21 +17,21 @@ from typing import Tuple
 
 from wai.test.decorators import RegressionTest
 
-from wai.ma.algorithm.glsw import GLSW
+from wai.ma.algorithms.glsw import GLSW
 from wai.ma.core.matrix import Matrix, factory
 
-from ...test import AbstractMatrixAlgorithmTest, Tags, TestDataset
+from ...test import Tags
+from .._MatrixAlgorithmTest import MatrixAlgorithmTest
 
 
-class GLSWTest(AbstractMatrixAlgorithmTest):
+class GLSWTest(MatrixAlgorithmTest):
     @classmethod
     def subject_type(cls):
         return GLSW
 
-    def add_glsw_regressions(self, subject: GLSW, x: Matrix):
+    def add_glsw_regressions(self, subject: GLSW):
         # Add regressions
         return {
-            Tags.TRANSFORM: subject.transform(x),
             Tags.PROJECTION: subject.G
         }
 
@@ -46,15 +46,20 @@ class GLSWTest(AbstractMatrixAlgorithmTest):
         return self.standard_regression(subject, *resources)
 
     def standard_regression(self, subject: GLSW, *resources: Matrix):
-        # Get inputs: Simulate second instrument as x1 with noise
-        x_first_instrument, = resources
-        x_second_instrument: Matrix = x_first_instrument.add(factory.randn_like(x_first_instrument, 0, 0.0, 0.1))
-
-        # Init GLSW
-        subject.initialize(x_first_instrument, x_second_instrument)
-
-        return self.add_glsw_regressions(subject, x_first_instrument)
+        regressions = super().standard_regression(subject, *resources)
+        regressions.update(self.add_glsw_regressions(subject))
+        return regressions
 
     @classmethod
-    def get_datasets(cls) -> Tuple[TestDataset]:
-        return TestDataset.BOLTS,
+    def common_resources(cls) -> Tuple[Matrix, ...]:
+        return cls.glsw_input_data(*super().common_resources())
+
+    @classmethod
+    def glsw_input_data(cls, *resources: Matrix) -> Tuple[Matrix, ...]:
+        bolts, bolts_response = resources
+
+        # Get inputs: Simulate second instrument as x1 with noise
+        x_first_instrument = bolts
+        x_second_instrument: Matrix = x_first_instrument.add(factory.randn_like(x_first_instrument, 0, 0.0, 0.1))
+
+        return x_first_instrument, x_second_instrument

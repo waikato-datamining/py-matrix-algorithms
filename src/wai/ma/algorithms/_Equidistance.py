@@ -13,36 +13,42 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from ..core import Filter
+from ..core.algorithm import MatrixAlgorithm
 from ..core.matrix import Matrix, factory
 
 
-class Equidistance(Filter):
+class Equidistance(MatrixAlgorithm):
     """
     Filter which resamples rows to the given number of columns
     using linear interpolation.
     """
-    def __init__(self, num_samples: int):
-        self.num_samples: int = num_samples  # The number of samples to resample to
+    def __init__(self):
+        super().__init__()
 
-    def __setattr__(self, key, value):
-        # Must be at least 2 samples in the output
-        if key == "num_samples" and value < 2:
+        self._num_samples: int = 2  # The number of samples to resample to
+
+    def get_num_samples(self) -> int:
+        return self._num_samples
+
+    def set_num_samples(self, value: int):
+        if value < 2:
             raise ValueError("num_samples must be at least 2")
 
-        super().__setattr__(key, value)
+        self._num_samples = value
 
-    def transform(self, predictors: Matrix) -> Matrix:
+    num_samples = property(get_num_samples, set_num_samples)
+
+    def _do_transform(self, predictors: Matrix) -> Matrix:
         # Create a 1-dimensional space where the sample positions
         # for the original and transformed matrices are integral
         resampled_step = (predictors.num_columns() - 1)
-        original_step = (self.num_samples - 1)
+        original_step = (self._num_samples - 1)
 
         # Create a correctly-sized matrix to hold the resampled columns
-        resampled = factory.zeros(predictors.num_rows(), self.num_samples)
+        resampled = factory.zeros(predictors.num_rows(), self._num_samples)
 
         # Calculate each resampled column in turn
-        for resampled_index in range(self.num_samples):
+        for resampled_index in range(self._num_samples):
             # Get the x-position of this sample in our integral space
             x = resampled_step * resampled_index
 
@@ -64,7 +70,9 @@ class Equidistance(Filter):
             t = (x % original_step) / original_step
 
             # Add the linear interpolation of the 2 columns
-            resampled.set_column(resampled_index, left.matrix_multiply(1 - t).add(right.matrix_multiply(t)))
+            resampled.set_column(resampled_index, left.multiply(1 - t).add(right.multiply(t)))
 
         return resampled
 
+    def is_non_invertible(self) -> bool:
+        return True

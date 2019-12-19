@@ -153,7 +153,7 @@ class PCA(MatrixAlgorithm):
         self._eigenvalues = self._eigenvalues.apply_elementwise(lambda v: real(0) if v < 0 else v)
 
         self._sorted_eigens = utils.sort(self._eigenvalues.as_native_flattened())
-        self._sum_of_eigenvalues = self._eigenvalues.total()
+        self._sum_of_eigenvalues = self._eigenvalues.total().as_scalar()
 
         self._train = None
 
@@ -190,7 +190,7 @@ class PCA(MatrixAlgorithm):
                     val += self._eigenvectors.get_row(j).get(0, self._sorted_eigens[i]) * data.get(n, j)
 
                 new_vals[self._num_cols - i - 1] = val
-                cumulative += self._eigenvalues.get_from_vector(self._sorted_eigens[i])
+                cumulative += self._eigenvalues.get_flat(self._sorted_eigens[i])
                 if (cumulative / self._sum_of_eigenvalues) >= self._variance:
                     break
 

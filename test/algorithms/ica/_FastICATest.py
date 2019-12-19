@@ -17,14 +17,14 @@ from typing import Tuple
 
 from wai.test.decorators import RegressionTest
 
-from wai.ma.algorithm.ica import FastICA, Algorithm
-from wai.ma.algorithm.ica.approxfun import LogCosH, Cube, Exponential
+from wai.ma.algorithms.ica import FastICA, Algorithm
+from wai.ma.algorithms.ica.approxfun import LogCosH, Cube, Exponential
 from wai.ma.core.matrix import Matrix
 
-from ...test import AbstractMatrixAlgorithmTest, TestDataset
+from .._MatrixAlgorithmTest import MatrixAlgorithmTest
 
 
-class FastICATest(AbstractMatrixAlgorithmTest):
+class FastICATest(MatrixAlgorithmTest):
     @classmethod
     def subject_type(cls):
         return FastICA
@@ -60,17 +60,13 @@ class FastICATest(AbstractMatrixAlgorithmTest):
         return self.standard_regression(subject, *resources)
 
     def standard_regression(self, subject: FastICA, *resources: Matrix):
-        X, = resources
+        X = resources[0]
 
         transform: Matrix = subject.transform(X)
 
         return {
             'transform': transform,
-            'components': subject.components,
-            'mixing': subject.mixing,
-            'sources': subject.sources
+            'components': subject.get_components(),
+            'mixing': subject.get_mixing(),
+            'sources': subject.get_sources()
         }
-
-    @classmethod
-    def get_datasets(cls) -> Tuple[TestDataset]:
-        return TestDataset.BOLTS,

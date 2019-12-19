@@ -1,4 +1,4 @@
-#  _PCATest.py
+#  _EquidistanceTest.py
 #  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -13,41 +13,42 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from wai.test.decorators import RegressionTest
-from wai.ma.algorithms import PCA
+from wai.test.decorators import RegressionTest, Test
 from wai.ma.core.matrix import Matrix
+from wai.ma.algorithms import Equidistance
 
-from ..test import Tags
 from ._MatrixAlgorithmTest import MatrixAlgorithmTest
 
 
-class PCATest(MatrixAlgorithmTest):
+class EquidistanceTest(MatrixAlgorithmTest):
     @classmethod
     def subject_type(cls):
-        return PCA
+        return Equidistance
 
     @RegressionTest
-    def center(self, subject: PCA, *resources: Matrix):
-        subject.center = True
+    def filter_3(self, subject: Equidistance, *resources: Matrix):
+        subject.num_samples = 3
         return self.standard_regression(subject, *resources)
 
     @RegressionTest
-    def max_cols_3(self, subject: PCA, *resources: Matrix):
-        subject.max_columns = 3
+    def filter_4(self, subject: Equidistance, *resources: Matrix):
+        subject.num_samples = 4
         return self.standard_regression(subject, *resources)
 
-    def standard_regression(self, subject: PCA, *resources: Matrix):
-        # Get input
+    @RegressionTest
+    def filter_5(self, subject: Equidistance, *resources: Matrix):
+        subject.num_samples = 5
+        return self.standard_regression(subject, *resources)
+
+    @RegressionTest
+    def filter_6(self, subject: Equidistance, *resources: Matrix):
+        subject.num_samples = 6
+        return self.standard_regression(subject, *resources)
+
+    @Test
+    def identity(self, subject: Equidistance, *resources: Matrix):
         bolts, bolts_response = resources
 
-        # Get matrices
-        transformed: Matrix = subject.transform(bolts)
-        loadings: Matrix = subject.loadings
-        scores: Matrix = subject.scores
-
-        # Add regressions
-        return {
-            Tags.TRANSFORM: transformed,
-            Tags.LOADINGS: loadings,
-            Tags.SCORES: scores,
-        }
+        subject.num_samples = bolts.num_columns()
+        bolts_filtered = subject.transform(bolts)
+        self.assertMatricesEqual(bolts, bolts_filtered)

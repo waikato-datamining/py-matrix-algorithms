@@ -147,7 +147,7 @@ class PRM(AbstractSingleResponsePLS):
         row_L1_median: Matrix = self.geometric_median(T)
         distances_to_median: Matrix = self.c_dist(T, row_L1_median)
 
-        median_of_dists_to_median: real = distances_to_median.median()
+        median_of_dists_to_median: real = distances_to_median.median().as_scalar()
 
         # Calculate w_xi by f(zi, c) with zi = (distance_i to median) / (median of distances to median)
         for i in range(n):
@@ -170,7 +170,7 @@ class PRM(AbstractSingleResponsePLS):
         # Check if this is the first iteration
         is_first_iteration: bool = self.T is None and self.gamma is None
 
-        y_i_hat: real = y.median()
+        y_i_hat: real = y.median().as_scalar()
         for i in range(n):
             # Use t_i * gamma as estimation if iteration > 0
             if not is_first_iteration:
@@ -199,7 +199,7 @@ class PRM(AbstractSingleResponsePLS):
         :param v:   Input vector.
         :return:    MAD result.
         """
-        return v.sub(v.median()).abs().median()
+        return v.subtract(v.median()).abs().median().as_scalar()
 
     def do_perform_initialization(self, predictors: Matrix, response: Matrix) -> Optional[str]:
         """

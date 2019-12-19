@@ -14,16 +14,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#from ._CCAFilter import CCAFilter
+from ._CCAFilter import CCAFilter
 from ._Center import Center
 from ._Downsample import Downsample
-#from ._Equidistance import Equidistance
+from ._Equidistance import Equidistance
 from ._FFT import FFT, OutputMode
 from ._Log import Log
 #from ._MultiFilter import MultiFilter
 #from ._MultiplicativeScatterCorrection import MultiplicativeScatterCorrection
 from ._PassThrough import PassThrough
-#from ._PCA import PCA
+from ._PCA import PCA
 from ._PowerTransformer import PowerTransformer
 from ._QuantileTransformer import QuantileTransformer
 from ._RobustScaler import RobustScaler

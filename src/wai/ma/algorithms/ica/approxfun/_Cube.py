@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import Tuple, Optional
 
-from ....core.matrix import Matrix
+from ....core.matrix import Matrix, Axis
 from ._NegEntropyApproximationFunction import NegEntropyApproximationFunction
 
 
@@ -24,6 +24,6 @@ class Cube(NegEntropyApproximationFunction):
     Cubic Negative Entropy Approximation Function.
     """
     def apply(self, x: Optional[Matrix]) -> Tuple[Matrix, Matrix]:
-        gx: Matrix = x.pow_elementwise(3)
-        g_x: Matrix = x.pow_elementwise(2).matrix_multiply(3).mean(1)
+        gx: Matrix = x.pow(3)
+        g_x: Matrix = x.pow(2).multiply(3).mean(Axis.ROWS)
         return gx, g_x

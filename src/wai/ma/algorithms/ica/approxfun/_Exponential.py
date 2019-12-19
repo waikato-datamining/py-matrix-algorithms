@@ -16,7 +16,7 @@
 from typing import Optional, Tuple
 
 from ....core.matrix.factory import filled_like
-from ....core.matrix import Matrix
+from ....core.matrix import Matrix, Axis
 from ._NegEntropyApproximationFunction import NegEntropyApproximationFunction
 
 
@@ -25,12 +25,12 @@ class Exponential(NegEntropyApproximationFunction):
     Exponential Negative Entropy Approximation Function.
     """
     def apply(self, x: Optional[Matrix]) -> Tuple[Matrix, Matrix]:
-        x_pow_2: Matrix = x.pow_elementwise(2)
-        exp: Matrix = x_pow_2.div(2).matrix_multiply(-1).exp()
+        x_pow_2: Matrix = x.pow(2)
+        exp: Matrix = x_pow_2.divide(2).multiply(-1).exp()
 
-        gx: Matrix = x.mul_elementwise(exp)
+        gx: Matrix = x.multiply(exp)
 
         ones: Matrix = filled_like(gx, 1)
-        g_x: Matrix = ones.sub(x_pow_2).mul_elementwise(exp).mean(1)
+        g_x: Matrix = ones.subtract(x_pow_2).multiply(exp).mean(Axis.ROWS)
 
         return gx, g_x

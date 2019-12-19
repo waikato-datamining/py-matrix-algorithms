@@ -16,6 +16,7 @@
 from typing import Optional
 
 from ...core.algorithm import SupervisedMatrixAlgorithm
+from ...core.errors import MatrixAlgorithmsError
 from ...core.matrix import Matrix, factory
 from .._Center import Center
 
@@ -25,7 +26,7 @@ class GLSW(SupervisedMatrixAlgorithm):
         super().__init__()
 
         self._alpha: float = 1e-3
-        self.G: Optional[Matrix] = None
+        self._G: Optional[Matrix] = None
 
     def get_alpha(self) -> float:
         return self._alpha
@@ -39,59 +40,47 @@ class GLSW(SupervisedMatrixAlgorithm):
 
     alpha = property(get_alpha, set_alpha)
 
+    def get_projection_matrix(self) -> Matrix:
+        return self._G
+
+    G = property(get_projection_matrix)
+
     def _do_reset(self):
         super()._do_reset()
 
-        self.G = None
-
-    def initialize(self, x1: Optional[Matrix] = None, x2: Optional[Matrix] = None) -> Optional[str]:
-        if x1 is None and x2 is None:
-            super().initialize()
-            self.alpha = 1e-3
-        else:
-            # Always work on copies
-            x1 = x1.copy()
-            x2 = x2.copy()
-
-            self.reset()
-
-            result: Optional[str] = self.check(x1, x2)
-
-            if result is None:
-                result = self.do_initialize(x1, x2)
-                self.initialised = result is None
-
-            return result
+        self._G = None
 
     def to_string(self) -> str:
-        if self.initialised:
-            return 'Generalized Least Squares Weighting. Projection Matrix shape: ' + self.G.shape_string()
+        if self.is_configured():
+            return 'Generalized Least Squares Weighting. Projection Matrix shape: ' + self._G.shape_string()
         else:
             return 'Generalized Least Squares Weighting. Model not yet initialized.'
 
-    def do_initialize(self, x1: Matrix, x2: Matrix) -> Optional[str]:
-        super().initialize()
+    def _check(self, X: Matrix, y: Matrix):
+        if not X.is_same_shape_as(y):
+            raise MatrixAlgorithmsError("Matrices X and y must have the same shape")
 
-        C: Matrix = self.get_covariance_matrix(x1, x2)
+    def _do_configure(self, X: Matrix, y: Matrix):
+        self._check(X, y)
+
+        C: Matrix = self.get_covariance_matrix(X, y)
 
         # SVD
         V: Matrix = self.get_eigenvector_matrix(C)
         D: Matrix = self.get_weight_matrix(C)
 
         # Projection matrix
-        self.G = V.matrix_multiply(D.inverse()).matrix_multiply(V.transpose())
-
-        return None
+        self._G = V.matrix_multiply(D.inverse()).matrix_multiply(V.transpose())
 
     def get_eigenvector_matrix(self, C: Matrix) -> Matrix:
         return C.get_eigenvalue_decomposition_V()
 
     def get_weight_matrix(self, C: Matrix) -> Matrix:
         # Get eigenvalues
-        S_squared: Matrix = C.svd_S().pow_elementwise(2)
+        S_squared: Matrix = C.svd_S().pow(2)
 
         # Weights
-        D: Matrix = S_squared.div(self.alpha)
+        D: Matrix = S_squared.divide(self._alpha)
         D = D.add(factory.eye_like(D))
         D = D.sqrt()
         return D
@@ -100,29 +89,17 @@ class GLSW(SupervisedMatrixAlgorithm):
         # Center X1, X2
         c1: Center = Center()
         c2: Center = Center()
-        x1_centered: Matrix = c1.transform(x1)
-        x2_centered: Matrix = c2.transform(x2)
+        x1_centered: Matrix = c1.configure_and_transform(x1)
+        x2_centered: Matrix = c2.configure_and_transform(x2)
 
         # Build difference
-        X_d: Matrix = x2_centered.sub(x1_centered)
+        X_d: Matrix = x2_centered.subtract(x1_centered)
 
         # Covariance Matrix
         return X_d.transpose().matrix_multiply(X_d)
 
-    def do_transform(self, predictors: Matrix) -> Matrix:
-        return predictors.matrix_multiply(self.G)
+    def _do_transform(self, predictors: Matrix) -> Matrix:
+        return predictors.matrix_multiply(self._G)
 
-    def transform(self, predictors: Matrix) -> Matrix:
-        if not self.is_initialised():
-            raise RuntimeError("Algorithm hasn't been initialized!")
-
-        return self.do_transform(predictors)
-
-    def check(self, x1: Matrix, x2: Matrix) -> Optional[str]:
-        if x1 is None:
-            return 'No x1 matrix provided!'
-        if x2 is None:
-            return 'No x2 matrix provided!'
-        if not x1.is_same_shape_as(x2):
-            return 'Matrices x1 and x2 must have the same shape'
-        return None
+    def is_non_invertible(self) -> bool:
+        return True

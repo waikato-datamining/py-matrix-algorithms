@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from wai.test.decorators import RegressionTest
 
-from wai.ma.algorithm.glsw import EPO
+from wai.ma.algorithms.glsw import EPO
 from wai.ma.core.matrix import Matrix
 
 from ._GLSWTest import GLSWTest

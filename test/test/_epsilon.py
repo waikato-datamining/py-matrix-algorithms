@@ -16,4 +16,4 @@
 from wai.ma.core import real
 
 # Tolerance
-EPSILON: real = real(1e-6)
+EPSILON: real = real(1e-7)

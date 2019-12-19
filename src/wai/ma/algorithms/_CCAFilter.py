@@ -75,7 +75,7 @@ class CCAFilter(SupervisedMatrixAlgorithmWithResponseTransform):
         return "Canonical Correlation Analysis Filter (CCARegression)"
 
     def _do_reset(self):
-        super().reset()
+        super()._do_reset()
 
         self._proj_X = None
         self._proj_Y = None
@@ -111,8 +111,8 @@ class CCAFilter(SupervisedMatrixAlgorithmWithResponseTransform):
         # Calculate omega for SVD
         omega: Matrix = Cxx_inv_sqrt.matrix_multiply(Cxy).matrix_multiply(Cyy_inv_sqrt)
 
-        U: Matrix = omega.svd_U().normalized(Axis.ROWS)
-        V: Matrix = omega.svd_V().normalized(Axis.ROWS)
+        U: Matrix = omega.svd_U().normalized(Axis.COLUMNS)
+        V: Matrix = omega.svd_V().normalized(Axis.COLUMNS)
 
         C: Matrix = U.get_sub_matrix((0, U.num_rows()), (0, self._kcca))
         D: Matrix = V.get_sub_matrix((0, V.num_rows()), (0, self._kcca))

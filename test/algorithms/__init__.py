@@ -14,12 +14,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#from ._CCAFilterTest import CCAFilterTest
+from ._CCAFilterTest import CCAFilterTest
 from ._CenterTest import CenterTest
+from ._EquidistanceTest import EquidistanceTest
 from ._FFTTest import FFTTest
 from ._LogTest import LogTest
 from ._PassThroughTest import PassThroughTest
-#from ._PCATest import PCATest
+from ._PCATest import PCATest
 from ._PowerTransformerTest import PowerTransformerTest
 from ._QuantileTransformerTest import QuantileTransformerTest
 from ._RobustScalerTest import RobustScalarTest

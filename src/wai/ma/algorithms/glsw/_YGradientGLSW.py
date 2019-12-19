@@ -13,18 +13,18 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import List, Optional
+from typing import List
 
 from ._GLSW import GLSW
 from ...core import real
+from ...core.algorithm import MatrixAlgorithm
 from ...core.errors import MatrixAlgorithmsError
 from ...core.matrix import Matrix, factory
-from ...transformation import AbstractTransformation
 
 
 class YGradientGLSW(GLSW):
     def get_covariance_matrix(self, X: Matrix, y: Matrix) -> Matrix:
-        y_vals: List[real] = y.to_raw_copy_1D()
+        y_vals: List[real] = y.as_native_flattened()
         sorted_increasing_row_indices: List[int] = [i for i in range(len(y_vals))]
         sorted_increasing_row_indices.sort(key=lambda o: y_vals[o])
 
@@ -39,8 +39,8 @@ class YGradientGLSW(GLSW):
         X_smoothed: Matrix = sav_golay.transform(X_sorted)
         y_smoothed: Matrix = sav_golay.transform(y_sorted)
 
-        y_smoothed_mean: real = y_smoothed.mean(-1).as_real()
-        syd: real = y_smoothed.sub(y_smoothed_mean).pow_elementwise(2).sum(-1).div(y_smoothed.num_rows() - 1).sqrt().as_real()
+        y_smoothed_mean: real = y_smoothed.mean().as_scalar()
+        syd: real = y_smoothed.subtract(y_smoothed_mean).pow(2).total().divide(y_smoothed.num_rows() - 1).sqrt().as_scalar()
 
         # Reweighting matrix
         W: Matrix = factory.zeros(y.num_rows(), y.num_rows())
@@ -52,7 +52,7 @@ class YGradientGLSW(GLSW):
         C: Matrix = X_smoothed.transpose().matrix_multiply(W.matrix_multiply(W)).matrix_multiply(X_smoothed)
         return C
 
-    def check(self, x1: Matrix, x2: Matrix) -> Optional[str]:
+    def _check(self, x1: Matrix, x2: Matrix):
         """
         Hook method for checking the data before training.
 
@@ -61,26 +61,18 @@ class YGradientGLSW(GLSW):
         :return:    None if successful,
                     otherwise error message.
         """
-        if x1 is None:
-            return 'No x1 matrix provided!'
-        if x2 is None:
-            return 'No x2 matrix provided!'
         if x1.num_rows() != x2.num_rows():
-            return 'Predictors and response must have the same number of rows!'
-        return None
+            raise MatrixAlgorithmsError("Predictors and response must have the same number of rows!")
 
 
-class SavitzkyGolayFilter(AbstractTransformation):
+class SavitzkyGolayFilter(MatrixAlgorithm):
     coef: List[real] = [real(x) for x in [2.0 / 10.0,
                                           1.0 / 10.0,
                                           0.0,
                                           -1.0 / 10.0,
                                           -2.0 / 10.0]]
 
-    def configure(self, data: Matrix):
-        self.configured = True
-
-    def do_transform(self, data: Matrix) -> Matrix:
+    def _do_transform(self, data: Matrix) -> Matrix:
         mat_extended: Matrix = self.extend_matrix(data)
         result: Matrix = factory.zeros_like(mat_extended)
 
@@ -117,9 +109,6 @@ class SavitzkyGolayFilter(AbstractTransformation):
                         .concatenate_along_rows(last_row)\
                         .concatenate_along_rows(last_row)
 
-    def do_inverse_transform(self, data: Matrix) -> Matrix:
-        raise MatrixAlgorithmsError('Inverse transform of Savitzky-Golay is not available.')
-
     def smooth_row(self, i: int, matrix: Matrix) -> Matrix:
         """
         Apply first five-point first gradient Savitzky-Golay smoothing to the i-th
@@ -136,7 +125,10 @@ class SavitzkyGolayFilter(AbstractTransformation):
             coef_idx: int = (window_size - 1) - m
             row_idx: int = i - (m - 2)
             row: Matrix = matrix.get_row(row_idx)
-            row_scaled: Matrix = row.matrix_multiply(SavitzkyGolayFilter.coef[coef_idx])
+            row_scaled: Matrix = row.multiply(SavitzkyGolayFilter.coef[coef_idx])
             res = res.add(row_scaled)
 
         return res
+
+    def is_non_invertible(self) -> bool:
+        return True

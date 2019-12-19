@@ -215,7 +215,7 @@ class Matrix(Serialisable):
         :param row_index:   The row index to get.
         :return:            The row.
         """
-        return Matrix(self._data[row_index].copy())
+        return Matrix(self._data[np.newaxis, row_index, :].copy())
 
     def get_column(self, column_index: int) -> 'Matrix':
         """
@@ -224,7 +224,7 @@ class Matrix(Serialisable):
         :param column_index:    The column index to get.
         :return:                The column.
         """
-        return Matrix(self._data[np.newaxis, :, column_index].transpose().copy())
+        return Matrix(self._data[:, column_index, np.newaxis].copy())
 
     def set_row(self, row_index: int, row: 'Matrix'):
         """
@@ -304,7 +304,7 @@ class Matrix(Serialisable):
 
         :return:    A list of floats.
         """
-        return list(self._data.flat())
+        return list(self._data.flat)
 
     def as_scalar(self) -> real:
         """
@@ -336,8 +336,6 @@ class Matrix(Serialisable):
             rows = [i for i in range(*rows)]
         if isinstance(columns, tuple):
             columns = [i for i in range(*columns)]
-
-        # TODO: if index out-of-range
 
         # Use advanced indexing
         rows = np.array(rows, dtype=np.int)
@@ -382,7 +380,7 @@ class Matrix(Serialisable):
         :return:    The diagonal elements.
         """
         raw = [self.get(i, i) for i in range(min(self.num_rows(), self.num_columns()))]
-        return Matrix(np.array(raw))
+        return Matrix(np.array([raw]))
 
     # ------------ #
     # AGGREGATIONS #
@@ -390,106 +388,85 @@ class Matrix(Serialisable):
 
     # TODO: Comments
 
-    def _aggregate(self, op, axis: Axis = Axis.BOTH, as_real: bool = True, **kwargs) -> Union['Matrix', real]:
+    def _aggregate(self, op, axis: Axis = Axis.BOTH, **kwargs) -> 'Matrix':
         """
         Base implementation of aggregation functions.
 
         :param op:      The aggregating function to perform.
         :param axis:    The axis to aggregate.
-        :param as_real: If axis is Both, determines if the result is a
-                        1x1 matrix or the single real value.
         :return:        The resulting matrix.
         """
         if axis is Axis.BOTH:
-            if as_real:
-                return op(self._data, **kwargs)
-            else:
-                return Matrix(op(self._data, keepdims=True, **kwargs))
+            return Matrix(op(self._data, keepdims=True, **kwargs))
 
         return Matrix(op(self._data, axis=0 if axis is Axis.COLUMNS else 1, keepdims=True, **kwargs))
 
-    def maximum(self, axis: Axis = Axis.BOTH, as_real: bool = True) -> Union['Matrix', real]:
+    def maximum(self, axis: Axis = Axis.BOTH) -> 'Matrix':
         """
         Returns the maxima of values in this matrix.
 
         :param axis:    The axis to aggregate.
-        :param as_real: If axis is Both, determines if the result is a
-                        1x1 matrix or the single real value.
         :return:        The maximal value.
         """
         return self._aggregate(np.amax, axis)
 
-    def minimum(self, axis: Axis = Axis.BOTH, as_real: bool = True) -> Union['Matrix', real]:
+    def minimum(self, axis: Axis = Axis.BOTH) -> 'Matrix':
         """
         Returns the minima of values in this matrix.
 
         :param axis:    The axis to aggregate.
-        :param as_real: If axis is Both, determines if the result is a
-                        1x1 matrix or the single real value.
         :return:        The minimal value.
         """
         return self._aggregate(np.amin, axis)
 
-    def median(self, axis: Axis = Axis.BOTH, as_real: bool = True) -> Union['Matrix', real]:
+    def median(self, axis: Axis = Axis.BOTH) -> 'Matrix':
         """
         Returns the median of values in this matrix.
 
         :param axis:    The axis to aggregate.
-        :param as_real: If axis is Both, determines if the result is a
-                        1x1 matrix or the single real value.
         :return:        The median value.
         """
         return self._aggregate(np.median, axis)
 
-    def mean(self, axis: Axis = Axis.BOTH, as_real: bool = True) -> Union['Matrix', real]:
+    def mean(self, axis: Axis = Axis.BOTH) -> 'Matrix':
         """
         Returns the mean of values in this matrix.
 
         :param axis:    The axis to aggregate.
-        :param as_real: If axis is Both, determines if the result is a
-                        1x1 matrix or the single real value.
         :return:        The mean value.
         """
         return self._aggregate(np.mean, axis)
 
-    def standard_deviation(self, axis: Axis = Axis.BOTH, as_real: bool = True) -> Union['Matrix', real]:
+    def standard_deviation(self, axis: Axis = Axis.BOTH) -> 'Matrix':
         """
         Returns the standard deviations of values in this matrix.
 
         :param axis:    The axis to aggregate.
-        :param as_real: If axis is Both, determines if the result is a
-                        1x1 matrix or the single real value.
         :return:        The standard deviations value.
         """
         return self._aggregate(np.std, axis, ddof=1)
 
-    def total(self, axis: Axis = Axis.BOTH, as_real: bool = True) -> Union['Matrix', real]:
+    def total(self, axis: Axis = Axis.BOTH) -> 'Matrix':
         """
         Returns the sum of all values in this matrix.
 
         :param axis:    The axis to aggregate.
-        :param as_real: If axis is Both, determines if the result is a
-                        1x1 matrix or the single real value.
         :return:        The total value.
         """
         return self._aggregate(np.sum, axis)
 
-    def norm1(self, axis: Axis = Axis.BOTH, as_real: bool = True) -> Union['Matrix', real]:
+    def norm1(self, axis: Axis = Axis.BOTH) -> 'Matrix':
         """
         Calculates the L1 norm of this matrix.
 
         :param axis:    The axis to calculate the norm over.
-        :param as_real: If axis is Both, determines if the result is a
-                        1x1 matrix or the single real value.
         :return:        The L1 norm.
         """
         if axis is Axis.BOTH:
-            if as_real:
-                return real(np.linalg.norm(np.linalg.norm(self._data, 1, 0), 1))
-            else:
-                return Matrix(np.linalg.norm(np.linalg.norm(self._data, 1, 0), 1).reshape((1, 1)))
+            norm = np.linalg.norm(np.linalg.norm(self._data, 1, 0), 1)
+            return Matrix(norm.reshape((1, 1)))
         else:
-            return Matrix(np.linalg.norm(self._data, 1, int(axis), keepdims=True))
+            return Matrix(np.linalg.norm(self._data, 1, 0 if axis is Axis.COLUMNS else 1, keepdims=True))
 
     def norm2(self) -> real:
         """
@@ -517,7 +494,7 @@ class Matrix(Serialisable):
 
         :return:    The trace of the matrix.
         """
-        return self.diag().total()
+        return self.diag().total().as_scalar()
 
     # ------------------- #
     # EIGENVECTORS/VALUES #
@@ -536,7 +513,9 @@ class Matrix(Serialisable):
         if self._eigenvalue_decomposition is None:
             eigenvalues, eigenvectors = np.linalg.eig(self._data)
             eigenvalues = eigenvalues[:, np.newaxis]
-            self._eigenvalue_decomposition = (Matrix(eigenvalues).transpose(), Matrix(eigenvectors))
+            eigenvalues = eigenvalues.astype(real)
+            eigenvectors = eigenvectors.astype(real)
+            self._eigenvalue_decomposition = (Matrix(eigenvalues), Matrix(eigenvectors))
 
     def get_eigenvectors(self, sort_dominance: bool = False) -> 'Matrix':
         if sort_dominance:
@@ -605,6 +584,7 @@ class Matrix(Serialisable):
 
     def _initialise_singular_value_decomposition(self):
         u, s, vh = np.linalg.svd(self._data, full_matrices=False)
+        s.resize((1, s.size))
         # u and vh matrices are multiplied by -1 to match OJAlgo reference implementation
         self._singular_value_decomposition = (Matrix(u).multiply(-1, in_place=True),
                                               Matrix(s),
@@ -627,6 +607,7 @@ class Matrix(Serialisable):
         return Matrix(np.array(raw, dtype=real))
 
     def get_singular_values(self) -> 'Matrix':
+        self._initialise_singular_value_decomposition()
         return self._singular_value_decomposition[1].transpose()
 
     # ---------------- #
@@ -803,7 +784,9 @@ class Matrix(Serialisable):
         :param axis:
         :return:
         """
-        norms = np.linalg.norm(self._data, 2, int(axis), keepdims=True)
+        norms = np.linalg.norm(self._data, 2,
+                               None if axis is Axis.BOTH else 0 if axis is Axis.COLUMNS else 1,
+                               keepdims=True)
         result = np.divide(self._data, norms)
         return Matrix(result)
 

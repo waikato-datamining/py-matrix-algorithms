@@ -34,18 +34,19 @@ class YGradientEPO(YGradientGLSW):
     """
     def __init__(self):
         super().__init__()
-        self.N: int = 5  # Number of eigenvectors to keep
+        self._N: int = 5  # Number of eigenvectors to keep
 
-    @staticmethod
-    def validate_N(value: int) -> bool:
-        return value > 0
+    def get_N(self) -> int:
+        return self._N
 
-    def initialize(self, x1: Optional[Matrix] = None, x2: Optional[Matrix] = None) -> str:
-        if x1 is None and x2 is None:
-            super().initialize()
-            self.N = 5
-        else:
-            return super().initialize(x1, x2)
+    def set_N(self, value: int):
+        if value < 1:
+            raise ValueError(f"Number of eigenvectors to keep must be at least 1 but was {value}")
+
+        self._N = value
+        self.reset()
+
+    N = property(get_N, set_N)
 
     def get_weight_matrix(self, C: Matrix) -> Matrix:
         """
@@ -54,7 +55,7 @@ class YGradientEPO(YGradientGLSW):
         :param C:   Covariance matrix.
         :return:    Identity matrix.
         """
-        return factory.eye(self.N)
+        return factory.eye(self._N)
 
     def get_eigenvector_matrix(self, C: Matrix) -> Matrix:
         """
@@ -65,5 +66,5 @@ class YGradientEPO(YGradientGLSW):
         """
         sort_dominance: bool = True
         V: Matrix = C.get_eigenvectors(sort_dominance)
-        V = V.get_sub_matrix((0, V.num_rows()), (0, min(V.num_columns(), self.N)))
+        V = V.get_sub_matrix((0, V.num_rows()), (0, min(V.num_columns(), self._N)))
         return V

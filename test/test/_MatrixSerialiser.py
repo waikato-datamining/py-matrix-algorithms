@@ -16,6 +16,7 @@
 from typing import IO, Optional, List, Tuple
 
 from wai.test.serialisation import RegressionSerialiser
+from wai.ma.core import real
 from wai.ma.core.matrix import Matrix, helper
 
 from ._epsilon import EPSILON
@@ -39,7 +40,7 @@ class MatrixSerialiser(RegressionSerialiser[Matrix]):
         return helper.read(file, False, ",")
 
     @classmethod
-    def compare(cls, result: Matrix, reference: Matrix) -> Optional[str]:
+    def compare(cls, result: Matrix, reference: Matrix, epsilon: real = EPSILON) -> Optional[str]:
         # Check for shape
         if not reference.is_same_shape_as(result):
             return 'Shapes of the expected and actual matrices do not match.\n' + \
@@ -48,7 +49,7 @@ class MatrixSerialiser(RegressionSerialiser[Matrix]):
 
         # Check for values
         diff: Matrix = reference.subtract(result).abs()
-        which = diff.where(lambda v: v > EPSILON)
+        which = diff.where(lambda v: v > epsilon)
         if len(which) > 0:
             return 'Values in the expected and actual matrices do not match.\n' + \
                    'Absolute differences:\n' + \

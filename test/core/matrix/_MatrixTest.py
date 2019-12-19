@@ -62,6 +62,8 @@ class MatrixTest(AbstractMatrixAlgorithmTest):
                                                 (i, i + 1))
             self.assertEqual(column, sub_matrix)
 
+
+
     @Test
     def aggregations_are_right_shape(self, subject: Matrix, bolts: Matrix):
         """
@@ -78,11 +80,11 @@ class MatrixTest(AbstractMatrixAlgorithmTest):
                             bolts.total,
                             bolts.norm1):
             with self.subTest(aggregation.__name__):
-                bolts_columns = bolts.mean(Axis.COLUMNS)
+                bolts_columns = aggregation(Axis.COLUMNS)
                 self.assertTrue(bolts_columns.is_row_vector())
                 self.assertEqual(bolts_columns.num_columns(), 7)
 
-                bolts_rows = bolts.mean(Axis.ROWS)
+                bolts_rows = aggregation(Axis.ROWS)
                 self.assertTrue(bolts_rows.is_column_vector())
                 self.assertEqual(bolts_rows.num_rows(), 40)
 

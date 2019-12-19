@@ -15,8 +15,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import Tuple
 
-from test.test import TestDataset
-from wai.ma.algorithm.glsw import YGradientGLSW
+from wai.ma.algorithms.glsw import YGradientGLSW
 from wai.ma.core.matrix import Matrix
 
 from ._GLSWTest import GLSWTest
@@ -27,16 +26,7 @@ class YGradientGLSWTest(GLSWTest):
     def subject_type(cls):
         return YGradientGLSW
 
-    def standard_regression(self, subject: YGradientGLSW, *resources: Matrix):
-        # Get inputs: Simulate second instrument as x1 with noise
-        X, y = resources
-
-        # Init GLSW
-        subject.initialize(X, y)
-
-        # Add regressions
-        return self.add_glsw_regressions(subject, X)
-
     @classmethod
-    def get_datasets(cls) -> Tuple[TestDataset, TestDataset]:
-        return TestDataset.BOLTS, TestDataset.BOLTS_RESPONSE
+    def glsw_input_data(cls, *resources: Matrix) -> Tuple[Matrix, ...]:
+        return resources
+

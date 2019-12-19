@@ -30,6 +30,6 @@ class CenterTest(MatrixAlgorithmTest):
     def mean_is_zero(self, subject: Center, *resources: Matrix):
         bolts, bolts_response = resources
         transform: Matrix = subject.configure_and_transform(bolts)
-        actual: real = transform.mean()
+        actual: real = transform.mean().as_scalar()
         expected: real = real(0.0)
         self.assertAlmostEqual(actual, expected, delta=1e-7)

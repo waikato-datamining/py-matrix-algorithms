@@ -17,10 +17,11 @@ from abc import ABC
 from typing import Tuple
 
 from wai.test.decorators import Test
+from wai.ma.core import real
 from wai.ma.core.matrix import Matrix
 from wai.ma.core.algorithm import MatrixAlgorithm, SupervisedMatrixAlgorithm, UnsupervisedMatrixAlgorithm
 
-from ..test import AbstractMatrixAlgorithmTest, TestDataset, Tags
+from ..test import AbstractMatrixAlgorithmTest, TestDataset, Tags, MatrixSerialiser, EPSILON
 
 
 class MatrixAlgorithmTest(AbstractMatrixAlgorithmTest, ABC):
@@ -37,8 +38,7 @@ class MatrixAlgorithmTest(AbstractMatrixAlgorithmTest, ABC):
         inverse_transform: Matrix = subject.inverse_transform(transform)
 
         # Check if input == inverse_transform
-        is_equal: bool = bolts.subtract(inverse_transform).abs().all(lambda v: v < 1e-7)
-        self.assertTrue(is_equal)
+        self.assertMatricesAlmostEqual(bolts, inverse_transform)
 
     def standard_regression(self, subject: MatrixAlgorithm, *resources: Matrix):
         bolts, bolts_response = resources
@@ -78,3 +78,11 @@ class MatrixAlgorithmTest(AbstractMatrixAlgorithmTest, ABC):
             subject.configure(bolts, bolts_response)
         elif isinstance(subject, UnsupervisedMatrixAlgorithm):
             subject.configure(bolts)
+
+    def assertMatricesEqual(self, m1: Matrix, m2: Matrix):
+        self.assertMatricesAlmostEqual(m1, m2, 0)
+
+    def assertMatricesAlmostEqual(self, m1: Matrix, m2: Matrix, epsilon: float = EPSILON):
+        error = MatrixSerialiser.compare(m1, m2, real(epsilon))
+        if error is not None:
+            raise AssertionError(error)

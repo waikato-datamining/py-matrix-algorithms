@@ -32,7 +32,7 @@ class RowNormTest(MatrixAlgorithmTest):
 
         transform: Matrix = subject.transform(bolts)
 
-        actual_mean: real = transform.mean()
+        actual_mean: real = transform.mean().as_scalar()
         expected_mean: real = real(0.0)
         expected_std: real = real(1.0)
 

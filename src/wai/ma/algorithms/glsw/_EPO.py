@@ -13,8 +13,6 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import Optional
-
 from ...core.matrix import Matrix, factory
 from ._GLSW import GLSW
 
@@ -37,13 +35,6 @@ class EPO(GLSW):
 
     N = property(get_N, set_N)
 
-    def initialize(self, x1: Optional[Matrix] = None, x2: Optional[Matrix] = None) -> str:
-        if x1 is None and x2 is None:
-            super().initialize()
-            self.N = 5
-        else:
-            return super().initialize(x1, x2)
-
     def get_weight_matrix(self, C: Matrix) -> Matrix:
         """
         Instead of calculating D from C, create an identity matrix.
@@ -51,7 +42,7 @@ class EPO(GLSW):
         :param C:   Covariance matrix.
         :return:    Identity matrix.
         """
-        return factory.eye(self.N)
+        return factory.eye(self._N)
 
     def get_eigenvector_matrix(self, C: Matrix) -> Matrix:
         """
@@ -62,5 +53,5 @@ class EPO(GLSW):
         """
         sort_dominance: bool = True
         V: Matrix = C.get_eigenvectors(sort_dominance)
-        V = V.get_sub_matrix((0, V.num_rows()), (0, min(V.num_columns(), self.N)))
+        V = V.get_sub_matrix((0, V.num_rows()), (0, min(V.num_columns(), self._N)))
         return V

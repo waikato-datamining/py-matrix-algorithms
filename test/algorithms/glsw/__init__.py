@@ -13,3 +13,8 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from ._EPOTest import EPOTest
+from ._GLSWTest import GLSWTest
+from ._YGradientEPOTest import YGradientEPOTest
+from ._YGradientGLSWTest import YGradientGLSWTest

@@ -27,15 +27,15 @@ class LogCosH(NegEntropyApproximationFunction):
     """
     def __init__(self, alpha: real = real(1.0)):
         super().__init__()
-        self.alpha = alpha
+        self.alpha: real = alpha
 
     def apply(self, x: Optional[Matrix]) -> Tuple[Matrix, Matrix]:
-        x = x.matrix_multiply(self.alpha)
+        x = x.multiply(self.alpha)
         gx: Matrix = x.tanh()
         g_x: Matrix = zeros(gx.num_rows(), 1)
         ones: Matrix = filled(1, gx.num_columns(), 1.0)
         for i in range(gx.num_rows()):
             gxi: Matrix = gx.get_row(i)
-            g_xi = ones.sub(gxi.pow_elementwise(2)).matrix_multiply(self.alpha).mean()
+            g_xi = ones.subtract(gxi.pow(2)).multiply(self.alpha).mean().as_scalar()
             g_x.set(i, 0, g_xi)
         return gx, g_x
