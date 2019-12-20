@@ -13,9 +13,9 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from wai.test.decorators import RegressionTest
+from wai.test.decorators import RegressionTest, ExceptionTest
 
-from wai.ma.algorithm.pls import CCARegression, DeflationMode
+from wai.ma.algorithms.pls import CCARegression, DeflationMode
 from wai.ma.core.matrix import Matrix
 
 from ._AbstractPLSTest import AbstractPLSTest
@@ -34,10 +34,9 @@ class CCARegressionTest(AbstractPLSTest):
         subject.deflation_mode = DeflationMode.CANONICAL
         return self.standard_regression(subject, *resources)
 
-    @RegressionTest
+    @ExceptionTest(ValueError)
     def deflation_mode_regression(self, subject: CCARegression, *resources: Matrix):
         subject.deflation_mode = DeflationMode.REGRESSION
-        return self.standard_regression(subject, *resources)
 
     @RegressionTest
     def norm_Y_weights_true(self, subject: CCARegression, *resources: Matrix):

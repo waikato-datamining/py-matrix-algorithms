@@ -778,7 +778,7 @@ class Matrix(Serialisable):
     def sqrt(self, in_place: bool = False) -> "Matrix":
         return self._unary_op(np.sqrt, in_place)
 
-    def normalized(self, axis: Axis) -> 'Matrix':
+    def normalized(self, axis: Axis = Axis.BOTH) -> 'Matrix':
         """
         TODO
         :param axis:

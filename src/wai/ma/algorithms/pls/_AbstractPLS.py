@@ -16,55 +16,123 @@
 from abc import abstractmethod
 from typing import List, Optional
 
-from ...core import SupervisedFilter
-from ...algorithm import AbstractAlgorithm
-from ...core import PreprocessingType
+from wai.common import switch, case, default, break_
+
+from ...core.algorithm import PredictingSupervisedMatrixAlgorithm, UnsupervisedMatrixAlgorithm
 from ...core.matrix import Matrix
+from .._Center import Center
+from .._Standardize import Standardize
+from ._PreprocessingType import PreprocessingType
 
 
-class AbstractPLS(AbstractAlgorithm, SupervisedFilter):
+class AbstractPLS(PredictingSupervisedMatrixAlgorithm):
     def __init__(self):
         super().__init__()
-        self.preprocessing_type: PreprocessingType = PreprocessingType.NONE  # The preprocessing type to perform
-        self.num_components: int = 5  # The maximum number of components to generate
 
-    def initialize(self, predictors: Optional[Matrix] = None, response: Optional[Matrix] = None) -> Optional[str]:
-        if predictors is None and response is None:
-            """
-            Initializes the members.
-            """
-            super().initialize()
-            self.num_components = 5
-            self.preprocessing_type = PreprocessingType.NONE
-        else:
-            """
-            Initialises using the provided data.
+        self._preprocessing_type: PreprocessingType = PreprocessingType.NONE  # The preprocessing type to perform
+        self._num_components: int = 5  # The maximum number of components to generate
 
-            :param predictors:  The input data.
-            :param response:    The dependent variable(s).
-            :return:            None if successful, otherwise error message.
-            """
-            # Always work on copies
-            predictors = predictors.copy()
-            response = response.copy()
+        self._trans_predictors: Optional[UnsupervisedMatrixAlgorithm] = None
+        self._trans_response: Optional[UnsupervisedMatrixAlgorithm] = None
 
-            self.reset()
+    def get_preprocessing_type(self) -> PreprocessingType:
+        return self._preprocessing_type
 
-            result = self.check(predictors, response)
+    def set_preprocessing_type(self, value: PreprocessingType):
+        self._preprocessing_type = value
+        self.reset()
 
-            if result is None:
-                result = self.do_initialize(predictors, response)
-                self.initialised = result is None
+    preprocessing_type = property(get_preprocessing_type, set_preprocessing_type)
 
-            return result
+    def get_num_components(self) -> int:
+        return self._num_components
 
-    @staticmethod
-    def validate_preprocessing_type(value: PreprocessingType) -> bool:
-        return True
+    def set_num_components(self, value: int):
+        self._num_components = value
+        self.reset()
 
-    @staticmethod
-    def validate_num_components(value: int) -> bool:
-        return True
+    num_components = property(get_num_components, set_num_components)
+
+    def _do_reset(self):
+        super()._do_reset()
+
+        self._trans_predictors = None
+        self._trans_response = None
+
+    def _do_configure(self, X: Matrix, y: Matrix):
+        with switch(self._preprocessing_type):
+            if case(PreprocessingType.CENTER):
+                self._trans_predictors = Center()
+                self._trans_response = Center()
+                break_()
+            if case(PreprocessingType.STANDARDIZE):
+                self._trans_predictors = Standardize()
+                self._trans_response = Standardize()
+                break_()
+            if case(PreprocessingType.NONE):
+                self._trans_predictors = None
+                self._trans_response = None
+                break_()
+            if default():
+                raise RuntimeError(f"Unhandled preprocessing type: {self._preprocessing_type}")
+
+        if self._trans_predictors is not None:
+            X = self._trans_predictors.configure_and_transform(X)
+        if self._trans_response is not None:
+            y = self._trans_response.configure_and_transform(y)
+
+        self._do_pls_configure(X, y)
+
+    @abstractmethod
+    def _do_pls_configure(self, X: Matrix, y: Matrix):
+        """
+        PLS-specific configuration implementation. Override to configure
+        the PLS algorithm on the given matrices, after feature/target
+        normalisation has been performed.
+
+        :param X:   The normalised feature configuration matrix.
+        :param y:   The normalised target configuration matrix.
+        """
+        pass
+
+    def _do_transform(self, X: Matrix) -> Matrix:
+        if self._trans_predictors is not None:
+            X = self._trans_predictors.transform(X)
+
+        return self._do_pls_transform(X)
+
+    @abstractmethod
+    def _do_pls_transform(self, X: Matrix) -> Matrix:
+        """
+        Internal implementation of PLS transformation. Override
+        to implement the PLS-specific transformation code, after
+        normalisation has been performed.
+
+        :param X:   The normalised matrix to apply the algorithm to.
+        :return:    The normalised matrix resulting from the transformation.
+        """
+        pass
+
+    def _do_predict(self, X: Matrix) -> Matrix:
+        if self._trans_predictors is not None:
+            X = self._trans_predictors.transform(X)
+
+        result: Matrix = self._do_pls_predict(X)
+
+        if self._trans_response is not None:
+            result = self._trans_response.inverse_transform(result)
+
+        return result
+
+    def _do_pls_predict(self, X: Matrix) -> Matrix:
+        """
+        PLS-specific prediction implementation. Override to predict
+        normalised target values for the given normalised feature matrix.
+
+        :param X:   The normalised feature matrix to predict against.
+        :return:    The normalised predictions.
+        """
+        pass
 
     @abstractmethod
     def get_matrix_names(self) -> List[str]:
@@ -103,31 +171,6 @@ class AbstractPLS(AbstractAlgorithm, SupervisedFilter):
         """
         pass
 
-    def check(self, predictors: Optional[Matrix], response: Optional[Matrix]) -> Optional[str]:
-        """
-        Hook method for checking the data before training.
-
-        :param predictors:  The input data.
-        :param response:    The dependent variable(s).
-        :return:            None if successful, otherwise error message.
-        """
-        if predictors is None:
-            return 'No predictors matrix provided!'
-        if response is None:
-            return 'No response matrix provided!'
-        return None
-
-    @abstractmethod
-    def do_initialize(self, predictors: Matrix, response: Matrix) -> Optional[str]:
-        """
-        Trains using the provided data.
-
-        :param predictors:  The input data.
-        :param response:    The dependent variable(s).
-        :return:            None if successful, otherwise error message.
-        """
-        pass
-
     @abstractmethod
     def can_predict(self) -> bool:
         """
@@ -137,70 +180,8 @@ class AbstractPLS(AbstractAlgorithm, SupervisedFilter):
         """
         pass
 
-    @abstractmethod
-    def do_predict(self, predictors: Matrix) -> Matrix:
-        """
-        Performs predictions on the data.
-
-        :param predictors:  The input data.
-        :return:            The predictions.
-        """
-        pass
-
-    def predict(self, predictors: Matrix) -> Matrix:
-        """
-        Performs predictions on the data.
-
-        :param predictors:  The input data.
-        :return:            The predictions.
-        """
-        if not self.is_initialised():
-            raise RuntimeError('Algorithm has not been initialised!')
-
-        return self.do_predict(predictors)
-
-    @abstractmethod
-    def do_transform(self, predictors: Matrix) -> Matrix:
-        """
-        Transforms the data.
-
-        :param predictors:  The input data.
-        :return:            The transformed data.
-        """
-        pass
-
-    def transform(self, predictors: Matrix) -> Matrix:
-        """
-        Transforms the data.
-
-        :param predictors:  The input data.
-        :return:            The transformed data.
-        """
-        if not self.is_initialised():
-            raise RuntimeError('Algorithm has not been initialised!')
-
-        return self.do_transform(predictors)
-
-    @abstractmethod
-    def do_perform_initialization(self, predictors: Matrix, response: Matrix) -> Optional[str]:
-        """
-        Initialises using the provided data.
-
-        :param predictors:  The input data.
-        :param response:    The dependent variable(s).
-        :return:            None if successful, otherwise error message.
-        """
-        pass
-
-    @abstractmethod
-    def do_perform_predictions(self, predictors: Matrix) -> Matrix:
-        """
-        Performs predictions on the data.
-
-        :param predictors:  The input data.
-        :return:            The transformed data and the predictions.
-        """
-        pass
+    def is_non_invertible(self) -> bool:
+        return True
 
     def to_string(self) -> str:
         """
@@ -211,7 +192,7 @@ class AbstractPLS(AbstractAlgorithm, SupervisedFilter):
         result = self.__class__.__name__ + '\n'
         result += self.__class__.__name__.replace('.', '=') + '\n\n'
         result += 'Debug        : ' + str(self.debug) + '\n'
-        result += '# components : ' + str(self.num_components) + '\n'
-        result += 'Preprocessing: ' + str(self.preprocessing_type) + '\n'
+        result += '# components : ' + str(self._num_components) + '\n'
+        result += 'Preprocessing: ' + str(self._preprocessing_type) + '\n'
 
         return result

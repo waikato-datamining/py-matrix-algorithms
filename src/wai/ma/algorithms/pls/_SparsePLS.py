@@ -21,7 +21,7 @@ from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
 from ._NIPALS import NIPALS
 from ...core import ZERO, real
 from ...core.matrix import Matrix, factory
-from ...transformation import Standardize
+from .._Standardize import Standardize
 
 
 class SparsePLS(AbstractSingleResponsePLS):
@@ -45,48 +45,61 @@ class SparsePLS(AbstractSingleResponsePLS):
     """
     def __init__(self):
         super().__init__()
-        self.B_pls: Optional[Matrix] = None
-        self.tol: real = ZERO  # NIPALS tolerance threshold
-        self.max_iter: int = 0  # NIPALS max iterations
-        self.lambda_: real = ZERO  # Sparsity parameter. Determines sparseness
-        self.A: Optional[Set[int]] = None
-        self.W: Optional[Matrix] = None  # Loadings
-        self.standardize_X: Optional[Standardize] = None  # Standardize X
-        self.standardize_Y: Optional[Standardize] = None  # Standardize Y
+        self._B_pls: Optional[Matrix] = None
+        self._tol: real = real(1e-7)  # NIPALS tolerance threshold
+        self._max_iter: int = 500  # NIPALS max iterations
+        self._lambda: real = real(0.5)  # Sparsity parameter. Determines sparseness
+        self._A: Optional[Set[int]] = None
+        self._W: Optional[Matrix] = None  # Loadings
+        self._standardize_X: Standardize = Standardize()  # Standardize X
+        self._standardize_Y: Standardize = Standardize()  # Standardize Y
 
-    @staticmethod
-    def validate_max_iter(value: int) -> bool:
-        return value >= 0
+    def get_max_iter(self) -> int:
+        return self._max_iter
 
-    @staticmethod
-    def validate_tol(value: real) -> bool:
-        return value >= 0
+    def set_max_iter(self, value: int):
+        if value < 0:
+            raise ValueError(f"Maximum iteration parameter must be positive but was {value}")
 
-    @staticmethod
-    def validate_lambda_(value: real) -> bool:
-        return value >= 0
+        self._max_iter = value
+        self.reset()
 
-    def reset(self):
+    max_iter = property(get_max_iter, set_max_iter)
+
+    def get_tol(self) -> real:
+        return self._tol
+
+    def set_tol(self, value: real):
+        if value < 0:
+            raise ValueError(f"Tolerance parameter must be positive but was {value}")
+
+        self._tol = value
+        self.reset()
+
+    tol = property(get_tol, set_tol)
+
+    def get_lambda(self) -> real:
+        return self._lambda
+
+    def set_lambda(self, value: real):
+        if abs(value) < 0:
+            raise ValueError(f"Sparseness parameter lambda must be postive but was {value}")
+
+        self._lambda = value
+        self.reset()
+
+    lambda_ = property(get_lambda, set_lambda)
+
+    def _do_reset(self):
         """
         Resets the member variables.
         """
-        super().reset()
-        self.B_pls = None
-        self.A = None
-        self.W = None
-        self.standardize_X = Standardize()
-        self.standardize_Y = Standardize()
-
-    def initialize(self, predictors: Optional[Matrix] = None, response: Optional[Matrix] = None) -> Optional[str]:
-        if predictors is None and response is None:
-            super().initialize()
-            self.lambda_ = real(0.5)
-            self.tol = real(1e-7)
-            self.max_iter = 500
-            self.standardize_X = Standardize()
-            self.standardize_Y = Standardize()
-        else:
-            return super().initialize(predictors, response)
+        super()._do_reset()
+        self._B_pls = None
+        self._A = None
+        self._W = None
+        self._standardize_X.reset()
+        self._standardize_Y.reset()
 
     def get_matrix_names(self) -> List[str]:
         """
@@ -106,9 +119,9 @@ class SparsePLS(AbstractSingleResponsePLS):
         """
         with switch(name):
             if case('W'):
-                return self.W
+                return self._W
             if case('B'):
-                return self.B_pls
+                return self._B_pls
             if default():
                 return None
 
@@ -126,9 +139,9 @@ class SparsePLS(AbstractSingleResponsePLS):
 
         :return:    The loadings, None if not available.
         """
-        return self.W
+        return self._W
 
-    def do_perform_initialization(self, predictors: Matrix, response: Matrix) -> Optional[str]:
+    def _do_pls_configure(self, predictors: Matrix, response: Matrix) -> Optional[str]:
         """
         Initialises using the provided data.
 
@@ -136,17 +149,17 @@ class SparsePLS(AbstractSingleResponsePLS):
         :param response:    The dependent variable(s).
         :return:            None if successful, otherwise error message.
         """
-        X: Matrix = self.standardize_X.transform(predictors)
-        y: Matrix = self.standardize_Y.transform(response)
+        X: Matrix = self._standardize_X.configure_and_transform(predictors)
+        y: Matrix = self._standardize_Y.configure_and_transform(response)
         X_j: Matrix = X.copy()
         y_j: Matrix = y.copy()
-        self.A = set()
-        self.B_pls = factory.zeros(X.num_columns(), y.num_columns())
-        self.W = factory.zeros(X.num_columns(), self.num_components)
+        self._A = set()
+        self._B_pls = factory.zeros(X.num_columns(), y.num_columns())
+        self._W = factory.zeros(X.num_columns(), self._num_components)
 
-        for k in range(self.num_components):
+        for k in range(self._num_components):
             w_k: Matrix = self.get_direction_vector(X_j, y_j, k)
-            self.W.set_column(k, w_k)
+            self._W.set_column(k, w_k)
 
             if self.debug:
                 self.check_direction_vector(w_k)
@@ -154,23 +167,23 @@ class SparsePLS(AbstractSingleResponsePLS):
             self.collect_indices(w_k)
 
             X_A: Matrix = self.get_column_submatrix_of(X)
-            self.B_pls = factory.zeros(X.num_columns(), y.num_columns())
+            self._B_pls = factory.zeros(X.num_columns(), y.num_columns())
             B_pls_A: Matrix = self.get_regression_coefficient(X_A, y, k)
 
             # Fill self.B_pls values at non zero indices with estimated
             # regression coefficients
             idx_counter: int = 0
-            for idx in sorted(self.A):
-                self.B_pls.set_row(idx, B_pls_A.get_row(idx_counter))
+            for idx in sorted(self._A):
+                self._B_pls.set_row(idx, B_pls_A.get_row(idx_counter))
                 idx_counter += 1
 
             # Deflate
-            y_j = y.sub(X.matrix_multiply(self.B_pls))
+            y_j = y.subtract(X.matrix_multiply(self._B_pls))
 
         if self.debug:
             self.logger.info('Selected following features ' +
-                             '(' + str(len(self.A)) + '/' + str(X.num_columns()) + '): ')
-            l: List[str] = [str(a) for a in sorted(self.A)]
+                             '(' + str(len(self._A)) + '/' + str(X.num_columns()) + '): ')
+            l: List[str] = [str(a) for a in sorted(self._A)]
             self.logger.info(','.join(l))
 
         return None
@@ -186,11 +199,11 @@ class SparsePLS(AbstractSingleResponsePLS):
         """
         num_components: int = min(X_A.num_columns(), k + 1)
         nipals: NIPALS = NIPALS()
-        nipals.max_iter = self.max_iter
-        nipals.tol = self.tol
-        nipals.num_components = num_components
-        nipals.initialize(X_A, y)
-        return nipals.coef
+        nipals._max_iter = self._max_iter
+        nipals._tol = self._tol
+        nipals._num_components = num_components
+        nipals.configure(X_A, y)
+        return nipals._coef
 
     def get_column_submatrix_of(self, X: Matrix) -> Matrix:
         """
@@ -199,9 +212,9 @@ class SparsePLS(AbstractSingleResponsePLS):
         :param X:   Input matrix.
         :return:    Submatrix of X.
         """
-        X_A: Matrix = factory.zeros(X.num_rows(), len(self.A))
+        X_A: Matrix = factory.zeros(X.num_rows(), len(self._A))
         col_count: int = 0
-        for i in sorted(self.A):
+        for i in sorted(self._A):
             col: Matrix = X.get_column(i)
             X_A.set_column(col_count, col)
             col_count += 1
@@ -214,9 +227,9 @@ class SparsePLS(AbstractSingleResponsePLS):
         :param X:   Input matrix.
         :return:    Submatrix of X.
         """
-        X_A: Matrix = factory.zeros(len(self.A), X.num_columns())
+        X_A: Matrix = factory.zeros(len(self._A), X.num_columns())
         row_count: int = 0
-        for i in sorted(self.A):
+        for i in sorted(self._A):
             row: Matrix = X.get_row(i)
             X_A.set_row(row_count, row)
             row_count += 1
@@ -228,9 +241,9 @@ class SparsePLS(AbstractSingleResponsePLS):
 
         :param w:   Direction vector.
         """
-        self.A.clear()
-        self.A.update(w.where_vector(lambda d: abs(d) > 1e-6))
-        self.A.update(self.B_pls.where_vector(lambda d: abs(d) > 1e-6))
+        self._A.clear()
+        self._A.update(w.where_vector(lambda d: abs(d) > 1e-6))
+        self._A.update(self._B_pls.where_vector(lambda d: abs(d) > 1e-6))
 
     def check_direction_vector(self, w: Matrix):
         """
@@ -253,37 +266,37 @@ class SparsePLS(AbstractSingleResponsePLS):
         """
         Z_p: Matrix = X.transpose().matrix_multiply(y_j)
         z_norm: real = Z_p.abs().median().as_scalar()  # R package spls uses median norm
-        Z_p = Z_p.div(z_norm)
+        Z_p = Z_p.divide(z_norm)
         Z_P_sign: Matrix = Z_p.sign()
-        val_b: Matrix = Z_p.abs().sub(self.lambda_ * Z_p.abs().maximum())
+        val_b: Matrix = Z_p.abs().subtract(self._lambda * Z_p.abs().maximum().as_scalar())
 
         # Collect indices where val_b is >= 0
         idxs: List[int] = val_b.where_vector(lambda d: d >= 0)
-        pre_mul: Matrix = val_b.mul_elementwise(Z_P_sign)
+        pre_mul: Matrix = val_b.multiply(Z_P_sign)
         c: Matrix = factory.zeros(Z_p.num_rows(), 1)
         for idx in idxs:
             val: real = pre_mul.get(idx, 0)
             c.set(idx, 0, val)
 
-        return c.div(c.norm2_squared())  # Rescale c and use as estimated direction vector
+        return c.divide(c.norm2_squared())  # Rescale c and use as estimated direction vector
 
-    def do_transform(self, predictors: Matrix) -> Matrix:
+    def _do_pls_transform(self, predictors: Matrix) -> Matrix:
         """
         Transforms the data.
 
         :param predictors:  The input data.
         :return:            The transformed data and the predictions.
         """
-        num_components: int = self.num_components
+        num_components: int = self._num_components
         T: Matrix = factory.zeros(predictors.num_rows(), num_components)
         X: Matrix = predictors.copy()
         for k in range(num_components):
-            w_k: Matrix = self.W.get_column(k)
+            w_k: Matrix = self._W.get_column(k)
             t_k: Matrix = X.matrix_multiply(w_k)
             T.set_column(k, t_k)
 
-            p_k: Matrix = X.transpose().matrix_multiply(t_k).div(t_k.norm2_squared())
-            X = X.sub(t_k.matrix_multiply(p_k.transpose()))
+            p_k: Matrix = X.transpose().matrix_multiply(t_k).divide(t_k.norm2_squared())
+            X = X.subtract(t_k.matrix_multiply(p_k.transpose()))
 
         return T
 
@@ -295,20 +308,20 @@ class SparsePLS(AbstractSingleResponsePLS):
         """
         return True
 
-    def do_perform_predictions(self, predictors: Matrix) -> Matrix:
+    def _do_pls_predict(self, predictors: Matrix) -> Matrix:
         """
         Performs predictions on the data.
 
         :param predictors:  The input data.
         :return:            The transformed data and the predictions.
         """
-        X: Matrix = self.standardize_X.transform(predictors)
+        X: Matrix = self._standardize_X.transform(predictors)
 
         X_A: Matrix = self.get_column_submatrix_of(X)
-        B_A: Matrix = self.get_row_submatrix_of(self.B_pls)
+        B_A: Matrix = self.get_row_submatrix_of(self._B_pls)
 
-        y_means: Matrix = self.standardize_Y.get_means()
-        y_std: Matrix = self.standardize_Y.get_std_devs()
-        y_hat: Matrix = X_A.matrix_multiply(B_A).scale_by_row_vector(y_std).add_by_vector(y_means)
+        y_means: Matrix = self._standardize_Y.get_means()
+        y_std: Matrix = self._standardize_Y.get_std_devs()
+        y_hat: Matrix = X_A.matrix_multiply(B_A).multiply(y_std).add(y_means)
 
         return y_hat

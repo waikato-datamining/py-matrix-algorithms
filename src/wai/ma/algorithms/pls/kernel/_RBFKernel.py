@@ -32,7 +32,7 @@ class RBFKernel(AbstractKernel):
         super().__init__()
 
     def apply_vector(self, x: Matrix, y: Matrix) -> real:
-        norm_2: real = x.sub(y).norm2()
+        norm_2: real = x.subtract(y).norm2()
         if self.gamma is NAN:
             self.gamma = ONE / x.num_columns()
         return exp(-ONE * self.gamma * norm_2)

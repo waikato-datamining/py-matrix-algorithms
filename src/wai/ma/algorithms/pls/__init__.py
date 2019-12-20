@@ -14,3 +14,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from ._AbstractMultiResponsePLS import AbstractMultiResponsePLS
+from ._AbstractPLS import AbstractPLS
+from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
+from ._CCARegression import CCARegression
+from ._DIPLS import DIPLS
+from ._KernelPLS import KernelPLS
+from ._NIPALS import NIPALS, DeflationMode, WeightCalculationMode
+from ._OPLS import OPLS
+from ._PLS1 import PLS1
+from ._PreprocessingType import PreprocessingType
+from ._PRM import PRM
+from ._SIMPLS import SIMPLS
+from ._SparsePLS import SparsePLS
+from ._VCPLS import VCPLS

@@ -29,7 +29,7 @@ class Standardize(UnsupervisedMatrixAlgorithm, Serialisable):
         self._std_devs: Optional[Matrix] = None
 
     def _do_reset(self):
-        super().reset()
+        super()._do_reset()
 
         self._means = None
         self._std_devs = None

@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from wai.test.decorators import RegressionTest
 
-from wai.ma.algorithm.pls import SIMPLS
+from wai.ma.algorithms.pls import SIMPLS
 from wai.ma.core.matrix import Matrix
 
 from ._AbstractPLSTest import AbstractPLSTest

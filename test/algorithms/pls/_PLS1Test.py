@@ -13,7 +13,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from wai.ma.algorithm.pls import PLS1
+from wai.ma.algorithms.pls import PLS1
 
 from ._AbstractPLSTest import AbstractPLSTest
 

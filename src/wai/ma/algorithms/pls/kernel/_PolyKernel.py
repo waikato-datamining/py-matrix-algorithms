@@ -43,9 +43,9 @@ class PolyKernel(AbstractKernel):
         if self.gamma is NAN:
             self.gamma = ONE / X.num_columns()
         result: Matrix = X.matrix_multiply(Y.transpose())
-        result = result.matrix_multiply(self.gamma)
+        result = result.multiply(self.gamma)
         result = result.add(self.coef_0)
-        result = result.pow_elementwise(self.degree)
+        result = result.pow(self.degree)
         return result
 
     def apply_vector(self, x: Matrix, y: Matrix) -> real:

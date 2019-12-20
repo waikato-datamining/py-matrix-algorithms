@@ -13,3 +13,14 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from ._CCARegressionTest import CCARegressionTest
+from ._DIPLSTest import DIPLSTest
+from ._KernelPLSTest import KernelPLSTest
+from ._NIPALSTest import NIPALSTest
+from ._OPLSTest import OPLSTest
+from ._PLS1Test import PLS1Test
+from ._PRMTest import PRMTest
+from ._SIMPLSTest import SIMPLSTest
+from ._SparsePLSTest import SparsePLSTest
+from ._VCPLSTest import VCPLSTest

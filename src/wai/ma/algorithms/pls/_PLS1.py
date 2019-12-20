@@ -28,11 +28,11 @@ class PLS1(AbstractSingleResponsePLS):
         self.W: Optional[Matrix] = None  # The W matrix
         self.b_hat: Optional[Matrix] = None  # The b-hat vector
 
-    def reset(self):
+    def _do_reset(self):
         """
         Resets the member variables.
         """
-        super().reset()
+        super()._do_reset()
 
         self.r_hat = None
         self.P = None
@@ -84,7 +84,7 @@ class PLS1(AbstractSingleResponsePLS):
         """
         return self.get_matrix('P')
 
-    def do_perform_initialization(self, predictors: Matrix, response: Matrix) -> Optional[str]:
+    def _do_pls_configure(self, predictors: Matrix, response: Matrix) -> Optional[str]:
         """
         Initializes using the provided data.
 
@@ -96,12 +96,12 @@ class PLS1(AbstractSingleResponsePLS):
         y: Matrix = response
 
         # Init
-        W: Matrix = factory.zeros(predictors.num_columns(), self.num_components)
-        P: Matrix = factory.zeros(predictors.num_columns(), self.num_components)
-        T: Matrix = factory.zeros(predictors.num_rows(), self.num_components)
-        b_hat: Matrix = factory.zeros(self.num_components, 1)
+        W: Matrix = factory.zeros(predictors.num_columns(), self._num_components)
+        P: Matrix = factory.zeros(predictors.num_columns(), self._num_components)
+        T: Matrix = factory.zeros(predictors.num_rows(), self._num_components)
+        b_hat: Matrix = factory.zeros(self._num_components, 1)
 
-        for k in range(self.num_components):
+        for k in range(self._num_components):
             # 1. step: wj
             w_k: Matrix = self.calculate_weights(X_k, y)
             W.set_column(k, w_k)
@@ -116,11 +116,11 @@ class PLS1(AbstractSingleResponsePLS):
             b_hat.set(k, 0, b_k)
 
             # 4. step: pj
-            p_k: Matrix = X_k.transpose().matrix_multiply(t_k).div(tdott)
+            p_k: Matrix = X_k.transpose().matrix_multiply(t_k).divide(tdott)
             P.set_column(k, p_k)
 
             # 5. step: Xk+1 (deflating y is not necessary)
-            X_k = X_k.sub(t_k.matrix_multiply(p_k.transpose()))
+            X_k = X_k.subtract(t_k.matrix_multiply(p_k.transpose()))
 
         # W*(P^T*W)^-1
         tmp: Matrix = W.matrix_multiply(((P.transpose()).matrix_multiply(W)).inverse())
@@ -133,8 +133,6 @@ class PLS1(AbstractSingleResponsePLS):
         self.W = W
         self.b_hat = b_hat
 
-        return None
-
     def calculate_weights(self, x_k: Matrix, y: Matrix) -> Matrix:
         """
         Calculate the weight w_k in the PLS iterations.
@@ -145,28 +143,28 @@ class PLS1(AbstractSingleResponsePLS):
         """
         return x_k.transpose().matrix_multiply(y).normalized()
 
-    def do_transform(self, predictors: Matrix) -> Matrix:
+    def _do_pls_transform(self, predictors: Matrix) -> Matrix:
         """
         Transforms the data.
 
         :param predictors:  The input data.
         :return:            The transformed data and the predictions.
         """
-        result = factory.zeros(predictors.num_rows(), self.num_components)
+        result = factory.zeros(predictors.num_rows(), self._num_components)
 
         for i in range(predictors.num_rows()):
             # Work on each row
-            x: Matrix = helper.row_as_vector(predictors, i)
-            X: Matrix = factory.zeros(1, self.num_components)
-            T: Matrix = factory.zeros(1, self.num_components)
+            x: Matrix = predictors.get_row(i)
+            X: Matrix = factory.zeros(1, self._num_components)
+            T: Matrix = factory.zeros(1, self._num_components)
 
-            for j in range(self.num_components):
-                X.set_column(j, x)
+            for j in range(self._num_components):
+                X.set(0, j, x.get_flat(0))
                 # 1. step: tj = xj * wj
                 t: Matrix = x.matrix_multiply(self.W.get_column(j))
                 T.set_column(j, t)
                 # 2. step:xj+1 = xj - tj*pj^T (tj is 1x1 matrix!)
-                x = x.sub(self.P.get_column(j).transpose().matrix_multiply(t.as_real()))
+                x = x.subtract(self.P.get_column(j).transpose().multiply(t.as_scalar()))
 
             result.set_row(i, T)
 
@@ -180,7 +178,7 @@ class PLS1(AbstractSingleResponsePLS):
         """
         return True
 
-    def do_perform_predictions(self, predictors: Matrix) -> Matrix:
+    def _do_pls_predict(self, predictors: Matrix) -> Matrix:
         """
         Performs predictions on the data.
 
@@ -190,18 +188,18 @@ class PLS1(AbstractSingleResponsePLS):
         result = factory.zeros(predictors.num_rows(), 1)
 
         for i in range(predictors.num_rows()):
-            x: Matrix = helper.row_as_vector(predictors, i)
-            X: Matrix = factory.zeros(1, self.num_components)
-            T: Matrix = factory.zeros(1, self.num_components)
+            x: Matrix = predictors.get_row(i)
+            X: Matrix = factory.zeros(1, self._num_components)
+            T: Matrix = factory.zeros(1, self._num_components)
 
-            for j in range(self.num_components):
-                X.set_column(j, x)
+            for j in range(self._num_components):
+                X.set(0, j, x.get_flat(0))
                 # 1. step: tj = xj * wj
                 t: Matrix = x.matrix_multiply(self.W.get_column(j))
                 T.set_column(j, t)
                 # 2. step: xj+1 = xj - tj*pj^T (tj is 1x1 matrix!)
-                x = x.sub(self.P.get_column(j).transpose().matrix_multiply(t.as_real()))
+                x = x.subtract(self.P.get_column(j).transpose().multiply(t.as_scalar()))
 
-            result.set(i, 0, T.matrix_multiply(self.b_hat).as_real())
+            result.set(i, 0, T.matrix_multiply(self.b_hat).as_scalar())
 
         return result

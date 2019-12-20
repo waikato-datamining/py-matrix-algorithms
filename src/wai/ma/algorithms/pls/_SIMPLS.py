@@ -24,32 +24,27 @@ from ...core.utils import sqrt
 class SIMPLS(AbstractSingleResponsePLS, Serialisable):
     def __init__(self):
         super().__init__()
-        self.num_coefficients: int = 0  # The number of coefficients in W to keep (0 keep all)
+        self._num_coefficients: int = 0  # The number of coefficients in W to keep (0 keep all)
         self.W: Optional[Matrix] = None  # The W matrix
         self.B: Optional[Matrix] = None  # The B matrix (used for prediction)
         self.Q: Optional[Matrix] = None  # Q matrix to regress T (XW) on y
 
-    def initialize(self, predictors: Optional[Matrix] = None, response: Optional[Matrix] = None) -> Optional[str]:
-        """
-        Initialises the members.
-        """
-        if predictors is None and response is None:
-            super().initialize()
-            self.num_coefficients = 0
-        else:
-            return super().initialize(predictors, response)
-
-    def reset(self):
+    def _do_reset(self):
         """
         Resets the member variables.
         """
-        super().reset()
+        super()._do_reset()
         self.B = None
         self.W = None
 
-    @staticmethod
-    def validate_num_coefficients(value: int) -> bool:
-        return True
+    def get_num_coefficients(self) -> int:
+        return self._num_coefficients
+
+    def set_num_coefficients(self, value: int):
+        self._num_coefficients = value
+        self.reset()
+
+    num_coefficients = property(get_num_coefficients, set_num_coefficients)
 
     def get_matrix_names(self) -> List[str]:
         """
@@ -98,21 +93,21 @@ class SIMPLS(AbstractSingleResponsePLS, Serialisable):
 
         :param in_: The matrix to process in-place.
         """
-        B: List[List[real]] = in_.to_raw_copy_2D()
+        B: List[List[real]] = in_.as_native()
 
         for i in range(in_.num_columns()):
             l: Matrix = in_.get_column(i)
-            ld: List[real] = l.to_raw_copy_1D()
+            ld: List[real] = l.as_native_flattened()
             ld = [abs(x) for x in ld]
             srt: List[int] = utils.sort(ld)
-            index: int = srt[max(len(srt) - 1 - self.num_coefficients, 0)]
+            index: int = srt[max(len(srt) - 1 - self._num_coefficients, 0)]
 
             val: real = ld[index]
             for c in range(in_.num_rows()):
                 if abs(B[c][i]) < val:
                     in_.set(c, i, 0)
 
-    def do_perform_initialization(self, predictors: Matrix, response: Matrix) -> Optional[str]:
+    def _do_pls_configure(self, predictors: Matrix, response: Matrix):
         """
         Initializes using the provided data.
 
@@ -124,11 +119,11 @@ class SIMPLS(AbstractSingleResponsePLS, Serialisable):
         A: Matrix = X_trans.matrix_multiply(response)
         M: Matrix = X_trans.matrix_multiply(predictors)
         C: Matrix = factory.eye(predictors.num_columns(), predictors.num_columns())
-        W: Matrix = factory.zeros(predictors.num_columns(), self.num_components)
-        P: Matrix = factory.zeros(predictors.num_columns(), self.num_components)
-        Q: Matrix = factory.zeros(1, self.num_components)
+        W: Matrix = factory.zeros(predictors.num_columns(), self._num_components)
+        P: Matrix = factory.zeros(predictors.num_columns(), self._num_components)
+        Q: Matrix = factory.zeros(1, self._num_components)
 
-        for h in range(self.num_components):
+        for h in range(self._num_components):
             # // 1. qh as dominant EigenVector of Ah'*Ah
             A_trans: Matrix = A.transpose()
             q: Matrix = A_trans.matrix_multiply(A).get_dominant_eigenvector()
@@ -136,7 +131,7 @@ class SIMPLS(AbstractSingleResponsePLS, Serialisable):
             # 2. wh=Ah*qh, ch=wh'*Mh*wh, wh=wh/sqrt(ch), store wh in W as column
             w: Matrix = A.matrix_multiply(q)
             c: Matrix = w.transpose().matrix_multiply(M).matrix_multiply(w)
-            w = w.matrix_multiply(1.0 / sqrt(c.as_real()))
+            w = w.multiply(1.0 / sqrt(c.as_scalar()))
             W.set_column(h, w)
 
             # 3. ph=Mh*wh, store ph in P as column
@@ -154,14 +149,14 @@ class SIMPLS(AbstractSingleResponsePLS, Serialisable):
             v_trans: Matrix = v.transpose()
 
             # 6. Ch+1=Ch-vh*vh', Mh+1=Mh-ph*ph'
-            C = C.sub(v.matrix_multiply(v_trans))
-            M = M.sub(p.matrix_multiply(p_trans))
+            C = C.subtract(v.matrix_multiply(v_trans))
+            M = M.subtract(p.matrix_multiply(p_trans))
 
             # 7. Ah+1=ChAh (actually Ch+1)
             A = C.matrix_multiply(A)
 
         # Finish
-        if self.num_coefficients > 0:
+        if self._num_coefficients > 0:
             self.slim(W)
         self.W = W
         self.B = W.matrix_multiply(Q.transpose())
@@ -169,7 +164,7 @@ class SIMPLS(AbstractSingleResponsePLS, Serialisable):
 
         return None
 
-    def do_transform(self, predictors: Matrix) -> Matrix:
+    def _do_pls_transform(self, predictors: Matrix) -> Matrix:
         """
         Transforms the data.
 
@@ -186,7 +181,7 @@ class SIMPLS(AbstractSingleResponsePLS, Serialisable):
         """
         return True
 
-    def do_perform_predictions(self, predictors: Matrix) -> Matrix:
+    def _do_pls_predict(self, predictors: Matrix) -> Matrix:
         """
         Performs predictions on the data.
 
@@ -197,7 +192,7 @@ class SIMPLS(AbstractSingleResponsePLS, Serialisable):
 
     def serialise_state(self, stream: IO[bytes]):
         # Can't serialise our state until we've been initialised
-        if not self.initialised:
+        if not self.is_configured():
             raise RuntimeError("Can't serialise state of uninitialised SIMPLS")
 
         # Serialise out our W matrix

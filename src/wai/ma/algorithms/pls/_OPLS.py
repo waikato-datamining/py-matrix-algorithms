@@ -35,32 +35,31 @@ class OPLS(AbstractSingleResponsePLS):
     """
     def __init__(self):
         super().__init__()
-        self.P_orth: Optional[Matrix] = None  # The P matrix
-        self.T_orth: Optional[Matrix] = None  # The T matrix
-        self.W_orth: Optional[Matrix] = None  # The W matrix
-        self.X_osc: Optional[Matrix] = None  # Data with orthogonal signal components removed
-        self.base_PLS: Optional[AbstractPLS] = None  # Base PLS that is trained on the cleaned data
 
-    @staticmethod
-    def validate_base_PLS(value: AbstractPLS) -> bool:
-        return True
+        self._P_orth: Optional[Matrix] = None  # The P matrix
+        self._T_orth: Optional[Matrix] = None  # The T matrix
+        self._W_orth: Optional[Matrix] = None  # The W matrix
+        self._X_osc: Optional[Matrix] = None  # Data with orthogonal signal components removed
+        self._base_PLS: AbstractPLS = PLS1()  # Base PLS that is trained on the cleaned data
 
-    def reset(self):
+    def get_base_PLS(self) -> AbstractPLS:
+        return self._base_PLS
+
+    def set_base_PLS(self, value: AbstractPLS):
+        self._base_PLS = value
+        self.reset()
+
+    base_PLS = property(get_base_PLS, set_base_PLS)
+
+    def _do_reset(self):
         """
         Resets the member variables.
         """
-        super().reset()
+        super()._do_reset()
 
-        self.P_orth = None
-        self.W_orth = None
-        self.T_orth = None
-
-    def initialize(self, predictors: Optional[Matrix] = None, response: Optional[Matrix] = None) -> Optional[str]:
-        if predictors is None and response is None:
-            super().initialize()
-            self.base_PLS = PLS1()
-        else:
-            return super().initialize(predictors, response)
+        self._P_orth = None
+        self._W_orth = None
+        self._T_orth = None
 
     def get_matrix_names(self) -> List[str]:
         """
@@ -81,11 +80,11 @@ class OPLS(AbstractSingleResponsePLS):
         """
         with switch(name):
             if case('P_orth'):
-                return self.P_orth
+                return self._P_orth
             if case('W_orth'):
-                return self.W_orth
+                return self._W_orth
             if case('T_orth'):
-                return self.T_orth
+                return self._T_orth
             if default():
                 return None
 
@@ -103,9 +102,9 @@ class OPLS(AbstractSingleResponsePLS):
 
         :return:    The loadings, None if not available.
         """
-        return self.P_orth
+        return self._P_orth
 
-    def do_perform_initialization(self, predictors: Matrix, response: Matrix) -> Optional[str]:
+    def _do_pls_configure(self, predictors: Matrix, response: Matrix):
         """
         Initialises using the provided data.
 
@@ -118,38 +117,36 @@ class OPLS(AbstractSingleResponsePLS):
         y: Matrix = response
 
         # Init
-        self.W_orth = factory.zeros(predictors.num_columns(), self.num_components)
-        self.P_orth = factory.zeros(predictors.num_columns(), self.num_components)
-        self.T_orth = factory.zeros(predictors.num_rows(), self.num_components)
+        self._W_orth = factory.zeros(predictors.num_columns(), self._num_components)
+        self._P_orth = factory.zeros(predictors.num_columns(), self._num_components)
+        self._T_orth = factory.zeros(predictors.num_rows(), self._num_components)
 
-        w: Matrix = X_trans.matrix_multiply(y).matrix_multiply(self.inv_L2_squared(y)).normalized()
+        w: Matrix = X_trans.matrix_multiply(y).multiply(self.inv_L2_squared(y)).normalized()
 
-        for current_component in range(self.num_components):
+        for current_component in range(self._num_components):
             # Calculate scores vector
-            t: Matrix = X.matrix_multiply(w).matrix_multiply(self.inv_L2_squared(w))
+            t: Matrix = X.matrix_multiply(w).multiply(self.inv_L2_squared(w))
 
             # Calculate loadings of X
-            p: Matrix = X_trans.matrix_multiply(t).matrix_multiply(self.inv_L2_squared(t))
+            p: Matrix = X_trans.matrix_multiply(t).multiply(self.inv_L2_squared(t))
 
             # Orthogonalise weight
-            w_orth: Matrix = p.sub(w.matrix_multiply(w.transpose().matrix_multiply(p).matrix_multiply(self.inv_L2_squared(w)).as_real()))
+            w_orth: Matrix = p.subtract(w.multiply(w.transpose().matrix_multiply(p).multiply(self.inv_L2_squared(w)).as_scalar()))
             w_orth = w_orth.normalized()
-            t_orth: Matrix = X.matrix_multiply(w_orth).matrix_multiply(self.inv_L2_squared(w_orth))
-            p_orth: Matrix = X_trans.matrix_multiply(t_orth).matrix_multiply(self.inv_L2_squared(t_orth))
+            t_orth: Matrix = X.matrix_multiply(w_orth).multiply(self.inv_L2_squared(w_orth))
+            p_orth: Matrix = X_trans.matrix_multiply(t_orth).multiply(self.inv_L2_squared(t_orth))
 
             # Remove orthogonal components from X
-            X = X.sub(t_orth.matrix_multiply(p_orth.transpose()))
+            X = X.subtract(t_orth.matrix_multiply(p_orth.transpose()))
             X_trans = X.transpose()
 
             # Store results
-            self.W_orth.set_column(current_component, w_orth)
-            self.T_orth.set_column(current_component, t_orth)
-            self.P_orth.set_column(current_component, p_orth)
+            self._W_orth.set_column(current_component, w_orth)
+            self._T_orth.set_column(current_component, t_orth)
+            self._P_orth.set_column(current_component, p_orth)
 
-        self.X_osc = X.copy()
-        self.base_PLS.initialize(self.do_transform(predictors), response)
-
-        return None
+        self._X_osc = X.copy()
+        self._base_PLS.configure(self._do_pls_transform(predictors), response)
 
     def inv_L2_squared(self, v: Matrix) -> real:
         """
@@ -161,7 +158,7 @@ class OPLS(AbstractSingleResponsePLS):
         l2: real = v.norm2_squared()
         return real(1 / l2)
 
-    def do_transform(self, predictors: Matrix) -> Matrix:
+    def _do_pls_transform(self, predictors: Matrix) -> Matrix:
         """
         Transforms the data.
 
@@ -170,9 +167,9 @@ class OPLS(AbstractSingleResponsePLS):
         """
         # Remove signal from X_test that is orthogonal to y_train
         # X_clean = X_test - X_test*W_orth*P_orth^T
-        T: Matrix = predictors.matrix_multiply(self.W_orth)
-        X_orth: Matrix = T.matrix_multiply(self.P_orth.transpose())
-        return predictors.sub(X_orth)
+        T: Matrix = predictors.matrix_multiply(self._W_orth)
+        X_orth: Matrix = T.matrix_multiply(self._P_orth.transpose())
+        return predictors.subtract(X_orth)
 
     def can_predict(self) -> bool:
         """
@@ -182,7 +179,7 @@ class OPLS(AbstractSingleResponsePLS):
         """
         return True
 
-    def do_perform_predictions(self, predictors: Matrix) -> Matrix:
+    def _do_pls_predict(self, predictors: Matrix) -> Matrix:
         """
         Performs predictions on the data.
 
@@ -190,4 +187,4 @@ class OPLS(AbstractSingleResponsePLS):
         :return:            The transformed data and the predictions.
         """
         X_transformed: Matrix = self.transform(predictors)
-        return self.base_PLS.predict(X_transformed)
+        return self._base_PLS.predict(X_transformed)

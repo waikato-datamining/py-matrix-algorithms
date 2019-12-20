@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from wai.test.decorators import RegressionTest, Test
 
-from wai.ma.algorithm.pls import DIPLS
+from wai.ma.algorithms.pls import DIPLS
 from wai.ma.core.matrix import Matrix
 from wai.ma.core.matrix.factory import randn_like
 
@@ -42,17 +42,17 @@ class DIPLSTest(AbstractPLSTest):
         result = {}
 
         # Initialise supervised
-        subject.initialize_supervised(x_source_domain, x_target_domain, y_source_domain, y_target_domain)
+        subject.configure_supervised(x_source_domain, x_target_domain, y_source_domain, y_target_domain)
         result.update(self.add_default_pls_matrices(subject, x_target_domain, Tags.SUPERVISED))
         subject.reset()
 
         # Initialise unsupervised
-        subject.initialize_unsupervised(x_source_domain, x_target_domain, y_source_domain)
+        subject.configure_unsupervised(x_source_domain, x_target_domain, y_source_domain)
         result.update(self.add_default_pls_matrices(subject, x_target_domain, Tags.UNSUPERVISED))
         subject.reset()
 
         # Initialise semisupervised
-        subject.initialize_semisupervised(x_source_domain, x_target_domain, x_target_domain_unlabeled,
+        subject.configure_semisupervised(x_source_domain, x_target_domain, x_target_domain_unlabeled,
                                           y_source_domain, y_target_domain)
         result.update(self.add_default_pls_matrices(subject, x_target_domain, Tags.SEMISUPERVISED))
 
@@ -65,7 +65,7 @@ class DIPLSTest(AbstractPLSTest):
 
         for i in range(1, 5):
             subject.num_components = i
-            subject.initialize_unsupervised(X, X_2, Y)
+            subject.configure_unsupervised(X, X_2, Y)
             transform: Matrix = subject.transform(X)
             self.assertEqual(i, transform.num_columns())
 

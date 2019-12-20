@@ -17,9 +17,9 @@ from enum import Enum, auto
 from typing import Optional, List
 
 from ._AbstractMultiResponsePLS import AbstractMultiResponsePLS
-from ...core import ZERO, real, ONE
+from ...core import real, ONE
 from ...core.matrix import Matrix, factory
-from ...transformation import Standardize
+from .._Standardize import Standardize
 
 
 class NIPALS(AbstractMultiResponsePLS):
@@ -39,42 +39,60 @@ class NIPALS(AbstractMultiResponsePLS):
     """
     def __init__(self):
         super().__init__()
-        self.X_scores: Optional[Matrix] = None  # Scores on X
-        self.Y_scores: Optional[Matrix] = None  # Scores on Y
-        self.X_loadings: Optional[Matrix] = None  # Loadings on X
-        self.Y_loadings: Optional[Matrix] = None  # Loadings on Y
-        self.X_weights: Optional[Matrix] = None  # Weights on X
-        self.Y_weights: Optional[Matrix] = None  # Weights on Y
-        self.X_rotations: Optional[Matrix] = None  # Projection of X into latent space
-        self.Y_rotations: Optional[Matrix] = None  # Projection of Y into latent space
-        self.X: Optional[Matrix] = None  # Training points
-        self.coef: Optional[Matrix] = None  # Regression coefficients
-        self.tol: real = real(1e-6)  # Inner NIPALS loop improvement tolerance
-        self.max_iter: int = 500  # Inner NIPALS loop maximum number of iterations
+        self._X_scores: Optional[Matrix] = None  # Scores on X
+        self._Y_scores: Optional[Matrix] = None  # Scores on Y
+        self._X_loadings: Optional[Matrix] = None  # Loadings on X
+        self._Y_loadings: Optional[Matrix] = None  # Loadings on Y
+        self._X_weights: Optional[Matrix] = None  # Weights on X
+        self._Y_weights: Optional[Matrix] = None  # Weights on Y
+        self._X_rotations: Optional[Matrix] = None  # Projection of X into latent space
+        self._Y_rotations: Optional[Matrix] = None  # Projection of Y into latent space
+        self._X: Optional[Matrix] = None  # Training points
+        self._coef: Optional[Matrix] = None  # Regression coefficients
+        self._tol: real = real(1e-6)  # Inner NIPALS loop improvement tolerance
+        self._max_iter: int = 500  # Inner NIPALS loop maximum number of iterations
         self.norm_Y_weights: bool = False  # Flag to normalize Y weights
-        self.standardize_X: Optional[Standardize] = None  # Standarize X tranformation
-        self.standardize_Y: Optional[Standardize] = None  # Standardize Y transformation
-        self.deflation_mode: DeflationMode = DeflationMode.REGRESSION
+        self._standardize_X: Standardize = Standardize()  # Standarize X tranformation
+        self._standardize_Y: Standardize = Standardize()  # Standardize Y transformation
+        self._deflation_mode: DeflationMode = DeflationMode.REGRESSION
 
-    def initialize(self, predictors: Optional[Matrix] = None, response: Optional[Matrix] = None) -> Optional[str]:
-        if predictors is None and response is None:
-            super().initialize()
-            self.tol = real(1e-6)
-            self.max_iter = 500
-            self.norm_Y_weights = False
-            self.standardize_X = Standardize()
-            self.standardize_Y = Standardize()
-            self.deflation_mode = DeflationMode.REGRESSION
-        else:
-            return super().initialize(predictors, response)
+    def is_norm_Y_weights(self) -> bool:
+        return self.norm_Y_weights
 
-    @staticmethod
-    def validate_max_iter(value: int) -> bool:
-        return value >= 0
+    def set_norm_Y_weights(self, value: bool):
+        self.norm_Y_weights = value
 
-    @staticmethod
-    def validate_tol(value: real) -> bool:
-        return value >= ZERO
+    def get_max_iter(self) -> int:
+        return self._max_iter
+
+    def set_max_iter(self, value: int):
+        if value < 0:
+            raise ValueError(f"Maximum iteration parameter must be positive but was {value}")
+
+        self._max_iter = value
+        self.reset()
+
+    max_iter = property(get_max_iter, set_max_iter)
+
+    def get_tol(self) -> real:
+        return self._tol
+
+    def set_tol(self, value: real):
+        if value < 0:
+            raise ValueError(f"Tolerance parameter must be positive but was {value}")
+
+        self._tol = value
+        self.reset()
+
+    tol = property(get_tol, set_tol)
+
+    def get_deflation_mode(self) -> "DeflationMode":
+        return self._deflation_mode
+
+    def set_deflation_mode(self, value: "DeflationMode"):
+        self._deflation_mode = value
+
+    deflation_mode = property(get_deflation_mode, set_deflation_mode)
 
     def get_min_columns_response(self) -> int:
         return 1
@@ -82,28 +100,28 @@ class NIPALS(AbstractMultiResponsePLS):
     def get_max_columns_response(self) -> int:
         return -1
 
-    def do_perform_initialization(self, predictors: Matrix, response: Matrix) -> Optional[str]:
+    def _do_pls_configure(self, predictors: Matrix, response: Matrix) -> Optional[str]:
         # Init
         X: Matrix = predictors
-        X = self.standardize_X.transform(X)
+        X = self._standardize_X.configure_and_transform(X)
         Y: Matrix = response
-        Y = self.standardize_Y.transform(Y)
+        Y = self._standardize_Y.configure_and_transform(Y)
 
         # Dimensions
         num_rows: int = X.num_rows()
         num_features: int = X.num_columns()
         num_classes: int = Y.num_columns()
-        num_components: int = self.num_components
+        num_components: int = self._num_components
 
         # Init matrices
-        self.X_scores = factory.zeros(num_rows, num_components)  # T
-        self.Y_scores = factory.zeros(num_rows, num_components)  # U
+        self._X_scores = factory.zeros(num_rows, num_components)  # T
+        self._Y_scores = factory.zeros(num_rows, num_components)  # U
 
-        self.X_weights = factory.zeros(num_features, num_components)  # W
-        self.Y_weights = factory.zeros(num_classes, num_components)  # C
+        self._X_weights = factory.zeros(num_features, num_components)  # W
+        self._Y_weights = factory.zeros(num_classes, num_components)  # C
 
-        self.X_loadings = factory.zeros(num_features, num_components)  # P
-        self.Y_loadings = factory.zeros(num_classes, num_components)  # Q
+        self._X_loadings = factory.zeros(num_features, num_components)  # P
+        self._Y_loadings = factory.zeros(num_classes, num_components)  # Q
 
         yk_loading: Matrix = factory.zeros(num_classes, 1)
 
@@ -119,43 +137,42 @@ class NIPALS(AbstractMultiResponsePLS):
 
             # Calculate latent X and Y scores
             xk_score: Matrix = X.matrix_multiply(xk_weight)
-            yk_score: Matrix = Y.matrix_multiply(yk_weight).div(yk_weight.norm2_squared())
+            yk_score: Matrix = Y.matrix_multiply(yk_weight).divide(yk_weight.norm2_squared())
 
             if xk_score.norm2_squared() < eps:
                 self.logger.warning('X scores are null at component ' + str(k))
                 break
 
             # Deflate X
-            xk_loading: Matrix = X.transpose().matrix_multiply(xk_score).div(xk_score.norm2_squared())
-            X = X.sub(xk_score.matrix_multiply(xk_loading.transpose()))
+            xk_loading: Matrix = X.transpose().matrix_multiply(xk_score).divide(xk_score.norm2_squared())
+            X = X.subtract(xk_score.matrix_multiply(xk_loading.transpose()))
 
             # Deflate Y
             if self.deflation_mode is DeflationMode.CANONICAL:
-                yk_loading: Matrix = Y.transpose().matrix_multiply(yk_score).div(yk_score.norm2_squared())
-                Y = Y.sub(yk_score.matrix_multiply(yk_loading.transpose()))
+                yk_loading: Matrix = Y.transpose().matrix_multiply(yk_score).divide(yk_score.norm2_squared())
+                Y = Y.subtract(yk_score.matrix_multiply(yk_loading.transpose()))
             elif self.deflation_mode is DeflationMode.REGRESSION:
-                yk_loading: Matrix = Y.transpose().matrix_multiply(xk_score).div(xk_score.norm2_squared())
-                Y = Y.sub(xk_score.matrix_multiply(yk_loading.transpose()))
+                yk_loading: Matrix = Y.transpose().matrix_multiply(xk_score).divide(xk_score.norm2_squared())
+                Y = Y.subtract(xk_score.matrix_multiply(yk_loading.transpose()))
 
             # Store results
-            self.X_scores.set_column(k, xk_score)
-            self.Y_scores.set_column(k, yk_score)
-            self.X_weights.set_column(k, xk_weight)
-            self.Y_weights.set_column(k, yk_weight)
-            self.X_loadings.set_column(k, xk_loading)
-            self.Y_loadings.set_column(k, yk_loading)
+            self._X_scores.set_column(k, xk_score)
+            self._Y_scores.set_column(k, yk_score)
+            self._X_weights.set_column(k, xk_weight)
+            self._Y_weights.set_column(k, yk_weight)
+            self._X_loadings.set_column(k, xk_loading)
+            self._Y_loadings.set_column(k, yk_loading)
 
-        self.X = X
-        self.X_rotations = self.X_weights.matrix_multiply((self.X_loadings.transpose().matrix_multiply(self.X_weights)).pseudo_inverse())
+        self._X = X
+        self._X_rotations = self._X_weights.matrix_multiply((self._X_loadings.transpose().matrix_multiply(self._X_weights)).pseudo_inverse())
         if Y.num_columns() > 1:
-            self.Y_rotations = self.Y_weights.matrix_multiply((self.Y_loadings.transpose().matrix_multiply(self.Y_weights)).pseudo_inverse())
+            self._Y_rotations = self._Y_weights.matrix_multiply((self._Y_loadings.transpose().matrix_multiply(self._Y_weights)).pseudo_inverse())
         else:
-            self.Y_rotations = factory.filled(1, 1, ONE)
+            self._Y_rotations = factory.filled(1, 1, ONE)
 
         # Calculate regression coefficients
-        y_stds: Matrix = self.standardize_Y.get_std_devs()
-        self.coef = self.X_rotations.matrix_multiply(self.Y_loadings.transpose()).scale_by_row_vector(y_stds)
-        return None
+        y_stds: Matrix = self._standardize_Y.get_std_devs()
+        self._coef = self._X_rotations.matrix_multiply(self._Y_loadings.transpose()).multiply(y_stds)
 
     def nipals_loop(self, X: Matrix, Y: Matrix) -> 'NipalsLoopResult':
         """
@@ -184,14 +201,14 @@ class NIPALS(AbstractMultiResponsePLS):
                     X_p_inv = X.inverse()
                 X_weight: Matrix = X_p_inv.matrix_multiply(y_score)
             else:  # PLS
-                X_weight: Matrix = X.transpose().matrix_multiply(y_score).div(y_score.norm2_squared())
+                X_weight: Matrix = X.transpose().matrix_multiply(y_score).divide(y_score.norm2_squared())
 
             # Add eps if necessary to converge to a more acceptable solution
             if X_weight.norm2_squared() < eps:
                 X_weight = X_weight.add(eps)
 
             # Normalize
-            X_weight = X_weight.div(X_weight.norm2() + eps)
+            X_weight = X_weight.divide(X_weight.norm2() + eps)
 
             # 2) Calculate latent X scores
             X_score: Matrix = X.matrix_multiply(X_weight)
@@ -204,21 +221,21 @@ class NIPALS(AbstractMultiResponsePLS):
                 Y_weight: Matrix = Y_p_inv.matrix_multiply(X_score)
             else:  # PLS
                 # WeightCalculationMode A: Regress each Y column on xscore
-                Y_weight: Matrix = Y.transpose().matrix_multiply(X_score).div(X_score.norm2_squared())
+                Y_weight: Matrix = Y.transpose().matrix_multiply(X_score).divide(X_score.norm2_squared())
 
             # Normalise Y weights
             if self.norm_Y_weights:
-                Y_weight = Y_weight.div(Y_weight.norm2() + eps)
+                Y_weight = Y_weight.divide(Y_weight.norm2() + eps)
 
             # 4) Calculate ykScores
-            Y_score: Matrix = Y.matrix_multiply(Y_weight).div(Y_weight.norm2_squared() + eps)
+            Y_score: Matrix = Y.matrix_multiply(Y_weight).divide(Y_weight.norm2_squared() + eps)
 
-            X_weight_diff: Matrix = X_weight.sub(X_weight_old)
+            X_weight_diff: Matrix = X_weight.subtract(X_weight_old)
 
-            if X_weight_diff.norm2_squared() < self.tol or Y.num_columns() == 1:
+            if X_weight_diff.norm2_squared() < self._tol or Y.num_columns() == 1:
                 break
 
-            if iterations >= self.max_iter:
+            if iterations >= self._max_iter:
                 break
 
             # Update stopping conditions
@@ -227,25 +244,25 @@ class NIPALS(AbstractMultiResponsePLS):
 
         return NipalsLoopResult(X_weight, Y_weight, iterations)
 
-    def do_perform_predictions(self, predictors: Matrix) -> Matrix:
-        X: Matrix = self.standardize_X.transform(predictors)
+    def _do_pls_predict(self, predictors: Matrix) -> Matrix:
+        X: Matrix = self._standardize_X.transform(predictors)
 
-        Y_means: Matrix = self.standardize_Y.get_means()
-        Y_hat: Matrix = X.matrix_multiply(self.coef).add_by_vector(Y_means)
+        Y_means: Matrix = self._standardize_Y.get_means()
+        Y_hat: Matrix = X.matrix_multiply(self._coef).add(Y_means)
         return Y_hat
 
-    def do_transform(self, predictors: Matrix) -> Matrix:
-        X: Matrix = self.standardize_X.transform(predictors)
+    def _do_pls_transform(self, predictors: Matrix) -> Matrix:
+        X: Matrix = self._standardize_X.transform(predictors)
 
         # Apply rotations
-        X_scores: Matrix = X.matrix_multiply(self.X_rotations)
+        X_scores: Matrix = X.matrix_multiply(self._X_rotations)
         return X_scores
 
     def do_transform_response(self, response: Matrix) -> Matrix:
-        Y: Matrix = self.standardize_Y.transform(response)
+        Y: Matrix = self._standardize_Y.transform(response)
 
         # Apply rotations
-        Y_scores: Matrix = Y.matrix_multiply(self.Y_rotations)
+        Y_scores: Matrix = Y.matrix_multiply(self._Y_rotations)
         return Y_scores
 
     def get_matrix_names(self) -> List[str]:
@@ -253,35 +270,35 @@ class NIPALS(AbstractMultiResponsePLS):
 
     def get_matrix(self, name: str) -> Optional[Matrix]:
         if name == 'T':
-            return self.X_scores
+            return self._X_scores
         elif name == 'U':
-            return self.Y_scores
+            return self._Y_scores
         elif name == 'P':
-            return self.X_loadings
+            return self._X_loadings
         elif name == 'Q':
-            return self.Y_loadings
+            return self._Y_loadings
         return None
 
     def has_loadings(self) -> bool:
         return True
 
-    def reset(self):
-        super().reset()
-        self.X_scores = None
-        self.Y_scores = None
-        self.X_loadings = None
-        self.Y_loadings = None
-        self.X_weights = None
-        self.Y_weights = None
-        self.coef = None
-        self.X = None
-        self.X_rotations = None
-        self.Y_rotations = None
-        self.standardize_X = Standardize()
-        self.standardize_Y = Standardize()
+    def _do_reset(self):
+        super()._do_reset()
+        self._X_scores = None
+        self._Y_scores = None
+        self._X_loadings = None
+        self._Y_loadings = None
+        self._X_weights = None
+        self._Y_weights = None
+        self._coef = None
+        self._X = None
+        self._X_rotations = None
+        self._Y_rotations = None
+        self._standardize_X.reset()
+        self._standardize_Y.reset()
 
     def get_loadings(self) -> Optional[Matrix]:
-        return self.X_loadings
+        return self._X_loadings
 
     def can_predict(self) -> bool:
         return True

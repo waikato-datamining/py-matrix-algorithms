@@ -132,7 +132,7 @@ class FastICA(MatrixAlgorithm):
             gwtx: Matrix = res[0]
             g_wtx: Matrix = res[1]
 
-            arg: Matrix = gwtx.matrix_multiply(X.transpose()).divide(p).subtract(W.multiply(g_wtx.t()))  # Scale by row?
+            arg: Matrix = gwtx.matrix_multiply(X.transpose()).divide(p).subtract(W.multiply(g_wtx))  # Scale by row?
             W1: Matrix = self.symmetric_decorrelation(arg)
             lim = W1.matrix_multiply(W.transpose()).diag().abs().subtract(1.0).abs().maximum().as_scalar()
             W = W1

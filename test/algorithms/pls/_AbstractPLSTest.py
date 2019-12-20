@@ -18,7 +18,7 @@ from abc import ABC
 from typing import Optional, Tuple
 
 from wai.test.decorators import Test
-from wai.ma.algorithm.pls import AbstractPLS
+from wai.ma.algorithms.pls import AbstractPLS
 from wai.ma.core.matrix import Matrix
 
 from ...test import AbstractMatrixAlgorithmTest, TestDataset, Tags
@@ -26,10 +26,12 @@ from ...test import AbstractMatrixAlgorithmTest, TestDataset, Tags
 
 class AbstractPLSTest(AbstractMatrixAlgorithmTest, ABC):
     @Test
-    def check_transformed_num_components(self, subject: AbstractPLS, bolts: Matrix, bolts_response: Matrix):
+    def check_transformed_num_components(self, subject: AbstractPLS, *resources: Matrix):
+        bolts, bolts_response = resources
+
         for i in range(1, 5):
             subject.num_components = i
-            subject.initialize(bolts, bolts_response)
+            subject.configure(bolts, bolts_response)
             transform: Matrix = subject.transform(bolts)
             self.assertEqual(i, transform.num_columns())
 
@@ -48,7 +50,7 @@ class AbstractPLSTest(AbstractMatrixAlgorithmTest, ABC):
         bolts, bolts_response = resources
 
         # Initialise PLS
-        results: Optional[str] = subject.initialize(bolts, bolts_response)
+        results: Optional[str] = subject.configure(bolts, bolts_response)
         if results is not None:
             self.fail('Algorithm#initialize failed with result: ' + results)
 

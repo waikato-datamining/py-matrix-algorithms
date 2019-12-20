@@ -15,9 +15,9 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from wai.test.decorators import RegressionTest
 
-from wai.ma.algorithm.pls import KernelPLS
+from wai.ma.algorithms.pls import KernelPLS
 from wai.ma.core.matrix import Matrix
-from wai.ma.transformation.kernel import LinearKernel, PolyKernel, RBFKernel
+from wai.ma.algorithms.pls.kernel import LinearKernel, PolyKernel, RBFKernel
 
 from ._AbstractPLSTest import AbstractPLSTest
 

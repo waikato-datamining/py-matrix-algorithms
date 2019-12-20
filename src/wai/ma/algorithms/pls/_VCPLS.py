@@ -35,18 +35,17 @@ class VCPLS(PLS1):
 
     def __init__(self):
         super().__init__()
-        self.lambda_: real = ONE
 
-    @staticmethod
-    def validate_lambda_(value: real) -> bool:
-        return True
+        self._lambda: real = ONE
 
-    def initialize(self, predictors: Optional[Matrix] = None, response: Optional[Matrix] = None) -> Optional[str]:
-        if predictors is None and response is None:
-            super().initialize()
-            self.lambda_ = ONE
-        else:
-            return super().initialize(predictors, response)
+    def get_lambda(self) -> real:
+        return self._lambda
+
+    def set_lambda(self, value: real):
+        self._lambda = value
+        self.reset()
+
+    lambda_ = property(get_lambda, set_lambda)
 
     def calculate_weights(self, x_k: Matrix, y: Matrix) -> Matrix:
         # Paper notation
@@ -54,9 +53,9 @@ class VCPLS(PLS1):
         f: Matrix = y
 
         I: Matrix = factory.eye(e.num_columns())
-        g_1: Matrix = e.transpose().matrix_multiply(f).matrix_multiply(f.transpose()).matrix_multiply(e).sub(I.matrix_multiply(self.lambda_))
+        g_1: Matrix = e.transpose().matrix_multiply(f).matrix_multiply(f.transpose()).matrix_multiply(e).subtract(I.multiply(self._lambda))
         g_2: Matrix = e.transpose().matrix_multiply(e)
 
-        term: Matrix = (g_2.add(I.matrix_multiply(VCPLS.NU))).inverse().matrix_multiply(g_1)
+        term: Matrix = (g_2.add(I.multiply(VCPLS.NU))).inverse().matrix_multiply(g_1)
 
         return term.get_dominant_eigenvector()

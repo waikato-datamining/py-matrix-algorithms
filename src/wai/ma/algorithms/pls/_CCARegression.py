@@ -17,18 +17,16 @@ from ._NIPALS import NIPALS, WeightCalculationMode, DeflationMode
 
 
 class CCARegression(NIPALS):
-    def get_weight_calculation_mode(self) -> 'WeightCalculationMode':
+    def get_weight_calculation_mode(self) -> WeightCalculationMode:
         return WeightCalculationMode.CCA  # Mode B in sklearn
 
-    def __getattribute__(self, item):
-        if item == 'deflation_mode':
-            return DeflationMode.CANONICAL
-        else:
-            return super().__getattribute__(item)
+    def get_deflation_mode(self) -> DeflationMode:
+        return DeflationMode.CANONICAL
 
-    def __setattr__(self, key, value):
-        if key == 'deflation_mode':
-            if value is not DeflationMode.CANONICAL:
-                self.logger.warning('CCARegression only allows CANONICAL deflation mode.')
-        else:
-            super().__setattr__(key, value)
+    def set_deflation_mode(self, value: DeflationMode):
+        if value is not DeflationMode.CANONICAL:
+            raise ValueError("CCARegression only allows CANONICAL deflation mode")
+
+        super().set_deflation_mode(value)
+
+    deflation_mode = property(get_deflation_mode, set_deflation_mode)

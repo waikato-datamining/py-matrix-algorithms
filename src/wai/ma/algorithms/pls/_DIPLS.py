@@ -21,16 +21,16 @@ from wai.common import switch, break_, case
 from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
 from ...core import ZERO, real, ONE, NAN
 from ...core.matrix import Matrix, factory
-from ...transformation import Center
+from .._Center import Center
 
 
 class DIPLS(AbstractSingleResponsePLS):
     def __init__(self):
         super().__init__()
-        self.model_adaption_strategy: Optional[ModelAdaptionStrategy] = None  # Model adaption strategy
+        self.model_adaption_strategy: ModelAdaptionStrategy = ModelAdaptionStrategy.UNSUPERVISED  # Model adaption strategy
         self.ns: int = 0  # Number of source train samples
         self.nt: int = 0  # Number of target train samples
-        self.lambda_: real = ONE  # Lambda parameter
+        self._lambda: real = ONE  # Lambda parameter
         self.b_0: real = ZERO  # Response mean
         self.T: Optional[Matrix] = None  # Loadings
         self.T_s: Optional[Matrix] = None  # Source domain loadings
@@ -40,23 +40,24 @@ class DIPLS(AbstractSingleResponsePLS):
         self.P_t: Optional[Matrix] = None  # Target domain scores
         self.W_di: Optional[Matrix] = None  # Weights
         self.b_di: Optional[Matrix] = None  # Regression coefficients
-        self.X_center: Optional[Center] = None  # X center
-        self.X_s_center: Optional[Center] = None  # Source domain center
-        self.X_t_center: Optional[Center] = None  # Target domain center
+        self.X_center: Center = Center()  # X center
+        self.X_s_center: Center = Center()  # Source domain center
+        self.X_t_center: Center = Center()  # Target domain center
 
-    def initialize(self, predictors: Optional[Matrix] = None, response: Optional[Matrix] = None) -> Optional[str]:
-        if predictors is None and response is None:
-            super().initialize()
-            self.model_adaption_strategy = ModelAdaptionStrategy.UNSUPERVISED
-            self.lambda_ = ONE
-            self.X_center = Center()
-            self.X_t_center = Center()
-            self.X_s_center = Center()
-        else:
-            return super().initialize(predictors, response)
+    def get_lambda(self) -> real:
+        return self._lambda
 
-    def reset(self):
-        super().reset()
+    def set_lambda(self, value: real):
+        if abs(value) < 1e-8:
+            raise ValueError(f"Lambda must not be zero but was {value}")
+
+        self._lambda = value
+        self.reset()
+
+    lambda_ = property(get_lambda, set_lambda)
+
+    def _do_reset(self):
+        super()._do_reset()
         self.T = None
         self.T_s = None
         self.T_t = None
@@ -66,10 +67,6 @@ class DIPLS(AbstractSingleResponsePLS):
         self.W_di = None
         self.b_di = None
         self.b_0 = NAN
-
-    @staticmethod
-    def validate_lambda_(value: real) -> bool:
-        return abs(value) >= 1e-8
 
     def get_matrix_names(self) -> List[str]:
         return ['T', 'Ts', 'Tt',
@@ -101,10 +98,10 @@ class DIPLS(AbstractSingleResponsePLS):
     def can_predict(self) -> bool:
         return True
 
-    def do_transform(self, predictors: Matrix) -> Matrix:
+    def _do_pls_transform(self, predictors: Matrix) -> Matrix:
         return self.X_center.transform(predictors).matrix_multiply(self.W_di)
 
-    def do_perform_initialization(self, predictors: Matrix, response: Matrix) -> Optional[str]:
+    def _do_pls_configure(self, predictors: Matrix, response: Matrix):
         num_features: int = predictors.num_columns()
         I: Matrix = factory.eye(num_features)
         c: Optional[Matrix] = None
@@ -145,24 +142,24 @@ class DIPLS(AbstractSingleResponsePLS):
                 break_()
 
         # Center X, Xs, Xt
-        X = self.X_center.transform(X)
-        X_s = self.X_s_center.transform(X_s)
-        X_t = self.X_t_center.transform(X_t)
+        X = self.X_center.configure_and_transform(X)
+        X_s = self.X_s_center.configure_and_transform(X_s)
+        X_t = self.X_t_center.configure_and_transform(X_t)
 
         # Center y
-        self.b_0 = y.mean(-1).as_real()
-        y = y.sub(self.b_0)
+        self.b_0 = y.mean().as_scalar()
+        y = y.subtract(self.b_0)
 
         # Start loop over number of components
-        for a in range(self.num_components):
+        for a in range(self._num_components):
 
             # Calculate domain invariant weights
             y_norm2_squared: real = y.norm2_squared()
-            w_di_LHS: Matrix = y.transpose().matrix_multiply(X).div(y_norm2_squared)
-            X_s_t_X_s: Matrix = X_s.transpose().matrix_multiply(X_s).matrix_multiply(ONE / (self.ns - ONE))
-            X_t_t_X_t: Matrix = X_t.transpose().matrix_multiply(X_t).matrix_multiply(ONE / (self.nt - ONE))
-            X_s_diff_X_t: Matrix = X_s_t_X_s.sub(X_t_t_X_t)
-            w_di_RHS: Matrix = I.add(X_s_diff_X_t.matrix_multiply(self.lambda_ / (2 * y_norm2_squared))).inverse()
+            w_di_LHS: Matrix = y.transpose().matrix_multiply(X).divide(y_norm2_squared)
+            X_s_t_X_s: Matrix = X_s.transpose().matrix_multiply(X_s).multiply(ONE / (self.ns - ONE))
+            X_t_t_X_t: Matrix = X_t.transpose().matrix_multiply(X_t).multiply(ONE / (self.nt - ONE))
+            X_s_diff_X_t: Matrix = X_s_t_X_s.subtract(X_t_t_X_t)
+            w_di_RHS: Matrix = I.add(X_s_diff_X_t.multiply(self._lambda / (2 * y_norm2_squared))).inverse()
             w_di: Matrix = w_di_LHS.matrix_multiply(w_di_RHS).transpose()
             w_di = w_di.normalized()
 
@@ -178,10 +175,10 @@ class DIPLS(AbstractSingleResponsePLS):
             ca: Matrix = (t.transpose().matrix_multiply(t)).inverse().matrix_multiply(y.transpose()).matrix_multiply(t)
 
             # Deflate X, Xs, Xt, y
-            X = X.sub(t.matrix_multiply(p))
-            X_s = X_s.sub(t_s.matrix_multiply(p_s))
-            X_t = X_t.sub(t_t.matrix_multiply(p_t))
-            y = y.sub(t.matrix_multiply(ca))
+            X = X.subtract(t.matrix_multiply(p))
+            X_s = X_s.subtract(t_s.matrix_multiply(p_s))
+            X_t = X_t.subtract(t_t.matrix_multiply(p_t))
+            y = y.subtract(t.matrix_multiply(ca))
 
             # Collect
             c = self.concat(c, ca)
@@ -199,8 +196,6 @@ class DIPLS(AbstractSingleResponsePLS):
         # Calculate regression coefficients
         self.b_di = self.W_di.matrix_multiply((self.P.transpose().matrix_multiply(self.W_di)).inverse()).matrix_multiply(c.transpose())
 
-        return None
-
     def concat(self, A: Optional[Matrix], a: Matrix) -> Matrix:
         """
         Concat A along columns with a. If A is None, return a.
@@ -214,7 +209,7 @@ class DIPLS(AbstractSingleResponsePLS):
         else:
             return A.concatenate_along_columns(a)
 
-    def do_perform_predictions(self, predictors: Matrix) -> Matrix:
+    def _do_pls_predict(self, predictors: Matrix) -> Matrix:
         recentered: Optional[Matrix] = None
 
         # Recenter
@@ -234,10 +229,10 @@ class DIPLS(AbstractSingleResponsePLS):
         result: Matrix = regression.add(self.b_0)
         return result
 
-    def initialize_unsupervised(self,
-                                predictors_source_domain: Matrix,
-                                predictors_target_domain: Matrix,
-                                response_source_domain: Matrix) -> str:
+    def configure_unsupervised(self,
+                               predictors_source_domain: Matrix,
+                               predictors_target_domain: Matrix,
+                               response_source_domain: Matrix):
         """
         Unsupervised initialisation.
 
@@ -252,13 +247,13 @@ class DIPLS(AbstractSingleResponsePLS):
         X: Matrix = predictors_source_domain.concatenate_along_rows(predictors_target_domain)
         y: Matrix = response_source_domain
 
-        return self.initialize(X, y)
+        return self.configure(X, y)
 
-    def initialize_supervised(self,
-                              predictors_source_domain: Matrix,
-                              predictors_target_domain: Matrix,
-                              response_source_domain: Matrix,
-                              response_target_domain: Matrix) -> str:
+    def configure_supervised(self,
+                             predictors_source_domain: Matrix,
+                             predictors_target_domain: Matrix,
+                             response_source_domain: Matrix,
+                             response_target_domain: Matrix) -> str:
         """
         Supervised initialisation.
 
@@ -274,14 +269,14 @@ class DIPLS(AbstractSingleResponsePLS):
         X: Matrix = predictors_source_domain.concatenate_along_rows(predictors_target_domain)
         y: Matrix = response_source_domain.concatenate_along_rows(response_target_domain)
 
-        return self.initialize(X, y)
+        return self.configure(X, y)
 
-    def initialize_semisupervised(self,
-                                  predictors_source_domain: Matrix,
-                                  predictors_target_domain: Matrix,
-                                  predictors_target_domain_unlabeled: Matrix,
-                                  response_source_domain: Matrix,
-                                  response_target_domain: Matrix) -> str:
+    def configure_semisupervised(self,
+                                 predictors_source_domain: Matrix,
+                                 predictors_target_domain: Matrix,
+                                 predictors_target_domain_unlabeled: Matrix,
+                                 response_source_domain: Matrix,
+                                 response_target_domain: Matrix) -> str:
         """
         Semisupervised initialisation.
 
@@ -300,7 +295,7 @@ class DIPLS(AbstractSingleResponsePLS):
                     .concatenate_along_rows(predictors_target_domain_unlabeled)
         y: Matrix = response_source_domain.concatenate_along_rows(response_target_domain)
 
-        return self.initialize(X, y)
+        return self.configure(X, y)
 
 
 class ModelAdaptionStrategy(Enum):
