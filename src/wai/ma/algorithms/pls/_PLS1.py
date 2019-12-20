@@ -17,12 +17,13 @@ from typing import Optional, List
 
 from ._AbstractSingleResponsePLS import AbstractSingleResponsePLS
 from ...core import real
-from ...core.matrix import Matrix, factory, helper
+from ...core.matrix import Matrix, factory
 
 
 class PLS1(AbstractSingleResponsePLS):
     def __init__(self):
         super().__init__()
+
         self.r_hat: Optional[Matrix] = None  # The regression vector "r-hat"
         self.P: Optional[Matrix] = None  # The P matrix
         self.W: Optional[Matrix] = None  # The W matrix
@@ -84,7 +85,7 @@ class PLS1(AbstractSingleResponsePLS):
         """
         return self.get_matrix('P')
 
-    def _do_pls_configure(self, predictors: Matrix, response: Matrix) -> Optional[str]:
+    def _do_pls_configure(self, predictors: Matrix, response: Matrix):
         """
         Initializes using the provided data.
 

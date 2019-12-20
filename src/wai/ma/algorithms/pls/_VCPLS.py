@@ -13,8 +13,6 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import Optional
-
 from ...core import ONE, real
 from ...core.matrix import Matrix, factory
 from ._PLS1 import PLS1
@@ -53,8 +51,8 @@ class VCPLS(PLS1):
         f: Matrix = y
 
         I: Matrix = factory.eye(e.num_columns())
-        g_1: Matrix = e.transpose().matrix_multiply(f).matrix_multiply(f.transpose()).matrix_multiply(e).subtract(I.multiply(self._lambda))
-        g_2: Matrix = e.transpose().matrix_multiply(e)
+        g_1: Matrix = e.t().matrix_multiply(f).matrix_multiply(f.t()).matrix_multiply(e).subtract(I.multiply(self._lambda))
+        g_2: Matrix = e.t().matrix_multiply(e)
 
         term: Matrix = (g_2.add(I.multiply(VCPLS.NU))).inverse().matrix_multiply(g_1)
 

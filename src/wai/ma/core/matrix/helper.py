@@ -26,6 +26,8 @@ from ._Matrix import Matrix
 from .._types import real
 from ._Axis import Axis
 
+# TODO: Comments
+
 
 def delete_col(data: Matrix, col: int) -> Matrix:
     return delete_cols(data, [col])
@@ -41,7 +43,7 @@ def euclidean_distance(x: Matrix, y: Matrix, squared: bool) -> Matrix:
     yy: Matrix = row_norms(y, True)
 
     distances: Matrix = x.matrix_multiply(y.transpose())
-    distances = distances.matrix_multiply(-2)
+    distances = distances.multiply(-2)
     distances = distances.add(xx)
     distances = distances.add(yy)
 

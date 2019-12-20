@@ -40,7 +40,7 @@ class PolyKernel(AbstractKernel):
     def apply_matrix(self, X: Matrix, Y: Optional[Matrix] = None) -> Matrix:
         if Y is None:
             Y = X
-        if self.gamma is NAN:
+        if self.gamma == NAN:
             self.gamma = ONE / X.num_columns()
         result: Matrix = X.matrix_multiply(Y.transpose())
         result = result.multiply(self.gamma)
@@ -50,7 +50,7 @@ class PolyKernel(AbstractKernel):
 
     def apply_vector(self, x: Matrix, y: Matrix) -> real:
         linear_term: real = x.vector_dot(y)
-        if self.gamma is NAN:
+        if self.gamma == NAN:
             self.gamma = ONE / x.num_columns()
         return pow(self.gamma * linear_term + self.coef_0, self.degree)
 

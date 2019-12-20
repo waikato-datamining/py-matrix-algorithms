@@ -19,8 +19,8 @@ Factory methods for Matrix objects.
 """
 
 import builtins
-from numbers import Number
-from typing import List, Union
+from numbers import Real
+from typing import List, Union, Optional
 
 import numpy as np
 
@@ -28,7 +28,7 @@ from ._Matrix import Matrix
 from .._types import real
 
 
-def create(data: Union[np.ndarray, List[List[Number]]]) -> Matrix:
+def create(data: Union[np.ndarray, List[List[Real]]]) -> Matrix:
     """
     Create a matrix from a given set of data.
 
@@ -38,7 +38,7 @@ def create(data: Union[np.ndarray, List[List[Number]]]) -> Matrix:
     return Matrix(np.array(data, real, copy=True))
 
 
-def eye(rows: int, columns: int = -1) -> Matrix:
+def eye(rows: int, columns: Optional[int] = None) -> Matrix:
     """
     Creates an identity matrix (1s on the diagonal
     and 0s everywhere else.
@@ -48,7 +48,7 @@ def eye(rows: int, columns: int = -1) -> Matrix:
                         Default is equal to rows.
     :return:            The matrix.
     """
-    if columns == -1:
+    if columns is None:
         columns = rows
     return Matrix(np.eye(rows, columns, dtype=real))
 
@@ -92,7 +92,7 @@ def zeros_like(other: Matrix) -> Matrix:
     return zeros(other.num_rows(), other.num_columns())
 
 
-def filled(rows: int, columns: int, initial_value: Number) -> Matrix:
+def filled(rows: int, columns: int, initial_value: Real) -> Matrix:
     """
     Creates a matrix filled with an initial value.
 
@@ -104,7 +104,7 @@ def filled(rows: int, columns: int, initial_value: Number) -> Matrix:
     return Matrix(np.full((rows, columns), real(initial_value), real))
 
 
-def filled_like(other: Matrix, initial_value: Number) -> Matrix:
+def filled_like(other: Matrix, initial_value: Real) -> Matrix:
     """
     Creates a matrix the same shape as another, but filled with
     an initial value.
@@ -116,7 +116,7 @@ def filled_like(other: Matrix, initial_value: Number) -> Matrix:
     return filled(other.num_rows(), other.num_columns(), initial_value)
 
 
-def from_row(vector: List[Number]) -> Matrix:
+def from_row(vector: List[Real]) -> Matrix:
     """
     Creates a row vector matrix from a list of values.
 
@@ -126,7 +126,7 @@ def from_row(vector: List[Number]) -> Matrix:
     return create([vector])
 
 
-def from_column(vector: List[Number]) -> Matrix:
+def from_column(vector: List[Real]) -> Matrix:
     """
     Creates a column vector matrix from a list of values.
 
@@ -222,7 +222,7 @@ def range(rows: int, columns: int, start: int) -> Matrix:
                    for s in builtins.range(start, start + rows * columns, columns)])
 
 
-def create_spectrum(wave_numbers: List[Number], amplitudes: List[Number]) -> Matrix:
+def create_spectrum(wave_numbers: List[Real], amplitudes: List[Real]) -> Matrix:
     """
     Creates a spectrum matrix, which has two columns (the wave-numbers and the
     amplitudes). The provided wave-number and amplitude lists must be the same

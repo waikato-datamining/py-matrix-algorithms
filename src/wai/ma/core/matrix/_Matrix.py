@@ -13,8 +13,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-from numbers import Number
+from numbers import Real
 from typing import Optional, Union, List, Tuple, Callable, IO, Iterator
 
 import numpy as np
@@ -102,7 +101,7 @@ class Matrix(Serialisable):
         Whether self x other is valid for the matrices.
 
         :param other:   The matrix to check for compatibility.
-        :return:        True if the multiplication is valid.
+        :return:        True if matrix multiplication is valid.
         """
         return self.num_columns() == other.num_rows()
 
@@ -159,7 +158,7 @@ class Matrix(Serialisable):
         if not self.is_column_vector():
             raise ValueError("Must be a column vector")
 
-    def ensure_is_same_shape_as(self, other: "Matrix"):
+    def ensure_is_same_shape_as(self, other: 'Matrix'):
         """
         Raises an error if this matrix is not the same shape
         as the given matrix.
@@ -171,7 +170,7 @@ class Matrix(Serialisable):
                                     self.shape_string(),
                                     other.shape_string())
 
-    def ensure_is_multiplicable_with(self, other: "Matrix"):
+    def ensure_is_multiplicable_with(self, other: 'Matrix'):
         """
         Raises an error if this matrix cannot be left-multiplied
         with the given matrix.
@@ -197,7 +196,7 @@ class Matrix(Serialisable):
         """
         return self._data[row][column]
 
-    def set(self, row: int, column: int, value: Number):
+    def set(self, row: int, column: int, value: Real):
         """
         Sets the value at the given row and column.
 
@@ -205,10 +204,10 @@ class Matrix(Serialisable):
         :param column:  The matrix column.
         :param value:   The value to set.
         """
-        self._reset_cache()
         self._data[row][column] = real(value)
+        self._reset_cache()
 
-    def get_row(self, row_index: int) -> "Matrix":
+    def get_row(self, row_index: int) -> 'Matrix':
         """
         Gets a row from this matrix.
 
@@ -239,13 +238,12 @@ class Matrix(Serialisable):
         # Make sure the row is the right length for this matrix
         row_length: int = row.num_columns()
         if row_length != self.num_columns():
-            raise InvalidShapeError("Row doesn't have the right number of columns",
-                                    self.shape_string(),
-                                    row.shape_string())
-
-        self._reset_cache()
+            raise InvalidShapeError(f"Row doesn't have the right number of columns "
+                                    f"(is {row_length}, should be {self.num_columns()})",
+                                    self.shape_string(), row.shape_string())
 
         self._data[row_index, :] = row._data[0, :]
+        self._reset_cache()
 
     def set_column(self, column_index: int, column: 'Matrix'):
         """
@@ -260,13 +258,13 @@ class Matrix(Serialisable):
         # Make sure the column is the right length for this matrix
         column_length: int = column.num_rows()
         if column_length != self.num_rows():
-            raise InvalidShapeError("Column doesn't have the right number of rows",
+            raise InvalidShapeError(f"Column doesn't have the right number of rows "
+                                    f"(is {column_length}, should be {self.num_rows()})",
                                     self.shape_string(),
                                     column.shape_string())
 
-        self._reset_cache()
-
         self._data[:, column_index] = column._data[:, 0]
+        self._reset_cache()
 
     def get_flat(self, index: int, row_major: bool = True) -> real:
         """
@@ -277,6 +275,11 @@ class Matrix(Serialisable):
                             ordering or column-major ordering.
         :return:            The value at the index.
         """
+        # Make sure the index is in-range
+        if index >= self.num_elements():
+            raise IndexError(f"Flat index must be in [0, {self.num_elements()}) but was {index}")
+
+        # Calculate the row/column index for the given ordering
         if row_major:
             row = index // self.num_columns()
             column = index % self.num_columns()
@@ -386,81 +389,80 @@ class Matrix(Serialisable):
     # AGGREGATIONS #
     # ------------ #
 
-    # TODO: Comments
-
     def _aggregate(self, op, axis: Axis = Axis.BOTH, **kwargs) -> 'Matrix':
         """
         Base implementation of aggregation functions.
 
         :param op:      The aggregating function to perform.
         :param axis:    The axis to aggregate.
+        :param kwargs:  Any other arguments to the aggregation op.
         :return:        The resulting matrix.
         """
-        if axis is Axis.BOTH:
-            return Matrix(op(self._data, keepdims=True, **kwargs))
-
-        return Matrix(op(self._data, axis=0 if axis is Axis.COLUMNS else 1, keepdims=True, **kwargs))
+        return Matrix(op(self._data,
+                         axis=None if axis is Axis.BOTH else 0 if axis is Axis.COLUMNS else 1,
+                         keepdims=True,
+                         **kwargs))
 
     def maximum(self, axis: Axis = Axis.BOTH) -> 'Matrix':
         """
-        Returns the maxima of values in this matrix.
+        Returns the maximal values in this matrix on the given axis.
 
         :param axis:    The axis to aggregate.
-        :return:        The maximal value.
+        :return:        The maxima.
         """
         return self._aggregate(np.amax, axis)
 
     def minimum(self, axis: Axis = Axis.BOTH) -> 'Matrix':
         """
-        Returns the minima of values in this matrix.
+        Returns the minimal values in this matrix along the given axis.
 
         :param axis:    The axis to aggregate.
-        :return:        The minimal value.
+        :return:        The minima.
         """
         return self._aggregate(np.amin, axis)
 
     def median(self, axis: Axis = Axis.BOTH) -> 'Matrix':
         """
-        Returns the median of values in this matrix.
+        Returns the median values in this matrix along the given axis.
 
         :param axis:    The axis to aggregate.
-        :return:        The median value.
+        :return:        The medians.
         """
         return self._aggregate(np.median, axis)
 
     def mean(self, axis: Axis = Axis.BOTH) -> 'Matrix':
         """
-        Returns the mean of values in this matrix.
+        Returns the mean values in this matrix along the given axis.
 
         :param axis:    The axis to aggregate.
-        :return:        The mean value.
+        :return:        The means.
         """
         return self._aggregate(np.mean, axis)
 
     def standard_deviation(self, axis: Axis = Axis.BOTH) -> 'Matrix':
         """
-        Returns the standard deviations of values in this matrix.
+        Returns the standard deviations of values in this matrix along the given axis.
 
         :param axis:    The axis to aggregate.
-        :return:        The standard deviations value.
+        :return:        The standard deviations.
         """
         return self._aggregate(np.std, axis, ddof=1)
 
     def total(self, axis: Axis = Axis.BOTH) -> 'Matrix':
         """
-        Returns the sum of all values in this matrix.
+        Returns the sums of values in this matrix along the given axis.
 
         :param axis:    The axis to aggregate.
-        :return:        The total value.
+        :return:        The sums.
         """
         return self._aggregate(np.sum, axis)
 
     def norm1(self, axis: Axis = Axis.BOTH) -> 'Matrix':
         """
-        Calculates the L1 norm of this matrix.
+        Calculates the L1 norm of values in this matrix.
 
         :param axis:    The axis to calculate the norm over.
-        :return:        The L1 norm.
+        :return:        The L1 norms.
         """
         if axis is Axis.BOTH:
             norm = np.linalg.norm(np.linalg.norm(self._data, 1, 0), 1)
@@ -500,6 +502,8 @@ class Matrix(Serialisable):
     # EIGENVECTORS/VALUES #
     # ------------------- #
 
+    # TODO: Comments
+
     def _initialise_eigenvalue_decomposition(self):
         """
         Initialises the eigenvalue decomposition.
@@ -510,48 +514,116 @@ class Matrix(Serialisable):
         the exact direction of the eigenvectors may be affected. Possible future solution
         is to enforce normalisation and a standard quadrant that the vectors must point into.
         """
-        if self._eigenvalue_decomposition is None:
-            eigenvalues, eigenvectors = np.linalg.eig(self._data)
-            eigenvalues = eigenvalues[:, np.newaxis]
-            eigenvalues = eigenvalues.astype(real)
-            eigenvectors = eigenvectors.astype(real)
-            self._eigenvalue_decomposition = (Matrix(eigenvalues), Matrix(eigenvectors))
+        # Abort if already decomposed
+        if self._eigenvalue_decomposition is not None:
+            return
+
+        # Perform the decomposition
+        eigenvalues, eigenvectors = np.linalg.eig(self._data)
+
+        # Convert the eigenvalues/vectors into Matrix format
+        eigenvalues = eigenvalues[:, np.newaxis]
+        eigenvalues = eigenvalues.astype(real)
+        eigenvectors = eigenvectors.astype(real)
+
+        # Store the decomposition
+        self._eigenvalue_decomposition = (Matrix(eigenvalues), Matrix(eigenvectors))
 
     def get_eigenvectors(self, sort_dominance: bool = False) -> 'Matrix':
+        """
+        Gets the eigenvectors of this matrix.
+
+        :param sort_dominance:  Whether to sort the vectors by
+                                eigenvalue size.
+        :return:                The eigenvector matrix.
+        """
+        # If sorted, defer
         if sort_dominance:
             return self.get_eigenvectors_sorted_descending()
 
-        self._initialise_eigenvalue_decomposition()
-        return self._eigenvalue_decomposition[1].copy()
+        # Just return the eigenvector matrix
+        return self.get_eigenvalue_decomposition_V()
 
     def get_eigenvectors_sorted_ascending(self) -> 'Matrix':
+        """
+        Gets the eigenvectors of this matrix, sorted by
+        ascending eigenvalue.
+
+        :return:    The sorted eigenvector matrix.
+        """
         return self.get_eigenvectors_sorted(True)
 
     def get_eigenvectors_sorted_descending(self) -> 'Matrix':
+        """
+        Gets the eigenvectors of this matrix, sorted by
+        descending eigenvalue.
+
+        :return:    The sorted eigenvector matrix.
+        """
         return self.get_eigenvectors_sorted(False)
 
     def get_dominant_eigenvector(self) -> 'Matrix':
+        """
+        Gets the eigenvector with the largest eigenvalue.
+
+        :return:    The column eigenvector.
+        """
         return self.get_eigenvectors_sorted_descending().get_column(0)
 
     def get_eigenvalue_decomposition_V(self) -> 'Matrix':
+        """
+        Gets the V-matrix of the eigen-decomposition.
+
+        :return:    The matrix of eigenvectors.
+        """
         self._initialise_eigenvalue_decomposition()
-        return self._eigenvalue_decomposition[1]
+        return self._eigenvalue_decomposition[1].copy()
 
     def get_eigenvalue_decomposition_D(self) -> 'Matrix':
+        """
+        Gets the D-matrix of the eigenvalue decomposition.
+
+        :return:    The diagonal eigenvalue matrix.
+        """
         self._initialise_eigenvalue_decomposition()
         return self._eigenvalue_decomposition[0].vector_to_diagonal()
 
     def get_eigenvalues(self) -> 'Matrix':
+        """
+        Gets the eigenvalues of this matrix as a column vector.
+
+        :return:    The eigenvalues.
+        """
         self._initialise_eigenvalue_decomposition()
         return self._eigenvalue_decomposition[0].copy()
 
     def get_eigenvalues_sorted_descending(self) -> 'Matrix':
+        """
+        Gets the eigenvalues of this matrix as a column vector,
+        sorted by descending magnitude.
+
+        :return:    The eigenvalues.
+        """
         return self.get_eigenvalues_sorted(False)
 
     def get_eigenvalues_sorted_ascending(self) -> 'Matrix':
+        """
+        Gets the eigenvalues of this matrix as a column vector,
+        sorted by ascending magnitude.
+
+        :return:    The eigenvalues.
+        """
         return self.get_eigenvalues_sorted(True)
 
     def get_eigenvectors_sorted(self, ascending: bool):
+        """
+        Gets the eigenvectors of this matrix, sorted in either
+        ascending or descending order.
+
+        :param ascending:   The order in which to sort the eigenvectors.
+        :return:            The sorted eigenvector matrix.
+        """
+        # Create the decomposition
         self._initialise_eigenvalue_decomposition()
 
         # Get eigenpairs
@@ -572,15 +644,29 @@ class Matrix(Serialisable):
         return result
 
     def get_eigenvalues_sorted(self, ascending: bool) -> 'Matrix':
+        """
+        Gets the eigenvalues of this matrix as a column vector,
+        sorted by magnitude.
+
+        :param ascending:   The order in which to sort the eigenvalues.
+        :return:            The eigenvalues.
+        """
+        # Get the unsorted eigenvalues
         eigenvalues = self.get_eigenvalues()
+
+        # Sort them in ascending order
         eigenvalues._data.sort(0)
+
+        # If descending order is requested, flip the result
         if not ascending:
             eigenvalues._data = np.flip(eigenvalues._data)
+
         return eigenvalues
 
     # ---------------------------- #
     # SINGULAR VALUE DECOMPOSITION #
     # ---------------------------- #
+    # TODO: Comments
 
     def _initialise_singular_value_decomposition(self):
         u, s, vh = np.linalg.svd(self._data, full_matrices=False)
@@ -613,6 +699,7 @@ class Matrix(Serialisable):
     # ---------------- #
     # QR DECOMPOSITION #
     # ---------------- #
+    # TODO: Comments, implementations
 
     def make_qr_decomposition(self):
         # TODO
@@ -630,7 +717,7 @@ class Matrix(Serialisable):
     # BINARY OPERATIONS #
     # ----------------- #
 
-    def _binary_op(self, operand: Union['Matrix', Number], op: np.ufunc, in_place: bool = False) -> 'Matrix':
+    def _binary_op(self, operand: Union['Matrix', Real], op: np.ufunc, in_place: bool = False) -> 'Matrix':
         """
         Performs a binary operation on this matrix's data, either
         in-place or creating a new matrix for the result.
@@ -646,17 +733,17 @@ class Matrix(Serialisable):
                 if operand.is_row_vector():
                     if self.num_columns() != operand.num_columns():
                         raise InvalidShapeError("Row vector does not match matrix shape",
-                                                operand.shape_string(),
-                                                self.shape_string())
+                                                self.shape_string(),
+                                                operand.shape_string())
                 elif operand.is_column_vector():
                     if self.num_rows() != operand.num_rows():
                         raise InvalidShapeError("Column vector does not match matrix shape",
-                                                operand.shape_string(),
-                                                self.shape_string())
+                                                self.shape_string(),
+                                                operand.shape_string())
                 elif not self.is_same_shape_as(operand):
                     raise InvalidShapeError("Matrix shapes don't match",
-                                            operand.shape_string(),
-                                            self.shape_string())
+                                            self.shape_string(),
+                                            operand.shape_string())
 
             operand = operand._data
 
@@ -668,19 +755,76 @@ class Matrix(Serialisable):
 
         return result
 
-    def add(self, operand: Union['Matrix', Number], in_place: bool = False) -> 'Matrix':
+    # TODO: Comments
+
+    def add(self, operand: Union['Matrix', Real], in_place: bool = False) -> 'Matrix':
+        """
+        Adds to the values in this matrix.
+
+        :param operand:     The values to add to this matrix. Performs differently depending on argument:
+                            - scalar value or matrix: add the scalar value to all elements.
+                            - row vector: add column-wise elements together.
+                            - column vector: add row-wise elements together.
+                            - full matrix: element-wise addition.
+        :param in_place:    Whether to modify this matrix in-place.
+        :return:            The result of the operation.
+        """
         return self._binary_op(operand, np.add, in_place)
 
-    def subtract(self, operand: Union['Matrix', Number], in_place: bool = False) -> 'Matrix':
+    def subtract(self, operand: Union['Matrix', Real], in_place: bool = False) -> 'Matrix':
+        """
+        Subtracts from the values in this matrix.
+
+        :param operand:     The values to subtract from this matrix. Performs differently depending on argument:
+                            - scalar value or matrix: subtract the scalar value from all elements.
+                            - row vector: subtract column-wise elements from one-another.
+                            - column vector: subtract row-wise elements from one-another.
+                            - full matrix: element-wise subtraction.
+        :param in_place:    Whether to modify this matrix in-place.
+        :return:            The result of the operation.
+        """
         return self._binary_op(operand, np.subtract, in_place)
 
-    def multiply(self, operand: Union['Matrix', Number], in_place: bool = False) -> 'Matrix':
+    def multiply(self, operand: Union['Matrix', Real], in_place: bool = False) -> 'Matrix':
+        """
+        Scales the values in this matrix.
+
+        :param operand:     The values by which to scale this matrix. Performs differently depending on argument:
+                            - scalar value or matrix: scale all elements by the value.
+                            - row vector: multiply column-wise elements with one-another.
+                            - column vector: multiply row-wise elements with one-another.
+                            - full matrix: element-wise multiplication.
+        :param in_place:    Whether to modify this matrix in-place.
+        :return:            The result of the operation.
+        """
         return self._binary_op(operand, np.multiply, in_place)
 
-    def divide(self, operand: Union['Matrix', Number], in_place: bool = False) -> 'Matrix':
+    def divide(self, operand: Union['Matrix', Real], in_place: bool = False) -> 'Matrix':
+        """
+        Divides the values in this matrix.
+
+        :param operand:     The values by which to divide this matrix. Performs differently depending on argument:
+                            - scalar value or matrix: divide all elements by the value.
+                            - row vector: divide column-wise elements by one-another.
+                            - column vector: divide row-wise elements by one-another.
+                            - full matrix: element-wise division.
+        :param in_place:    Whether to modify this matrix in-place.
+        :return:            The result of the operation.
+        """
         return self._binary_op(operand, np.divide, in_place)
 
-    def pow(self, operand: Union['Matrix', Number], in_place: bool = False) -> 'Matrix':
+    def pow(self, operand: Union['Matrix', Real], in_place: bool = False) -> 'Matrix':
+        """
+        Raises the values in this matrix to the given exponents.
+
+        :param operand:     The values to exponentiate this matrix. Performs differently depending on argument:
+                            - scalar value or matrix: exponentiate all elements by this value.
+                            - row vector: exponentiate column-wise elements.
+                            - column vector: exponentiate row-wise elements.
+                            - full matrix: element-wise exponentiation.
+        :param in_place:    Whether to modify this matrix in-place.
+        :return:            The result of the operation.
+        """
         return self._binary_op(operand, np.power, in_place)
 
     def vector_dot(self, other: 'Matrix') -> real:
@@ -704,78 +848,81 @@ class Matrix(Serialisable):
 
         return real(np.dot(a, b))
 
-    def matrix_multiply(self, other: "Matrix", in_place: bool = False) -> "Matrix":
+    def matrix_multiply(self, other: 'Matrix', in_place: bool = False) -> 'Matrix':
         """
-        TODO
-        :param other:
-        :param in_place:
-        :return:
+        Performs matrix multiplication between this and another matrix.
+
+        :param other:       The matrix to multiply with this one.
+        :param in_place:    Whether the result should be stored in this matrix,
+                            or a new matrix should be created.
+        :return:            The result of the multiplication.
         """
         # Make sure the multiplication is valid
         self.ensure_is_multiplicable_with(other)
 
+        # Perform the multiplication
         if in_place:
             self._data = np.matmul(self._data, other._data)
             return self
         else:
             return Matrix(np.matmul(self._data, other._data))
 
-    def clip(self, lower_bound: Number, upper_bound: Number) -> "Matrix":
-        if lower_bound > upper_bound:
-            raise MatrixAlgorithmsError('Invalid clipping values. Lower ' +
-                                        'bound must be below upper bound')
-
-        lower_bound = real(lower_bound)
-        upper_bound = real(upper_bound)
-
-        def clip(el: real) -> real:
-            if el < lower_bound:
-                return lower_bound
-            elif el > upper_bound:
-                return upper_bound
-            else:
-                return el
-
-        return self.apply_elementwise(clip)
-
-    def clip_lower(self, lower_bound: Number) -> "Matrix":
-        return self.clip(lower_bound, np.inf)
-
-    def clip_upper(self, upper_bound: Number) -> "Matrix":
+    def clip(self,
+             lower_bound: Optional[Real] = None,
+             upper_bound: Optional[Real] = None,
+             in_place: bool = False) -> 'Matrix':
         """
-        TODO
-        :param upper_bound:
-        :return:
+        Returns a matrix with all values clipped to the provided bounds.
+
+        :param lower_bound:     The minimum value that should be in the matrix.
+        :param upper_bound:     The maximum value that should be in the matrix.
+        :param in_place:        Whether the operation should be done on this matrix,
+                                or a new matrix should be returned.
+        :return:                The clipped matrix.
         """
-        return self.clip(-np.inf, upper_bound)
+        # If both bounds are none, no clipping is performed
+        if lower_bound is None and upper_bound is None:
+            return self if in_place else self.copy()
+
+        # Make sure the bounds are properly ordered
+        if lower_bound is not None and upper_bound is not None and lower_bound > upper_bound:
+            raise MatrixAlgorithmsError(f"Lower bound {lower_bound} must be below upper bound {upper_bound}")
+
+        # Determine the resulting matrix
+        if in_place:
+            np.clip(self._data, lower_bound, upper_bound, self._data)
+            return self
+        else:
+            return Matrix(np.clip(self._data, lower_bound, upper_bound))
 
     # ---------------- #
     # UNARY OPERATIONS #
     # ---------------- #
+    # TODO: Comments
 
-    def _unary_op(self, op: np.ufunc, in_place: bool = False) -> "Matrix":
+    def _unary_op(self, op: np.ufunc, in_place: bool = False) -> 'Matrix':
         result = self if in_place else self.copy()
 
         op.at(result._data, ...)
 
         return result
 
-    def sign(self, in_place: bool = False) -> "Matrix":
+    def sign(self, in_place: bool = False) -> 'Matrix':
         return self._unary_op(np.sign, in_place)
 
-    def abs(self, in_place: bool = False) -> "Matrix":
+    def abs(self, in_place: bool = False) -> 'Matrix':
         return self._unary_op(np.abs, in_place)
 
-    def log(self, in_place: bool = False) -> "Matrix":
+    def log(self, in_place: bool = False) -> 'Matrix':
         return self._unary_op(np.log, in_place)
 
-    def exp(self, in_place: bool = False) -> "Matrix":
+    def exp(self, in_place: bool = False) -> 'Matrix':
         return self._unary_op(np.exp, in_place)
 
-    def tanh(self, in_place: bool = False) -> "Matrix":
+    def tanh(self, in_place: bool = False) -> 'Matrix':
         return self._unary_op(np.tanh, in_place)
 
-    def sqrt(self, in_place: bool = False) -> "Matrix":
+    def sqrt(self, in_place: bool = False) -> 'Matrix':
         return self._unary_op(np.sqrt, in_place)
 
     def normalized(self, axis: Axis = Axis.BOTH) -> 'Matrix':
@@ -790,7 +937,7 @@ class Matrix(Serialisable):
         result = np.divide(self._data, norms)
         return Matrix(result)
 
-    def apply_elementwise(self, function: Callable[[real], Number], in_place: bool = False) -> 'Matrix':
+    def apply_elementwise(self, function: Callable[[real], Real], in_place: bool = False) -> 'Matrix':
         """
         Applies a function to each element of a matrix.
 
@@ -813,6 +960,7 @@ class Matrix(Serialisable):
     # ------- #
     # INVERSE #
     # ------- #
+    # TODO: Comments
 
     def inverse(self) -> 'Matrix':
         if self.is_square():
@@ -908,7 +1056,9 @@ class Matrix(Serialisable):
         :param predicate:   The functional predicate to match.
         :return:            A list of indices of matching elements.
         """
+        # Can only be called for vectors
         self.ensure_is_vector()
+
         if self.is_row_vector():
             return [column for row, column in self.where(predicate)]
         else:
@@ -1012,6 +1162,11 @@ class Matrix(Serialisable):
     # ----- #
 
     def transpose(self) -> 'Matrix':
+        """
+        Returns the matrix transpose of this matrix.
+
+        :return:    The transposed matrix.
+        """
         return Matrix(self._data.transpose().copy())
 
     # Alias for transpose
@@ -1042,6 +1197,11 @@ class Matrix(Serialisable):
         raise NotImplementedError
 
     def vector_to_diagonal(self):
+        """
+        TODO: Comment
+
+        :return:
+        """
         self.ensure_is_vector()
         raw = [[self.get_flat(i) if i == j else real(0)
                 for i in range(self.num_elements())]
@@ -1053,17 +1213,28 @@ class Matrix(Serialisable):
     # --------- #
 
     def _reset_cache(self):
+        """
+        Resets the cached decompositions when a matrix value is changed so that
+        they are recalculated.
+        """
         self._eigenvalue_decomposition = None
         self._singular_value_decomposition = None
         self._qr_decomposition = None
 
     def __eq__(self, other):
+        # Always equal to ourselves
         if self is other:
             return True
 
+        # Can only be equal to other matrices
         if not isinstance(other, Matrix):
             return False
 
+        # Must be that same shape as each other
+        if not self.is_same_shape_as(other):
+            return False
+
+        # Calculate the difference between the matrices
         diff: Matrix = self.subtract(other)
 
         return not diff._data.any()
@@ -1071,7 +1242,3 @@ class Matrix(Serialisable):
     def __hash__(self):
         # TODO
         raise NotImplementedError
-
-    # --- #
-    # END #
-    # --- #

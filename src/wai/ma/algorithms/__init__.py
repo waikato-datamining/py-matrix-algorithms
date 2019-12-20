@@ -31,5 +31,3 @@ from ._RowNorm import RowNorm
 from ._SavitzkyGolay import SavitzkyGolay
 from ._SavitzkyGolay2 import SavitzkyGolay2
 from ._Standardize import Standardize
-#from ._Wavelet import Wavelet
-#from ._YGradientGLSWSavitzkyGolayFilter import YGradientGLSWSavitzkyGolayFilter
