@@ -47,6 +47,18 @@ class MatrixTest(AbstractMatrixAlgorithmTest):
         return self.standard_regression(subject.get_eigenvalues())
 
     @RegressionTest
+    def svd_S(self, subject: Matrix, bolts: Matrix):
+        return self.standard_regression(subject.svd_S())
+
+    @RegressionTest
+    def svd_U(self, subject: Matrix, bolts: Matrix):
+        return self.standard_regression(subject.svd_U())
+
+    @RegressionTest
+    def svd_V(self, subject: Matrix, bolts: Matrix):
+        return self.standard_regression(subject.svd_V())
+
+    @RegressionTest
     def norm2(self, subject: Matrix, bolts: Matrix):
         return self.standard_regression(bolts.norm2())
 
