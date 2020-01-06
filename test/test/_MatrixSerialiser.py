@@ -53,11 +53,15 @@ class MatrixSerialiser(RegressionSerialiser[Matrix]):
         if len(which) > 0:
             return 'Values in the expected and actual matrices do not match.\n' + \
                    'Absolute differences:\n' + \
-                   cls.indices_to_string(which, diff)
+                   cls.indices_to_string(which, diff, reference, result)
 
     @classmethod
-    def indices_to_string(cls, which: List[Tuple[int, int]], diff: Matrix) -> str:
-        string = '(<row>, <column>): <absolute difference>\n'
-        string += '\n'.join(('({i}, {j}): {diff}'.format_map({'i': i, 'j': j, 'diff': diff.get(i, j)})
-                            for i, j in which))
+    def indices_to_string(cls,
+                          which: List[Tuple[int, int]],
+                          diff: Matrix,
+                          reference: Matrix,
+                          result: Matrix) -> str:
+        string = '(<row>, <column>): <absolute difference>, <expected>, <actual>\n'
+        string += '\n'.join((f"({i}, {j}): {diff.get(i, j)}, {reference.get(i, j)}, {result.get(i,j)}"
+                             for i, j in which))
         return string

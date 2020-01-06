@@ -701,15 +701,23 @@ class Matrix(Serialisable):
     # ---------------- #
     # TODO: Comments, implementations
 
-    def make_qr_decomposition(self):
+    def _initialise_qr_decomposition(self):
+        # Abort if already decomposed
+        if self._qr_decomposition is not None:
+            return
+
         # TODO
         raise NotImplementedError
 
     def qr_Q(self) -> 'Matrix':
+        self._initialise_qr_decomposition()
+
         # TODO
         raise NotImplementedError
 
     def qr_R(self) -> 'Matrix':
+        self._initialise_qr_decomposition()
+
         # TODO
         raise NotImplementedError
 
