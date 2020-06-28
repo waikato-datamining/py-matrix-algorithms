@@ -1,15 +1,22 @@
 Changelog
 =========
 
-0.0.1 (2019-07-15)
+0.0.6 (2019-11-18)
+------------------
+
+- Added tranformations based on scikit-learn: PowerTransformer, QuantileTranformer and RobustScalar.
+
+0.0.5 (2019-11-01)
+------------------
+
+- Added Log transformation.
+- Updated to wai.common v0.0.17
+
+0.0.4 (2019-10-04)
 -------------------
 
-- Initial release
-
-0.0.2 (2019-07-25)
--------------------
-
-- Modified RowNorm to reconfigure itself for every matrix it sees.
+- Standardize now implements Serialisable interface.
+- Serialisable can now serialise strings.
 
 0.0.3 (2019-08-21)
 -------------------
@@ -24,19 +31,12 @@ Changelog
   and SIMPLS implement this.
 - Added Equidistance resampling filter.
 
-0.0.4 (2019-10-04)
+0.0.2 (2019-07-25)
 -------------------
 
-- Standardize now implements Serialisable interface.
-- Serialisable can now serialise strings.
+- Modified RowNorm to reconfigure itself for every matrix it sees.
 
-0.0.5 (2019-11-01)
-------------------
+0.0.1 (2019-07-15)
+-------------------
 
-- Added Log transformation.
-- Updated to wai.common v0.0.17
-
-0.0.6 (2019-11-18)
-------------------
-
-- Added tranformations based on scikit-learn: PowerTransformer, QuantileTranformer and RobustScalar.
+- Initial release
