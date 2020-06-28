@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.0.7 (2020-06-29)
+------------------
+
+- Fixed Downsample so it filters columns instead of rows.
+
 0.0.6 (2019-11-18)
 ------------------
 
