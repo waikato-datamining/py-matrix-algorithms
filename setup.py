@@ -49,7 +49,7 @@ setup(
     namespace_packages=[
         "wai"
     ],
-    version="0.0.7",
+    version="0.0.8",
     author='Peter "fracpete" Reutemann',
     author_email='fracpete@waikato.ac.nz',
     install_requires=[

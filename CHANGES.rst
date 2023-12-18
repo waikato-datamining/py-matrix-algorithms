@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.0.8 (2023-12-19)
+------------------
+
+- Updated/relaxed dependencies
+- Using `int` instead of `np.int` now
+
 0.0.7 (2020-06-29)
 ------------------
 
