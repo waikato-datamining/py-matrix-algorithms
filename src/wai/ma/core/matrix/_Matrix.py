@@ -51,8 +51,8 @@ class Matrix(Serialisable):
             columns = [i for i in range(*columns)]
 
         # Use advanced indexing
-        rows = np.array(rows, dtype=np.int)
-        columns = np.array(columns, dtype=np.int)
+        rows = np.array(rows, dtype=int)
+        columns = np.array(columns, dtype=int)
         rows = rows[:, np.newaxis]
 
         return Matrix(np.array(self.data[rows, columns]))
