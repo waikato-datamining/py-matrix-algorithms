@@ -1,5 +1,5 @@
 #  _types.py
-#  Copyright (C) 2019 University of Waikato, Hamilton, New Zealand
+#  Copyright (C) 2019,2025 University of Waikato, Hamilton, New Zealand
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -22,5 +22,5 @@ real = np.float64
 ZERO = real(0)
 ONE = real(1)
 NAN = real('NaN')
-INF = real(np.PINF)
-NEG_INF = real(np.NINF)
+INF = real(np.inf)
+NEG_INF = real(-np.inf)

@@ -56,7 +56,7 @@ Planned:
 Install from the PyPI index:
 
 ```bash
-pip install wai.ma
+pip install wai_ma
 ```
 
 ## Examples

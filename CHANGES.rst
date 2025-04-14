@@ -1,6 +1,15 @@
 Changelog
 =========
 
+0.0.9 (2025-04-14)
+------------------
+
+- project name uses underscores now
+- lifted `numpy<1.22` restriction
+- `np.INF`/`np.NINF` to `np.inf`/`-np.inf`
+- updated regression files
+
+
 0.0.8 (2023-12-19)
 ------------------
 
