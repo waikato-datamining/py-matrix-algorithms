@@ -43,14 +43,14 @@ class RowNorm(AbstractTransformation):
 
     def do_transform(self, data: Matrix) -> Matrix:
         result = data.copy()
-        result.sub_by_vector_modify(self.means)
-        result.div_by_vector_modify(self.std_devs)
+        result.data -= self.means.data
+        result.data /= self.std_devs.data
         return result
 
     def do_inverse_transform(self, data: Matrix) -> Matrix:
         result = data.copy()
-        result.mul_by_vector_modify(self.std_devs)
-        result.add_by_vector_modify(self.means)
+        result.data *= self.std_devs.data
+        result.data += self.means.data
         return result
 
     def get_means(self) -> Matrix:
