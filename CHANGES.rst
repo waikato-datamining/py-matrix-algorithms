@@ -8,6 +8,7 @@ Changelog
 - lifted `numpy<1.22` restriction
 - `np.INF`/`np.NINF` to `np.inf`/`-np.inf`
 - updated regression files
+- the `AbstractTransformation` class now sets the `configured` flag
 
 
 0.0.8 (2023-12-19)

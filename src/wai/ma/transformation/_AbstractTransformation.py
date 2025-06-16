@@ -38,6 +38,7 @@ class AbstractTransformation(Filter, ABC):
     def transform(self, data: Matrix) -> Matrix:
         if not self.configured:
             self.configure(data)
+            self.configured = True
         return self.do_transform(data)
 
     @abstractmethod
@@ -47,6 +48,7 @@ class AbstractTransformation(Filter, ABC):
     def inverse_transform(self, data: Matrix) -> Matrix:
         if not self.configured:
             self.configure(data)
+            self.configured = True
         return self.do_inverse_transform(data)
 
     @classmethod
