@@ -13,6 +13,8 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import numpy as np
+
 from typing import Optional, List
 
 from ..transformation import Center, Standardize, AbstractTransformation
@@ -140,7 +142,7 @@ class PCA(AbstractAlgorithm, Filter):
         # Any eigenvalues less than 0 are not worth anything -- change to 0
         self.eigenvalues = self.eigenvalues.apply_elementwise(lambda v: real(0) if v < 0 else v)
 
-        self.sorted_eigens = utils.sort(self.eigenvalues.to_raw_copy_1D())
+        self.sorted_eigens = np.argsort(self.eigenvalues.to_raw_copy_1D())
         self.sum_of_eigenvalues = sum(self.eigenvalues.to_raw_copy_1D())
 
         self.train = None

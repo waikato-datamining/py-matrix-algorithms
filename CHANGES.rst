@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.0.10 (????-??-??)
+-------------------
+
+- PCA now uses numpy.argsort to sort eigenvectors
+
+
 0.0.9 (2025-04-14)
 ------------------
 
