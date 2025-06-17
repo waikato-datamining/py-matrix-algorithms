@@ -38,7 +38,6 @@ class AbstractTransformation(Filter, ABC):
     def transform(self, data: Matrix) -> Matrix:
         if not self.configured:
             self.configure(data)
-            self.configured = True
         return self.do_transform(data)
 
     @abstractmethod
